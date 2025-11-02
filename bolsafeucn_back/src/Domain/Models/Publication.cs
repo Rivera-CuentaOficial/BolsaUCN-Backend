@@ -1,74 +1,77 @@
 namespace bolsafeucn_back.src.Domain.Models
 {
     /// <summary>
-    /// Enum que define los tipos de publicaciones en el sistema
+    /// Enum that defines types of publications in the system.
     /// </summary>
     public enum Types
     {
-        Offer, // Oferta laboral o voluntariado
-        BuySell, // Compra/Venta
-    }
-
-    public enum StatusValidation
-    {
-        Published, // Oferta publicada con validación del administrador
-        InProcess, // Oferta en proceso de evaluación del administrador
-        Rejected, // Oferta rechazada por el administrador
+        Offer, // Job or volunteer offer
+        BuySell, // Buy/Sell listing
     }
 
     /// <summary>
-    /// Clase base abstracta para todas las publicaciones del sistema
-    /// Hereda de esta clase: Offer, BuySell
+    /// Validation state used by administrative workflows.
+    /// </summary>
+    public enum StatusValidation
+    {
+        Published, // Validated and published by an administrator
+        InProcess, // Under administrative review
+        Rejected, // Rejected by an administrator
+    }
+
+    /// <summary>
+    /// Abstract base class for all publication entities in the system.
+    /// Derived types include <see cref="Offer"/> and <see cref="BuySell"/>.
     /// </summary>
     public abstract class Publication
     {
         /// <summary>
-        /// Identificador único de la publicación
+        /// Unique identifier for the publication.
         /// </summary>
         public int Id { get; set; }
 
         /// <summary>
-        /// Usuario que creó la publicación
+        /// The user who created the publication.
         /// </summary>
         public required GeneralUser User { get; set; }
 
         /// <summary>
-        /// ID del usuario que creó la publicación
+        /// Identifier of the user who created the publication.
         /// </summary>
         public required int UserId { get; set; }
 
         /// <summary>
-        /// Título de la publicación
+        /// Title of the publication.
         /// </summary>
         public required string Title { get; set; }
 
         /// <summary>
-        /// Descripción detallada de la publicación
+        /// Full description of the publication.
         /// </summary>
         public required string Description { get; set; }
 
         /// <summary>
-        /// Fecha y hora de publicación (UTC)
+        /// Publication date and time in UTC.
         /// </summary>
         public DateTime PublicationDate { get; set; } = DateTime.UtcNow;
 
         /// <summary>
-        /// Colección de imágenes asociadas a la publicación
+        /// Collection of images attached to the publication.
         /// </summary>
         public ICollection<Image> Images { get; set; } = new List<Image>();
 
         /// <summary>
-        /// Tipo de publicación (Offer, BuySell)
+        /// Publication type (Offer, BuySell).
         /// </summary>
         public required Types Type { get; set; }
 
         /// <summary>
-        /// Indica si la publicación está activa y visible para los usuarios
+        /// Whether the publication is active and visible to users.
         /// </summary>
         public bool IsActive { get; set; }
 
         /// <summary>
-        /// Indica el estado en que se encuentra una publicación que es evaluada por el administrador
+        /// Administrative validation status for the publication.
         /// </summary>
         public StatusValidation statusValidation { get; set; }
     }

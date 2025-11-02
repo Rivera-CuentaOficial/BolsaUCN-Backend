@@ -1,27 +1,28 @@
 namespace bolsafeucn_back.src.Domain.Models
 {
     /// <summary>
-    /// Representa una publicación de compra/venta de productos o servicios
+    /// Represents a buy/sell publication for products or services.
+    /// Inherits common publication properties from <see cref="Publication"/>.
     /// </summary>
     public class BuySell : Publication
     {
         /// <summary>
-        /// Precio del producto o servicio en pesos chilenos
+        /// Price of the product or service in Chilean pesos.
         /// </summary>
         public decimal Price { get; set; }
 
         /// <summary>
-        /// Categoría del producto o servicio
+        /// Category of the product or service.
         /// </summary>
         public required string Category { get; set; }
 
         /// <summary>
-        /// Ubicación del producto
+        /// Location where the product or service is available.
         /// </summary>
         public string? Location { get; set; }
 
         /// <summary>
-        /// Información de contacto
+        /// Contact information for the listing.
         /// </summary>
         public string? ContactInfo { get; set; }
     }

@@ -6,17 +6,41 @@ using System.Threading.Tasks;
 namespace bolsafeucn_back.src.Application.DTOs.OfferDTOs
 {
     /// <summary>
-    /// Dto para obtener toda la info necesaria de una oferta para que el admin pueda validarla
+    /// <summary>
+    /// DTO that contains all information required by administrators to validate an offer.
     /// </summary>
-    /// TODO: agregar descripcion de compañia
+    /// TODO: add company description
     public class OfferDetailValidationDto
     {
-        public string Title { get; set; } 
-        public ICollection<string> Images { get; set; }
-        public string Description { get; set; }
-        public string CompanyName { get; set; }
-        public string CorreoContacto { get; set; }
-        public string TelefonoContacto { get; set; } 
+    /// <summary>
+    /// Offer title.
+    /// </summary>
+    public required string Title { get; set; }
+
+    /// <summary>
+    /// Collection of image URLs attached to the offer.
+    /// </summary>
+    public required ICollection<string> Images { get; set; }
+
+    /// <summary>
+    /// Full description of the offer.
+    /// </summary>
+    public required string Description { get; set; }
+
+    /// <summary>
+    /// Name of the company or individual who posted the offer.
+    /// </summary>
+    public required string CompanyName { get; set; }
+
+    /// <summary>
+    /// Contact email for the offer.
+    /// </summary>
+    public required string CorreoContacto { get; set; }
+
+    /// <summary>
+    /// Contact phone number for the offer.
+    /// </summary>
+    public required string TelefonoContacto { get; set; }
 
     }
 }
