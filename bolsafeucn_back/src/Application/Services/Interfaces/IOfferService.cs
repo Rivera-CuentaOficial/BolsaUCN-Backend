@@ -16,4 +16,6 @@ public interface IOfferService
     Task<OfferDetailValidationDto> GetOfferDetailForOfferValidationAsync(int id);
     Task GetOfferForAdminToPublish(int id);
     Task GetOfferForAdminToReject(int id);
+    Task<OfferDetailDto> GetOfferDetailForOfferer(int id);
+
 }

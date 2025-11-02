@@ -131,11 +131,9 @@ public class OfferService : IOfferService
     public async Task<IEnumerable<PendingOffersForAdminDto>> GetPendingOffersAsync()
     {
         var offer = await _offerRepository.GetAllPendingOffersAsync();
-        return offer.Select(o => new PendingOffersForAdminDto
-        {
-            Title = o.Title,
-            Type = o.Type
-        }).ToList();
+        return offer
+            .Select(o => new PendingOffersForAdminDto { Title = o.Title, Type = o.Type })
+            .ToList();
     }
 
     public async Task<IEnumerable<OfferBasicAdminDto>> GetPublishedOffersAsync()
@@ -156,7 +154,7 @@ public class OfferService : IOfferService
                     CompanyName = ownerName,
                     PublicationDate = o.PublicationDate,
                     OfferType = o.OfferType,
-                    Activa = o.IsActive
+                    Activa = o.IsActive,
                 };
             })
             .ToList();
@@ -188,7 +186,7 @@ public class OfferService : IOfferService
             PublicationDate = offer.PublicationDate,
             Type = offer.Type,
             Active = offer.IsActive,
-            statusValidation = offer.statusValidation
+            statusValidation = offer.statusValidation,
         };
         _logger.LogInformation("Detalles de oferta ID: {OfferId} obtenidos exitosamente", offerId);
         return result;
@@ -232,7 +230,7 @@ public class OfferService : IOfferService
             Description = offer.Description,
             CompanyName = ownerName,
             CorreoContacto = offer.ContactInfo,
-            TelefonoContacto = offer.User?.PhoneNumber
+            TelefonoContacto = offer.User?.PhoneNumber,
         };
     }
 
@@ -245,7 +243,9 @@ public class OfferService : IOfferService
         }
         if (offer.statusValidation != StatusValidation.InProcess)
         {
-            throw new InvalidOperationException($"La oferta con ID {id} ya fue {offer.statusValidation}. No se puede publicar.");
+            throw new InvalidOperationException(
+                $"La oferta con ID {id} ya fue {offer.statusValidation}. No se puede publicar."
+            );
         }
         offer.IsActive = true;
         offer.statusValidation = StatusValidation.Published;
@@ -261,10 +261,33 @@ public class OfferService : IOfferService
         }
         if (offer.statusValidation != StatusValidation.InProcess)
         {
-            throw new InvalidOperationException($"La oferta con ID {id} ya fue {offer.statusValidation}. No se puede publicar.");
+            throw new InvalidOperationException(
+                $"La oferta con ID {id} ya fue {offer.statusValidation}. No se puede publicar."
+            );
         }
         offer.IsActive = false;
         offer.statusValidation = StatusValidation.Rejected;
         await _offerRepository.UpdateOfferAsync(offer);
     }
+
+    public async Task<OfferDetailDto> GetOfferDetailForOfferer(int id)
+    {
+        // 1. Llamar al repositorio para obtener la entidad con sus relaciones
+        var offer = await _offerRepository.GetByIdAsync(id);
+
+        // 2. Verificar si se encontró
+        if (offer == null)
+        {
+            // Es una buena práctica lanzar una excepción si no se encuentra
+            throw new KeyNotFoundException($"La oferta con id {id} no fue encontrada.");
+        }
+
+        // 3. Mapear la entidad Offer al DTO OfferDetailDto usando Mapster
+        var offerDetailDto = offer.Adapt<OfferDetailDto>();
+
+        // 4. Retornar el DTO
+        return offerDetailDto;
+    }
+
+    
 }

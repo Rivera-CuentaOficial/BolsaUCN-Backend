@@ -97,7 +97,10 @@ namespace bolsafeucn_back.src.API.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error interno al crear publicación de oferta.");
-                return StatusCode(500, new GenericResponse<object>("Error interno al crear la publicación."));
+                return StatusCode(
+                    500,
+                    new GenericResponse<object>("Error interno al crear la publicación.")
+                );
             }
         }
 
@@ -154,7 +157,10 @@ namespace bolsafeucn_back.src.API.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error interno al crear publicación de compra/venta.");
-                return StatusCode(500, new GenericResponse<object>("Error interno al crear la publicación."));
+                return StatusCode(
+                    500,
+                    new GenericResponse<object>("Error interno al crear la publicación.")
+                );
             }
         }
 
@@ -193,9 +199,19 @@ namespace bolsafeucn_back.src.API.Controllers
             var buySell = await _buySellService.GetAllPendingBuySellsAsync();
             if (buySell == null)
             {
-                return NotFound(new GenericResponse<string>("No hay publicaciones de compra/venta pendientes", null));
+                return NotFound(
+                    new GenericResponse<string>(
+                        "No hay publicaciones de compra/venta pendientes",
+                        null
+                    )
+                );
             }
-            return Ok(new GenericResponse<IEnumerable<BuySellSummaryDto>>("Publicaciones de compra/venta pendientes obtenidas", buySell));
+            return Ok(
+                new GenericResponse<IEnumerable<BuySellSummaryDto>>(
+                    "Publicaciones de compra/venta pendientes obtenidas",
+                    buySell
+                )
+            );
         }
 
         /// <summary>
@@ -228,7 +244,9 @@ namespace bolsafeucn_back.src.API.Controllers
             var buysell = await _buySellService.GetPublishedBuysellsAsync();
             if (buysell == null)
             {
-                return NotFound(new GenericResponse<string>("no hay compra y ventas publicadas", null));
+                return NotFound(
+                    new GenericResponse<string>("no hay compra y ventas publicadas", null)
+                );
             }
             return Ok(
                 new GenericResponse<IEnumerable<BuySellBasicAdminDto>>(
@@ -254,7 +272,12 @@ namespace bolsafeucn_back.src.API.Controllers
             {
                 return NotFound(new GenericResponse<object>("No se encontro la oferta", null));
             }
-            return Ok(new GenericResponse<OfferDetailsAdminDto>("Informacion basica de oferta recibida con exito.", offer));
+            return Ok(
+                new GenericResponse<OfferDetailsAdminDto>(
+                    "Informacion basica de oferta recibida con exito.",
+                    offer
+                )
+            );
         }
 
         /// <summary>
@@ -270,7 +293,12 @@ namespace bolsafeucn_back.src.API.Controllers
             {
                 return NotFound(new GenericResponse<object>("No se encontro la oferta", null));
             }
-            return Ok(new GenericResponse<IEnumerable<ViewApplicantsDto>>("Lista de postulantes recibida exitosamente.", applicants));
+            return Ok(
+                new GenericResponse<IEnumerable<ViewApplicantsDto>>(
+                    "Lista de postulantes recibida exitosamente.",
+                    applicants
+                )
+            );
         }
 
         /// <summary>
@@ -280,12 +308,19 @@ namespace bolsafeucn_back.src.API.Controllers
         [HttpGet("applications/{studentId}/details")]
         public async Task<IActionResult> GetApplicantDetailsForAdmin(int studentId)
         {
-            var applicantDetail = await _jobApplicationService.GetApplicantDetailForAdmin(studentId);
+            var applicantDetail = await _jobApplicationService.GetApplicantDetailForAdmin(
+                studentId
+            );
             if (applicantDetail == null)
             {
                 return NotFound(new GenericResponse<object>("No se encontro al postulante", null));
             }
-            return Ok(new GenericResponse<ViewApplicantDetailAdminDto>("Informacion basica de oferta recibida con exito.", applicantDetail));
+            return Ok(
+                new GenericResponse<ViewApplicantDetailAdminDto>(
+                    "Informacion basica de oferta recibida con exito.",
+                    applicantDetail
+                )
+            );
         }
 
         /// <summary>
@@ -298,7 +333,12 @@ namespace bolsafeucn_back.src.API.Controllers
             try
             {
                 await _offerService.GetOfferForAdminToClose(offerId);
-                return Ok(new GenericResponse<object>($"Postulaciones para la oferta {offerId} cerradas con éxito por Admin.", offerId));
+                return Ok(
+                    new GenericResponse<object>(
+                        $"Postulaciones para la oferta {offerId} cerradas con éxito por Admin.",
+                        offerId
+                    )
+                );
             }
             catch (KeyNotFoundException)
             {
@@ -311,7 +351,10 @@ namespace bolsafeucn_back.src.API.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error cerrando oferta ID: {OfferId}", offerId);
-                return StatusCode(500, new GenericResponse<object>("Error interno al cerrar la oferta.", null));
+                return StatusCode(
+                    500,
+                    new GenericResponse<object>("Error interno al cerrar la oferta.", null)
+                );
             }
         }
 
@@ -319,7 +362,6 @@ namespace bolsafeucn_back.src.API.Controllers
         /// Elimina la oferta de trabajo de parte del admin
         /// </summary>
         /// TODO: agregar endpoint proximamente para siguiente iteracion
-
         #endregion
 
         #region Validar ofertas (admin)
@@ -333,7 +375,12 @@ namespace bolsafeucn_back.src.API.Controllers
             {
                 return NotFound(new GenericResponse<object>("No se encontro al postulante", null));
             }
-            return Ok(new GenericResponse<OfferDetailValidationDto>("Informacion basica de oferta recibida con exito.", offer));
+            return Ok(
+                new GenericResponse<OfferDetailValidationDto>(
+                    "Informacion basica de oferta recibida con exito.",
+                    offer
+                )
+            );
         }
 
         /// <summary>
@@ -359,7 +406,10 @@ namespace bolsafeucn_back.src.API.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error cerrando oferta ID: {OfferId}", id);
-                return StatusCode(500, new GenericResponse<object>("Error interno al cerrar la oferta.", null));
+                return StatusCode(
+                    500,
+                    new GenericResponse<object>("Error interno al cerrar la oferta.", null)
+                );
             }
         }
 
@@ -386,7 +436,10 @@ namespace bolsafeucn_back.src.API.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error cerrando oferta ID: {OfferId}", id);
-                return StatusCode(500, new GenericResponse<object>("Error interno al cerrar la oferta.", null));
+                return StatusCode(
+                    500,
+                    new GenericResponse<object>("Error interno al cerrar la oferta.", null)
+                );
             }
         }
 
@@ -800,6 +853,71 @@ namespace bolsafeucn_back.src.API.Controllers
             {
                 _logger.LogWarning(ex, "Operación inválida");
                 return Conflict(new GenericResponse<object>(ex.Message));
+            }
+        }
+
+        [HttpGet("offernet/offer/{id:int}")]
+        [Authorize(Roles = "Empresa")]
+        public async Task<IActionResult> GetOfferDetail(int id)
+        {
+            try
+            {
+                // 1. Llama al servicio que implementamos en el paso anterior
+                var offerDetailDto = await _offerService.GetOfferDetailForOfferer(id);
+
+                // 2. Devuelve el DTO en una respuesta exitosa
+                return Ok(
+                    new GenericResponse<OfferDetailDto>(
+                        "Detalle de la oferta obtenido",
+                        offerDetailDto
+                    )
+                );
+            }
+            catch (KeyNotFoundException ex)
+            {
+                _logger.LogWarning(ex, "Oferta no encontrada con ID: {Id}", id);
+                return NotFound(new GenericResponse<object>(ex.Message));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error al obtener detalle de la oferta ID: {Id}", id);
+                return StatusCode(500, new GenericResponse<object>("Error interno del servidor"));
+            }
+        }
+
+        /// <summary>
+        /// Obtiene el detalle de una publicación de Compra/Venta por su ID.
+        /// </summary>
+        [HttpGet("offernet/buysell/{id:int}")]
+        [Authorize(Roles = "Empresa")]
+        public async Task<IActionResult> GetBuySellDetail(int id)
+        {
+            try
+            {
+                // 1. Llama al servicio correspondiente
+                var buySellDetailDto = await _buySellService.GetBuySellDetailForOfferer(id);
+
+                // 2. Devuelve el DTO
+                return Ok(
+                    new GenericResponse<BuySellDetailDto>(
+                        "Detalle de la publicación obtenido",
+                        buySellDetailDto
+                    )
+                );
+            }
+            catch (KeyNotFoundException ex)
+            {
+                _logger.LogWarning(ex, "Publicación Compra/Venta no encontrada con ID: {Id}", id);
+                return NotFound(new GenericResponse<object>(ex.Message));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(
+                    ex,
+                    "Error al obtener detalle de la publicación Compra/Venta ID: {Id}",
+                    id
+                );
+                return StatusCode(500, new GenericResponse<object>("Error interno del servidor"));
             }
         }
 
