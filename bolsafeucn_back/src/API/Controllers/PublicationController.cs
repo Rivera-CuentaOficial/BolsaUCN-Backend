@@ -922,5 +922,58 @@ namespace bolsafeucn_back.src.API.Controllers
         }
 
         #endregion
+
+        #region Endpoints para Oferentes (Empresa/Particular)
+
+        /// <summary>
+        /// Obtiene la lista de postulantes para una oferta específica (Solo para el dueño de la oferta).
+        /// </summary>
+        /// <param name="offerId">El ID de la oferta</param>
+        /// <returns>Una lista de los postulantes de la oferta</returns>
+        [HttpGet("offers/my-offer/{offerId}/applicants")] // <-- 1. RUTA CORREGIDA (para no chocar con la del Admin)
+        [Authorize(Roles = "Offerent")] 
+        public async Task<IActionResult> GetOfferApplicantsForOfferer(int offerId)
+        {
+            try
+            {
+                // 1. Obtener el ID del oferente logueado desde el Token JWT
+                var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                
+                if (string.IsNullOrEmpty(userIdString) || !int.TryParse(userIdString, out var offererUserId))
+                {
+                    _logger.LogWarning("GetOfferApplicants: Token JWT inválido o sin claim de NameIdentifier.");
+                    return Unauthorized(new GenericResponse<object>("No autenticado o token inválido"));
+                }
+
+                _logger.LogInformation("Usuario {OffererId} solicitando postulantes para la oferta {OfferId}", offererUserId, offerId);
+
+                // 2. Llamar al servicio
+                var applicants = await _jobApplicationService.GetApplicantsForOffererAsync(offerId, offererUserId);
+
+                return Ok(new GenericResponse<IEnumerable<OffererApplicantViewDto>>(
+                    "Postulantes obtenidos exitosamente",
+                    applicants
+                ));
+            }
+            catch (KeyNotFoundException ex)
+            {
+                _logger.LogWarning(ex, "GetOfferApplicants: Oferta no encontrada. OfferID: {OfferId}", offerId);
+                return NotFound(new GenericResponse<object>(ex.Message));
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                _logger.LogWarning(ex, "GetOfferApplicants: Intento de acceso no autorizado. UserID: {UserId}, OfferID: {OfferId}", User.FindFirstValue(ClaimTypes.NameIdentifier), offerId);
+                
+                // 2. ARREGLO DEL ERROR (CS1503): Usamos StatusCode 403
+                return StatusCode(403, new GenericResponse<object>(ex.Message)); 
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "GetOfferApplicants: Error interno al obtener postulantes. OfferID: {OfferId}", offerId);
+                return StatusCode(500, new GenericResponse<object>("Error interno al procesar la solicitud."));
+            }
+        }
+
+        #endregion
     }
 }
