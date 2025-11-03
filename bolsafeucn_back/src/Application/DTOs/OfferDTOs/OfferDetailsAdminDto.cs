@@ -7,17 +7,49 @@ using bolsafeucn_back.src.Domain.Models;
 namespace bolsafeucn_back.src.Application.DTOs.OfferDTOs
 {
     /// <summary>
-    /// Dto para que el administrador vea la informacion de la oferta y decida si
+    /// <summary>
+    /// DTO with offer information surfaced to administrators for review and management.
     /// </summary>
     public class OfferDetailsAdminDto
     {
-        public string Title { get; set; }
-        public string Description { get; set; }
-        public ICollection<string> Images { get; set; }
-        public string CompanyName { get; set; }
+        /// <summary>
+        /// Offer title.
+        /// </summary>
+        public required string Title { get; set; }
+
+        /// <summary>
+        /// Full description of the offer.
+        /// </summary>
+        public required string Description { get; set; }
+
+        /// <summary>
+        /// Collection of image URLs attached to the offer.
+        /// </summary>
+        public required ICollection<string> Images { get; set; }
+
+        /// <summary>
+        /// Company or owner name who posted the offer.
+        /// </summary>
+        public required string CompanyName { get; set; }
+
+        /// <summary>
+        /// Date when the offer was published.
+        /// </summary>
         public DateTime PublicationDate { get; set; }
+
+        /// <summary>
+        /// Publication type (Offer, BuySell).
+        /// </summary>
         public Types Type { get; set; }
-        public bool Active { get; set; }  
+
+        /// <summary>
+        /// Whether the offer is currently active.
+        /// </summary>
+        public bool Active { get; set; }
+
+        /// <summary>
+        /// Administrative validation status for the offer.
+        /// </summary>
         public StatusValidation statusValidation { get; set; }
     }
 }
