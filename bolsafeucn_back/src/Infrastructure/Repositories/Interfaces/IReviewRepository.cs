@@ -14,13 +14,19 @@ namespace bolsafeucn_back.src.Infrastructure.Repositories.Interfaces
         /// <param name="review">La reseña a agregar.</param>
         /// <returns>Una tarea que representa la operación asíncrona.</returns>
         Task AddAsync(Review review);
-        
+
         /// <summary>
         /// Obtiene todas las reseñas asociadas a un oferente específico.
         /// </summary>
         /// <param name="offerorId">El identificador del oferente.</param>
         /// <returns>Una colección de reseñas del oferente.</returns>
         Task<IEnumerable<Review>> GetByOfferorIdAsync(int offerorId);
+        /// <summary>
+        /// Obtiene todas las reseñas asociadas a un estudiante específico.
+        /// </summary>
+        /// <param name="studentId">El identificador del estudiante.</param>
+        /// <returns>Una colección de reseñas del estudiante.</returns>
+        Task<IEnumerable<Review>> GetByStudentIdAsync(int studentId);
         
         /// <summary>
         /// Calcula el promedio de calificaciones recibidas por un oferente.
@@ -42,12 +48,17 @@ namespace bolsafeucn_back.src.Infrastructure.Repositories.Interfaces
         /// <param name="reviewId">El identificador de la reseña.</param>
         /// <returns>La reseña solicitada, o null si no existe.</returns>
         Task<Review?> GetByIdAsync(int reviewId);
-        
+
         /// <summary>
         /// Actualiza una reseña existente en la base de datos.
         /// </summary>
         /// <param name="review">La reseña con los datos actualizados.</param>
         /// <returns>Una tarea que representa la operación asíncrona.</returns>
         Task UpdateAsync(Review review);
+        /// <summary>
+        /// Obtiene todas las reseñas del sistema.
+        /// </summary>
+        /// <returns></returns>
+        Task<IEnumerable<Review>> GetAllAsync();
     }
 }

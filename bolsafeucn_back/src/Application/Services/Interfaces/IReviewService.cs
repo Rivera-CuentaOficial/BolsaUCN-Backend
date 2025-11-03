@@ -68,7 +68,7 @@ namespace bolsafeucn_back.src.Application.Services.Interfaces
         /// <returns>La reseña inicial creada.</returns>
         /// <exception cref="InvalidOperationException">Lanzada si ya existe una reseña para la publicación.</exception>
         Task<Review> CreateInitialReviewAsync(InitialReviewDTO dto);
-        
+
         /// <summary>
         /// Elimina parcial o completamente una reseña (parte del estudiante, oferente o ambas).
         /// </summary>
@@ -77,5 +77,22 @@ namespace bolsafeucn_back.src.Application.Services.Interfaces
         /// <exception cref="InvalidOperationException">Lanzada si no se especifica ninguna parte para eliminar.</exception>
         /// <exception cref="KeyNotFoundException">Lanzada si no se encuentra la reseña.</exception>
         Task DeleteReviewPartAsync(DeleteReviewPartDTO dto);
+        /// <summary>
+        /// Obtiene una reseña específica por su ID.
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        Task<ReviewDTO> GetReviewAsync(int id);
+        /// <summary>
+        /// Obtiene todas las reseñas asociadas a un estudiante específico.
+        /// </summary>
+        /// <param name="studentId"></param>
+        /// <returns></returns>
+        Task<IEnumerable<ReviewDTO>> GetReviewsByStudentAsync(int studentId);
+        /// <summary>
+        /// Obtiene todas las reseñas del sistema.
+        /// </summary>
+        /// <returns></returns>
+        Task<IEnumerable<ReviewDTO>> GetAllReviewsAsync();
     }
 }

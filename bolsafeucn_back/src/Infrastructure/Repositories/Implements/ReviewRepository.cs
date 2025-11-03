@@ -46,6 +46,18 @@ namespace bolsafeucn_back.src.Infrastructure.Repositories.Implements
                 .Include(r => r.Student)
                 .ToListAsync();
         }
+        /// <summary>
+        /// Obtiene todas las reseñas asociadas a un estudiante específico.
+        /// </summary>
+        /// <param name="studentId">El identificador del estudiante.</param>
+        /// <returns>Una colección de reseñas del estudiante.</returns>
+        public async Task<IEnumerable<Review>> GetByStudentIdAsync(int studentId)
+        {
+            return await _context.Reviews
+                .Where(r => r.StudentId == studentId)
+                .Include(r => r.Offeror)
+                .ToListAsync();
+        }
 
         /// <summary>
         /// Calcula el promedio de calificaciones recibidas por un oferente.
@@ -93,6 +105,17 @@ namespace bolsafeucn_back.src.Infrastructure.Repositories.Implements
         {
             _context.Reviews.Update(review);
             await _context.SaveChangesAsync();
+        }
+        /// <summary>
+        /// Obtiene todas las reseñas del sistema.
+        /// </summary>
+        /// <returns></returns>
+        public async Task<IEnumerable<Review>> GetAllAsync()
+        {
+            return await _context.Reviews
+                .Include(r => r.Student)
+                .Include(r => r.Offeror)
+                .ToListAsync();
         }
     }
 }

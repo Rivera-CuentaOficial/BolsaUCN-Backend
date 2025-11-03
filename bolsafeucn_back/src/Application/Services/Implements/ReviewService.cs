@@ -15,14 +15,17 @@ namespace bolsafeucn_back.src.Application.Services.Implements
     public class ReviewService : IReviewService
     {
         private readonly IReviewRepository _repository;
+        private readonly IUserRepository _userRepository;
 
         /// <summary>
         /// Inicializa una nueva instancia del servicio de reseñas.
         /// </summary>
         /// <param name="repository">El repositorio de reseñas para acceso a datos.</param>
-        public ReviewService(IReviewRepository repository)
+        /// <param name="userRepository">El repositorio de usuarios para validación.</param>
+        public ReviewService(IReviewRepository repository, IUserRepository userRepository)
         {
             _repository = repository;
+            _userRepository = userRepository;
         }
 
         /// <summary>
@@ -149,8 +152,22 @@ namespace bolsafeucn_back.src.Application.Services.Implements
         /// <param name="dto">DTO con los identificadores del estudiante, oferente y publicación.</param>
         /// <returns>La reseña inicial creada con estado pendiente.</returns>
         /// <exception cref="InvalidOperationException">Lanzada si ya existe una reseña para la publicación especificada.</exception>
+        /// <exception cref="ArgumentException">Lanzada si el estudiante u oferente no existen.</exception>
         public async Task<Review> CreateInitialReviewAsync(InitialReviewDTO dto)
         {
+            // Validar que existan el estudiante y el oferente
+            var student = await _userRepository.GetByIdAsync(dto.StudentId);
+            if (student == null)
+            {
+                throw new ArgumentException($"El estudiante con ID {dto.StudentId} no existe.");
+            }
+
+            var offeror = await _userRepository.GetByIdAsync(dto.OfferorId);
+            if (offeror == null)
+            {
+                throw new ArgumentException($"El oferente con ID {dto.OfferorId} no existe.");
+            }
+
             // Validar que no exista ya una review para esta publicación
             var existingReview = await _repository.GetByPublicationIdAsync(dto.PublicationId);
             if (existingReview != null)
@@ -217,6 +234,27 @@ namespace bolsafeucn_back.src.Application.Services.Implements
             }
 
             await _repository.UpdateAsync(review);
+        }
+
+        public async Task<ReviewDTO> GetReviewAsync(int id)
+        {
+            var review = await _repository.GetByIdAsync(id);
+            if(review == null)
+                throw new KeyNotFoundException($"No se encontró una review con ID {id}.");
+            return ReviewMapper.ToDTO(review);
+        }
+
+        public async Task<IEnumerable<ReviewDTO>> GetReviewsByStudentAsync(int studentId)
+        {
+            var reviews = await _repository.GetByStudentIdAsync(studentId);
+            if(reviews == null || !reviews.Any())
+                throw new KeyNotFoundException($"No se encontraron reseñas para el estudiante con ID {studentId}.");
+            return reviews.Select(ReviewMapper.ToDTO);
+        }
+        public async Task<IEnumerable<ReviewDTO>> GetAllReviewsAsync()
+        {
+            var reviews = await _repository.GetAllAsync();
+            return reviews.Select(ReviewMapper.ToDTO);
         }
     }
 }

@@ -1,5 +1,4 @@
 using System.ComponentModel.DataAnnotations;
-using bolsafeucn_back.src.Domain.Models;
 
 namespace bolsafeucn_back.src.Application.DTOs.ReviewDTO
 {

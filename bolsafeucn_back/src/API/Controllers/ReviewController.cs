@@ -6,12 +6,10 @@ using System.Security.Claims;
 
 namespace bolsafeucn_back.src.API.Controllers
 {
-    [ApiController]
-    [Route("reviews/[action]")] // [action] es el nombre de la funcion.
     /// <summary>
     /// Controlador para gestionar las reseñas entre oferentes y estudiantes.
     /// </summary>
-    public class ReviewController : ControllerBase
+    public class ReviewController : BaseController
     {
         private readonly IReviewService _reviewService;
 
@@ -24,7 +22,7 @@ namespace bolsafeucn_back.src.API.Controllers
         /// </summary>
         /// <param name="dto"></param>
         /// <returns></returns>
-        [HttpPost]
+        [HttpPost("AddReview")]
         public async Task<IActionResult> AddReview([FromBody] ReviewDTO dto)
         {
             await _reviewService.AddReviewAsync(dto);
@@ -35,18 +33,64 @@ namespace bolsafeucn_back.src.API.Controllers
         /// </summary>
         /// <param name="offerorId"></param>
         /// <returns></returns>
-        [HttpGet]
-        public async Task<IActionResult> GetReviews(int offerorId)
+        [HttpGet("offeror/{offerorId}")]
+        public async Task<IActionResult> GetReviewsByOfferorId(int offerorId)
         {
             var reviews = await _reviewService.GetReviewsByOfferorAsync(offerorId);
             return Ok(reviews);
+        }
+        
+        [HttpGet("student/{studentId}")]
+        public async Task<IActionResult> GetReviewsByStudentId(int studentId)
+        {
+            var reviews = await _reviewService.GetReviewsByStudentAsync(studentId);
+            return Ok(reviews);
+        }
+
+        /// <summary>
+        /// Obtiene todas las reseñas del usuario autenticado.
+        /// Funciona tanto para estudiantes (Applicant) como para oferentes (Offerent).
+        /// El usuario solo puede ver sus propias reseñas.
+        /// </summary>
+        /// <returns>Lista de reseñas del usuario autenticado</returns>
+        [HttpGet("my-reviews")]
+        [Authorize(Roles = "Applicant,Offerent")]
+        public async Task<IActionResult> GetMyReviews()
+        {
+            // Obtener el ID y el rol del usuario autenticado
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out int currentUserId))
+            {
+                return Unauthorized("No se pudo identificar al usuario autenticado.");
+            }
+            var userRole = User.FindFirst(ClaimTypes.Role)?.Value;
+            // Si es estudiante, buscar sus reseñas como estudiante
+            if (userRole == "Applicant")
+            {
+                var reviews = await _reviewService.GetReviewsByStudentAsync(currentUserId);
+                return Ok(reviews);
+            }
+            // Si es oferente, buscar sus reseñas como oferente
+            else if (userRole == "Offerent")
+            {
+                var reviews = await _reviewService.GetReviewsByOfferorAsync(currentUserId);
+                return Ok(reviews);
+            }
+            return Unauthorized("El usuario no tiene un rol válido para ver reseñas.");
+        }
+
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetReview(int id)
+        {
+            var review = await _reviewService.GetReviewAsync(id);
+            return Ok(review);
         }
         /// <summary>
         /// Obtiene la calificación promedio de un oferente específico.
         /// </summary>
         /// <param name="offerorId"></param>
         /// <returns></returns>
-        [HttpGet]
+        [HttpGet("average/{offerorId}")]
         public async Task<IActionResult> GetAverage(int offerorId)
         {
             var avg = await _reviewService.GetAverageRatingAsync(offerorId);
@@ -57,7 +101,7 @@ namespace bolsafeucn_back.src.API.Controllers
         /// </summary>
         /// <param name="dto"></param>
         /// <returns></returns>
-        [HttpPost]
+        [HttpPost("AddStudentReview")]
         [Authorize(Roles = "Offerent")]
         public async Task<IActionResult> AddStudentReview([FromBody] ReviewForStudentDTO dto)
         {
@@ -76,7 +120,7 @@ namespace bolsafeucn_back.src.API.Controllers
         /// </summary>
         /// <param name="dto"></param>
         /// <returns></returns>
-        [HttpPost]
+        [HttpPost("AddOfferorReview")]
         [Authorize(Roles = "Applicant")]
         public async Task<IActionResult> AddOfferorReview([FromBody] ReviewForOfferorDTO dto)
         {
@@ -94,24 +138,36 @@ namespace bolsafeucn_back.src.API.Controllers
         /// Agrega una nueva reseña inicial.
         /// </summary>
         /// <param name="dto"></param>
-        /// <returns></returns>
-        [HttpPost]
+        /// <returns>El ID de la reseña creada.</returns>
+        [HttpPost("AddInitialReview")]
         public async Task<IActionResult> AddInitialReview([FromBody] InitialReviewDTO dto)
         {
-            await _reviewService.CreateInitialReviewAsync(dto);
-            return Ok("Initial review added successfully");
+            var review = await _reviewService.CreateInitialReviewAsync(dto);
+            return Ok(new { reviewId = review.Id, message = "Initial review added successfully" });
         }
         /// <summary>
         /// Elimina una parte de la reseña.
         /// </summary>
         /// <param name="dto"></param>
         /// <returns></returns>
-        [HttpDelete]
+        [HttpDelete("Admin/DeleteReviewPart")]
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> DeleteReviewPart([FromBody] DeleteReviewPartDTO dto)
         {
             await _reviewService.DeleteReviewPartAsync(dto);
             return Ok("Review part(s) deleted successfully");
+        }
+        /// <summary>
+        /// Obtiene todas las reseñas del sistema. Solamente el administrador puede
+        /// acceder a este endpoint.
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet("Admin/GetAllReviews")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> GetAllReviews()
+        {
+            var reviews = await _reviewService.GetAllReviewsAsync();
+            return Ok(reviews);
         }
     }
 }
