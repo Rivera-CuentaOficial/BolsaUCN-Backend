@@ -151,12 +151,10 @@ try
     builder.Services.AddScoped<IPublicationService, PublicationService>();
     builder.Services.AddScoped<IBuySellService, BuySellService>();
     builder.Services.AddScoped<IPublicationRepository, PublicationRepository>();
-
-    builder.Services.AddMapster();
-
-    //REVIEWS
     builder.Services.AddScoped<IReviewRepository, ReviewRepository>();
     builder.Services.AddScoped<IReviewService, ReviewService>();
+
+    builder.Services.AddMapster();
 
     var app = builder.Build();
 
