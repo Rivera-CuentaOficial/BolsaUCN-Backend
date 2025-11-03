@@ -92,6 +92,35 @@ namespace bolsafeucn_back.src.Infrastructure.Data
                 .WithMany(u => u.Publications)
                 .HasForeignKey(p => p.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
+
+            // Relaciones de Review
+            
+            // Review - Publication (1:1)
+            // Una publicación puede tener una review
+            builder
+                .Entity<Review>()
+                .HasOne(r => r.Publication)
+                .WithOne()
+                .HasForeignKey<Review>(r => r.PublicationId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // Review - Student (Many:1)
+            // Un estudiante puede tener muchas reviews (como estudiante evaluado)
+            builder
+                .Entity<Review>()
+                .HasOne(r => r.Student)
+                .WithMany()
+                .HasForeignKey(r => r.StudentId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // Review - Offeror (Many:1)
+            // Un proveedor puede tener muchas reviews (como oferente evaluado)
+            builder
+                .Entity<Review>()
+                .HasOne(r => r.Offeror)
+                .WithMany()
+                .HasForeignKey(r => r.OfferorId)
+                .OnDelete(DeleteBehavior.Restrict);
         }
     }
 }
