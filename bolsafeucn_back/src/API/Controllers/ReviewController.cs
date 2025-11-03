@@ -1,6 +1,8 @@
 using bolsafeucn_back.src.Application.DTOs.ReviewDTO;
 using bolsafeucn_back.src.Application.Services.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace bolsafeucn_back.src.API.Controllers
 {
@@ -23,30 +25,47 @@ namespace bolsafeucn_back.src.API.Controllers
             return Ok("Review added successfully");
         }
 
-        [HttpGet("{offerorId}")]
+        [HttpGet("/{offerorId}")]
         public async Task<IActionResult> GetReviews(int offerorId)
         {
             var reviews = await _reviewService.GetReviewsByOfferorAsync(offerorId);
             return Ok(reviews);
         }
 
-        [HttpGet("{offerorId}")]
+        [HttpGet("/{offerorId}")]
         public async Task<IActionResult> GetAverage(int offerorId)
         {
             var avg = await _reviewService.GetAverageRatingAsync(offerorId);
             return Ok(avg);
         }
 
-        [HttpPost("addStudentReview")]
+        [HttpPost]
+        [Authorize(Roles = "Offerent")]
         public async Task<IActionResult> AddStudentReview([FromBody] ReviewForStudentDTO dto)
         {
-            await _reviewService.AddStudentReviewAsync(dto);
+            // Obtener el ID del usuario autenticado (OFERENTE calificando al estudiante)
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out int currentUserId))
+            {
+                return Unauthorized("No se pudo identificar al usuario autenticado.");
+            }
+
+            await _reviewService.AddStudentReviewAsync(dto, currentUserId);
             return Ok("Student review added successfully");
         }
-        [HttpPost("addOfferorReview")]
+
+        [HttpPost]
+        [Authorize(Roles = "Applicant")]
         public async Task<IActionResult> AddOfferorReview([FromBody] ReviewForOfferorDTO dto)
         {
-            await _reviewService.AddOfferorReviewAsync(dto);
+            // Obtener el ID del usuario autenticado (ESTUDIANTE calificando al oferente)
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out int currentUserId))
+            {
+                return Unauthorized("No se pudo identificar al usuario autenticado.");
+            }
+
+            await _reviewService.AddOfferorReviewAsync(dto, currentUserId);
             return Ok("Offeror review added successfully");
         }
         [HttpPost]
@@ -54,6 +73,14 @@ namespace bolsafeucn_back.src.API.Controllers
         {
             await _reviewService.CreateInitialReviewAsync(dto);
             return Ok("Initial review added successfully");
+        }
+
+        [HttpDelete]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> DeleteReviewPart([FromBody] DeleteReviewPartDTO dto)
+        {
+            await _reviewService.DeleteReviewPartAsync(dto);
+            return Ok("Review part(s) deleted successfully");
         }
     }
 }

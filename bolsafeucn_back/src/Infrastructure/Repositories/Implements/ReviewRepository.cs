@@ -42,5 +42,18 @@ namespace bolsafeucn_back.src.Infrastructure.Repositories.Implements
                 .Where(r => r.PublicationId == publicationId)
                 .FirstOrDefaultAsync();
         }
+
+        public async Task<Review?> GetByIdAsync(int reviewId)
+        {
+            return await _context.Reviews
+                .Where(r => r.Id == reviewId)
+                .FirstOrDefaultAsync();
+        }
+
+        public async Task UpdateAsync(Review review)
+        {
+            _context.Reviews.Update(review);
+            await _context.SaveChangesAsync();
+        }
     }
 }
