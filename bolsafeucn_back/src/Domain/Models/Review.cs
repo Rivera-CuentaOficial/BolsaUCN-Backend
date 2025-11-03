@@ -33,17 +33,15 @@ namespace bolsafeucn_back.src.Domain.Models
         /// </summary>
         public string? CommentForOfferor { get; set; }
         
-        /// <summary>
-        /// Indica si el estudiante llegó a tiempo a su lugar de trabajo.
-        /// </summary>
-        public bool AtTime = false;
-        
-        /// <summary>
-        /// Indica si el estudiante tuvo una buena presentación durante la realización del trabajo.
-        /// </summary>
-        public bool GoodPresentation = false;
-        
-        /// <summary>
+    /// <summary>
+    /// Indica si el estudiante llegó a tiempo a su lugar de trabajo.
+    /// </summary>
+    public bool AtTime { get; set; } = false;
+    
+    /// <summary>
+    /// Indica si el estudiante tuvo una buena presentación durante la realización del trabajo.
+    /// </summary>
+    public bool GoodPresentation { get; set; } = false;        /// <summary>
         /// Fecha y hora límite para completar la ventana de revisión.
         /// Después de esta fecha, puede que no se permitan más modificaciones.
         /// </summary>
@@ -70,12 +68,12 @@ namespace bolsafeucn_back.src.Domain.Models
         public int? OfferorId { get; set; }
         
         /// <summary>
-        /// Indica si el estudiante ha completado su parte de la reseña.
+        /// Indica si las evaluaciones hacia el estudiante han sido completadas.
         /// </summary>
         public bool StudentReviewCompleted { get; set; } = false;
         
         /// <summary>
-        /// Indica si el oferente ha completado su parte de la reseña.
+        /// Indica si las evaluaciones hacia el oferente han sido completadas.
         /// </summary>
         public bool OfferorReviewCompleted { get; set; } = false;
         
@@ -94,6 +92,16 @@ namespace bolsafeucn_back.src.Domain.Models
         /// Requerido - cada reseña debe estar asociada a una publicación específica.
         /// </summary>
         public required int PublicationId { get; set; }
+        /// <summary>
+        /// Indica si la reseña del estudiante ha sido eliminada.
+        /// </summary>
+        /// <value></value>
+        public bool HasReviewForStudentBeenDeleted { get; set; } = false;
+        /// <summary>
+        /// Indica si la reseña del oferente ha sido eliminada.
+        /// </summary>
+        /// <value></value>
+        public bool HasReviewForOfferorBeenDeleted { get; set; } = false;
     }
 }
 

@@ -82,15 +82,17 @@ namespace bolsafeucn_back.src.Application.Services.Implements
             {
                 throw new UnauthorizedAccessException("Solo el oferente de esta publicación puede dejar una review hacia el estudiante.");
             }
-
             // Validar que el oferente no haya completado ya su review hacia el estudiante
-            if(review.OfferorReviewCompleted)
+            if (review.StudentReviewCompleted)
             {
                 throw new InvalidOperationException("Ya has completado tu review para este estudiante.");
             }
-
+            if(review.HasReviewForStudentBeenDeleted)
+            {
+                throw new InvalidOperationException("No se puede agregar la Review hacia el estudiante, ya que esta ya ha sido eliminada.");
+            }
             ReviewMapper.studentUpdateReview(dto, review);
-            if(review.StudentReviewCompleted) {
+            if(review.OfferorReviewCompleted) {
                 review.IsCompleted = true;
             }
             await _repository.UpdateAsync(review);
@@ -111,20 +113,23 @@ namespace bolsafeucn_back.src.Application.Services.Implements
         {
             var review = await _repository.GetByPublicationIdAsync(dto.PublicationId);
             if(review == null)
+            {
                 throw new KeyNotFoundException("No se ha encontrado una reseña para el ID de publicación dado.");
-            
+            }
             // Validar que el usuario actual sea el ESTUDIANTE (quien califica al oferente)
             if(review.StudentId != currentUserId)
             {
                 throw new UnauthorizedAccessException("Solo el estudiante de esta publicación puede dejar una review hacia el oferente.");
             }
-
             // Validar que el estudiante no haya completado ya su review hacia el oferente
-            if(review.StudentReviewCompleted)
+            if (review.OfferorReviewCompleted)
             {
                 throw new InvalidOperationException("Ya has completado tu review para este oferente.");
             }
-
+            if(review.HasReviewForOfferorBeenDeleted)
+            {
+                throw new InvalidOperationException("No se puede agregar la Review hacia el oferente, ya que esta ya ha sido eliminada.");
+            }
             ReviewMapper.offerorUpdateReview(dto, review);
             if(review.OfferorReviewCompleted) {
                 review.IsCompleted = true;
@@ -161,13 +166,11 @@ namespace bolsafeucn_back.src.Application.Services.Implements
             {
                 throw new ArgumentException($"El estudiante con ID {dto.StudentId} no existe.");
             }
-
             var offeror = await _userRepository.GetByIdAsync(dto.OfferorId);
             if (offeror == null)
             {
                 throw new ArgumentException($"El oferente con ID {dto.OfferorId} no existe.");
             }
-
             // Validar que no exista ya una review para esta publicación
             var existingReview = await _repository.GetByPublicationIdAsync(dto.PublicationId);
             if (existingReview != null)
@@ -190,49 +193,38 @@ namespace bolsafeucn_back.src.Application.Services.Implements
         public async Task DeleteReviewPartAsync(DeleteReviewPartDTO dto)
         {
             // Validar que se solicite eliminar al menos una parte
-            if (!dto.DeleteStudentPart && !dto.DeleteOfferorPart)
+            if (!dto.DeleteReviewForOfferor && !dto.DeleteReviewForStudent)
             {
                 throw new InvalidOperationException("Debe especificar al menos una parte de la review para eliminar.");
             }
-
             // Obtener la review
             var review = await _repository.GetByIdAsync(dto.ReviewId);
             if (review == null)
             {
                 throw new KeyNotFoundException($"No se encontró una review con ID {dto.ReviewId}.");
             }
-
             // Eliminar la parte del estudiante si se solicita
-            if (dto.DeleteStudentPart)
-            {
-                review.RatingForOfferor = null;
-                review.CommentForOfferor = null;
-                review.AtTime = false;
-                review.GoodPresentation = false;
-                review.StudentReviewCompleted = false;
-                Log.Information("Deleted student part of review ID {ReviewId}", dto.ReviewId);
-            }
-
-            // Eliminar la parte del oferente si se solicita
-            if (dto.DeleteOfferorPart)
+            if (dto.DeleteReviewForStudent)
             {
                 review.RatingForStudent = null;
                 review.CommentForStudent = null;
+                review.AtTime = false;
+                review.GoodPresentation = false;
+                review.StudentReviewCompleted = false;
+                review.IsCompleted = false;
+                review.HasReviewForStudentBeenDeleted = true;
+                Log.Information("Deleted student part of review ID {ReviewId}", dto.ReviewId);
+            }
+            // Eliminar la parte del oferente si se solicita
+            if (dto.DeleteReviewForOfferor)
+            {
+                review.RatingForOfferor = null;
+                review.CommentForOfferor = null;
                 review.OfferorReviewCompleted = false;
+                review.IsCompleted = false;
+                review.HasReviewForOfferorBeenDeleted = true;
                 Log.Information("Deleted offeror part of review ID {ReviewId}", dto.ReviewId);
             }
-
-            // Si se eliminaron ambas partes, marcar la review como no completada
-            if (dto.DeleteStudentPart && dto.DeleteOfferorPart)
-            {
-                review.IsCompleted = false;
-            }
-            // Si solo queda una parte completada, mantener IsCompleted como false
-            else if (!review.StudentReviewCompleted || !review.OfferorReviewCompleted)
-            {
-                review.IsCompleted = false;
-            }
-
             await _repository.UpdateAsync(review);
         }
 

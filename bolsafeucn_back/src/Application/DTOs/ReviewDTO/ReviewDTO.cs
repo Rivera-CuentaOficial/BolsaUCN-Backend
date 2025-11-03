@@ -62,5 +62,15 @@ namespace bolsafeucn_back.src.Application.DTOs.ReviewDTO
         /// </summary>
         /// <value></value>
         public required int IdPublication { get; set; }
+        /// <summary>
+        /// Indica si la reseña hacia el oferente ha sido eliminada.
+        /// </summary>
+        /// <value></value>
+        public bool HasReviewForOfferorBeenDeleted { get; set; } = false;
+        /// <summary>
+        /// Indica si la reseña hacia el estudiante ha sido eliminada.
+        /// </summary>
+        /// <value></value>
+        public bool HasReviewForStudentBeenDeleted { get; set; } = false;
     }
 }

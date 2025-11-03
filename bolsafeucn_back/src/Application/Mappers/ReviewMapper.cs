@@ -89,7 +89,9 @@ namespace bolsafeucn_back.src.Application.Mappers
                 ReviewWindowEndDate = entity.ReviewWindowEndDate,
                 IdStudent = entity.StudentId ?? 0,
                 IdOfferor = entity.OfferorId ?? 0,
-                IdPublication = entity.PublicationId
+                IdPublication = entity.PublicationId,
+                HasReviewForOfferorBeenDeleted = entity.HasReviewForOfferorBeenDeleted,
+                HasReviewForStudentBeenDeleted = entity.HasReviewForStudentBeenDeleted
             };
         }
     }

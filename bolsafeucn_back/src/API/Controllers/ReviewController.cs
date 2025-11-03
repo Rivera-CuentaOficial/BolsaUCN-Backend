@@ -111,7 +111,6 @@ namespace bolsafeucn_back.src.API.Controllers
             {
                 return Unauthorized("No se pudo identificar al usuario autenticado.");
             }
-
             await _reviewService.AddStudentReviewAsync(dto, currentUserId);
             return Ok("Student review added successfully");
         }
@@ -130,7 +129,6 @@ namespace bolsafeucn_back.src.API.Controllers
             {
                 return Unauthorized("No se pudo identificar al usuario autenticado.");
             }
-
             await _reviewService.AddOfferorReviewAsync(dto, currentUserId);
             return Ok("Offeror review added successfully");
         }
