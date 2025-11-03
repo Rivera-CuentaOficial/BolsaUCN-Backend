@@ -35,7 +35,7 @@ namespace bolsafeucn_back.src.API.Controllers
         /// </summary>
         /// <param name="offerorId"></param>
         /// <returns></returns>
-        [HttpGet("/{offerorId}")]
+        [HttpGet]
         public async Task<IActionResult> GetReviews(int offerorId)
         {
             var reviews = await _reviewService.GetReviewsByOfferorAsync(offerorId);
@@ -46,7 +46,7 @@ namespace bolsafeucn_back.src.API.Controllers
         /// </summary>
         /// <param name="offerorId"></param>
         /// <returns></returns>
-        [HttpGet("/{offerorId}")]
+        [HttpGet]
         public async Task<IActionResult> GetAverage(int offerorId)
         {
             var avg = await _reviewService.GetAverageRatingAsync(offerorId);
