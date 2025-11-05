@@ -136,6 +136,7 @@ namespace bolsafeucn_back.src.Application.Services.Implements
             var result = buysell
                 .Select(bs => new BuySellBasicAdminDto
                 {
+                    Id = bs.Id,
                     Title = bs.Title,
                     NameOwner = bs.User.UserName ?? "Usuario",
                     PublicationDate = bs.PublicationDate,

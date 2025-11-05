@@ -132,7 +132,7 @@ public class OfferService : IOfferService
     {
         var offer = await _offerRepository.GetAllPendingOffersAsync();
         return offer
-            .Select(o => new PendingOffersForAdminDto { Id = o.Id,Title = o.Title, Description = o.Description, Location = o.Location , PostDate = o.PublicationDate, Remuneration = o.Remuneration})
+            .Select(o => new PendingOffersForAdminDto { Id = o.Id, Title = o.Title, Description = o.Description, Location = o.Location , PostDate = o.PublicationDate, Remuneration = o.Remuneration})
             .ToList();
     }
 
@@ -150,6 +150,7 @@ public class OfferService : IOfferService
                     : (o.User?.UserName ?? "UCN");
                 return new OfferBasicAdminDto
                 {
+                    Id = o.Id,
                     Title = o.Title,
                     CompanyName = ownerName,
                     PublicationDate = o.PublicationDate,
@@ -184,6 +185,8 @@ public class OfferService : IOfferService
             Images = imageForDTO,
             CompanyName = ownerName,
             PublicationDate = offer.PublicationDate,
+            EndDate = offer.EndDate,
+            DeadlineDate = offer.DeadlineDate,
             Type = offer.Type,
             Active = offer.IsActive,
             statusValidation = offer.statusValidation,
