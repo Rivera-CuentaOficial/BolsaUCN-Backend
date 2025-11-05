@@ -1,42 +1,42 @@
 namespace bolsafeucn_back.src.Domain.Models
 {
     /// <summary>
-    /// Representa una postulación de un estudiante a una oferta laboral
+    /// Represents an application submitted by a student to a job offer.
     /// </summary>
     public class JobApplication
     {
         /// <summary>
-        /// Identificador único de la postulación
+        /// Unique identifier for the application.
         /// </summary>
         public int Id { get; set; }
 
         /// <summary>
-        /// Estudiante que realiza la postulación
+        /// The student user who submitted the application.
         /// </summary>
         public required GeneralUser Student { get; set; }
 
         /// <summary>
-        /// ID del estudiante que postula
+        /// Identifier of the student who applied.
         /// </summary>
         public required int StudentId { get; set; }
 
         /// <summary>
-        /// Oferta laboral a la que se postula
+        /// The job offer to which the student applied.
         /// </summary>
         public required Offer JobOffer { get; set; }
 
         /// <summary>
-        /// ID de la oferta laboral
+        /// Identifier of the job offer.
         /// </summary>
         public required int JobOfferId { get; set; }
 
         /// <summary>
-        /// Estado de la postulación (Pendiente, Aceptada, Rechazada, etc.)
+        /// Current status of the application (e.g., Pending, Accepted, Rejected).
         /// </summary>
         public required string Status { get; set; }
 
         /// <summary>
-        /// Fecha y hora en que se realizó la postulación (UTC)
+        /// Date and time when the application was submitted (UTC).
         /// </summary>
         public DateTime ApplicationDate { get; set; } = DateTime.UtcNow;
     }

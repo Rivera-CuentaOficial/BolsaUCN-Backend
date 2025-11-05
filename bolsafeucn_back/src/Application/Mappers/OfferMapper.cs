@@ -5,16 +5,18 @@ using Mapster;
 namespace bolsafeucn_back.src.Application.Mappers;
 
 /// <summary>
-/// Configuración de mapeos entre entidades Offer y sus DTOs usando Mapster
+/// Configures mappings between the domain <see cref="Domain.Models.Offer"/> entity and its DTO types using Mapster.
+/// This class centralizes mapping rules used across the application to keep mapping logic consistent.
 /// </summary>
 public class OfferMapper
 {
     /// <summary>
-    /// Configura todos los mapeos relacionados con Offer
+    /// Registers all Mapster mapping configurations for <see cref="Domain.Models.Offer"/>.
+    /// Call this during application startup to ensure DTO mappings are available.
     /// </summary>
     public void ConfigureAllMappings()
     {
-        // Mapeo de Offer a OfferSummaryDto (resumen para listados)
+        // Map Offer to OfferSummaryDto (used for lists)
         TypeAdapterConfig<Offer, OfferSummaryDto>
             .NewConfig()
             .Map(dest => dest.Title, src => src.Title)
@@ -24,10 +26,10 @@ public class OfferMapper
                     src.User.UserType == UserType.Empresa ? src.User.Company!.CompanyName
                     : src.User.UserType == UserType.Particular
                         ? $"{src.User.Individual!.Name} {src.User.Individual!.LastName}"
-                    : "Desconocido"
+                    : "Unknown"
             );
 
-        // Mapeo de Offer a OfferDetailDto (detalle completo de la oferta)
+        // Map Offer to OfferDetailDto (full details)
         TypeAdapterConfig<Offer, OfferDetailDto>
             .NewConfig()
             .Map(dest => dest.Title, src => src.Title)
@@ -42,7 +44,7 @@ public class OfferMapper
                     src.User.UserType == UserType.Empresa ? src.User.Company!.CompanyName
                     : src.User.UserType == UserType.Particular
                         ? $"{src.User.Individual!.Name} {src.User.Individual!.LastName}"
-                    : "Desconocido"
+                    : "Unknown"
             );
     }
 }

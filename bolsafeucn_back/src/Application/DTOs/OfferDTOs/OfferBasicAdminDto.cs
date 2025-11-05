@@ -3,14 +3,33 @@ using bolsafeucn_back.src.Domain.Models;
 namespace bolsafeucn_back.src.Application.DTOs.OfferDTOs
 {
     /// <summary>
-    /// Dto que se usa al momento en que el admin administra las publicaciones ya publicadas y se le muestran las ofertas 
+    /// DTO used by administrators when listing and managing published offers.
     /// </summary>
     public class OfferBasicAdminDto
     {
-        public string Title { get; set; }
+        /// <summary>
+        /// Offer title.
+        /// </summary>
+        public required string Title { get; set; }
+
+        /// <summary>
+        /// Name of the company or individual that posted the offer.
+        /// </summary>
         public required string CompanyName { get; set; }
+
+        /// <summary>
+        /// Publication date of the offer.
+        /// </summary>
         public DateTime PublicationDate { get; set; }
+
+        /// <summary>
+        /// Offer type (domain enum).
+        /// </summary>
         public OfferTypes OfferType { get; set; }
-        public bool Activa { get; set; }  
+
+        /// <summary>
+        /// Whether the offer is active.
+        /// </summary>
+        public bool Activa { get; set; }
     }
 }

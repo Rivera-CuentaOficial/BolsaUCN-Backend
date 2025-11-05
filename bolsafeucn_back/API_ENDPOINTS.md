@@ -2016,12 +2016,337 @@ https://localhost:7169/swagger
 | `/api/job-applications/offer/{id}` | GET | ❌ | ❌ | ✅* | ✅* | ❌ |
 | `/api/job-applications/my-offers-applications` | GET | ❌ | ❌ | ✅ | ✅ | ❌ |
 | `/api/job-applications/{id}/status` | PATCH | ❌ | ❌ | ✅* | ✅* | ❌ |
+| **Gestión de Reviews** |
+| `/api/reviews/AddStudentReview` | POST | ❌ | ❌ | ✅* | ✅* | ❌ |
+| `/api/reviews/AddOfferorReview` | POST | ❌ | ✅* | ❌ | ❌ | ❌ |
+| `/api/reviews/GetReviews/{offerorId}` | GET | ✅ | ✅ | ✅ | ✅ | ✅ |
+| `/api/reviews/GetAverage/{offerorId}` | GET | ✅ | ✅ | ✅ | ✅ | ✅ |
+| `/api/reviews/DeleteReviewPart` | DELETE | ❌ | ❌ | ❌ | ❌ | ✅ |
 
 **Leyenda:**
 - ✅ = Acceso completo
 - ⚠️ = Acceso limitado (información básica sin datos sensibles)
 - ❌ = Sin acceso (401 Unauthorized o 403 Forbidden)
-- ✅* = Solo si es dueño del recurso
+- ✅* = Solo si es dueño del recurso (el oferente/estudiante específico de esa publicación)
+
+---
+
+## 📋 Reviews - Sistema de Calificaciones
+
+Las reviews permiten que estudiantes y oferentes se califiquen mutuamente después de completar un trabajo. Cada review tiene dos partes independientes:
+- **Review del Estudiante → Oferente** (`AddOfferorReview`): El **estudiante** califica al oferente (rating, comentario, puntualidad y presentación)
+- **Review del Oferente → Estudiante** (`AddStudentReview`): El **oferente** califica al estudiante (rating y comentario)
+
+### ⚠️ Aclaración de Nomenclatura
+
+**IMPORTANTE:** Los nombres de los endpoints pueden parecer contraintuitivos, pero siguen esta lógica:
+
+| Endpoint | Quién lo usa | A quién califica | Descripción |
+|----------|--------------|------------------|-------------|
+| `AddStudentReview` | **Oferente** (Empresa/Particular) | **Estudiante** | El oferente agrega su calificación **hacia** el estudiante |
+| `AddOfferorReview` | **Estudiante** | **Oferente** | El estudiante agrega su calificación **hacia** el oferente |
+
+**Ejemplo práctico:**
+```
+📊 Publicación #1: "Desarrollador Backend"
+👤 Oferente: Empresa TechCorp (ID: 3)
+👨‍🎓 Estudiante: Juan Pérez (ID: 5)
+
+Después del trabajo:
+1. Juan (estudiante) llama a POST /AddOfferorReview → Califica a TechCorp
+2. TechCorp (oferente) llama a POST /AddStudentReview → Califica a Juan
+```
+
+---
+
+### 1️⃣ Crear Review Inicial
+
+**Endpoint:** `POST /api/reviews/AddInitialReview`  
+**Autorización:** Requerida  
+**Descripción:** Crea una review inicial vacía vinculada a una publicación. Esta review será completada posteriormente por ambas partes.
+
+**Request Body:**
+```json
+{
+  "publicationId": 1,
+  "studentId": 5,
+  "offerorId": 3,
+  "reviewWindowEndDate": "2025-12-31T23:59:59Z"
+}
+```
+
+**Response:** `200 OK`
+```json
+"Initial review added successfully"
+```
+
+---
+
+### 2️⃣ Agregar Review hacia el Estudiante (por el Oferente)
+
+**Endpoint:** `POST /api/reviews/AddStudentReview`  
+**Autorización:** `[Authorize(Roles = "Offerent")]` - Solo Empresas y Particulares  
+**Descripción:** El **oferente** califica al **estudiante** con quien trabajó.
+
+**Validaciones de Seguridad:**
+- ✅ Solo usuarios con rol "Offerent" (Empresa o Particular)
+- ✅ Solo el oferente específico de esa publicación puede dejar la review
+- ✅ No se puede duplicar: valida que no haya completado ya su review
+
+**Request Body:**
+```json
+{
+  "publicationId": 1,
+  "ratingForStudent": 4,
+  "commentForStudent": "Buen trabajo, responsable y cumplió con las expectativas.",
+  "sendedAt": "2025-11-03T10:30:00Z"
+}
+```
+
+**Campos:**
+- `publicationId` (int, requerido): ID de la publicación asociada
+- `ratingForStudent` (int, 1-6): Calificación del estudiante
+- `commentForStudent` (string, requerido, max 320 chars): Comentario sobre el estudiante
+- `sendedAt` (DateTime, requerido): Fecha de envío de la review
+
+**Responses:**
+
+`200 OK`
+```json
+"Student review added successfully"
+```
+
+`401 Unauthorized`
+```json
+"No se pudo identificar al usuario autenticado."
+```
+
+`403 Forbidden`
+```json
+"Solo el oferente de esta publicación puede dejar una review hacia el estudiante."
+```
+
+`400 Bad Request`
+```json
+"Ya has completado tu review para este estudiante."
+```
+
+`404 Not Found`
+```json
+"No se ha encontrado una reseña para el ID de publicación dado."
+```
+
+---
+
+### 3️⃣ Agregar Review hacia el Oferente (por el Estudiante)
+
+**Endpoint:** `POST /api/reviews/AddOfferorReview`  
+**Autorización:** `[Authorize(Roles = "Applicant")]` - Solo Estudiantes  
+**Descripción:** El **estudiante** califica al **oferente** con quien trabajó.
+
+**Validaciones de Seguridad:**
+- ✅ Solo usuarios con rol "Applicant" (Estudiante)
+- ✅ Solo el estudiante específico de esa publicación puede dejar la review
+- ✅ No se puede duplicar: valida que no haya completado ya su review
+
+**Request Body:**
+```json
+{
+  "publicationId": 1,
+  "ratingForOfferor": 5,
+  "commentForOfferor": "Excelente experiencia, muy profesional y puntual en los pagos.",
+  "sendedAt": "2025-11-03T10:30:00Z",
+  "atTime": true,
+  "goodPresentation": true
+}
+```
+
+**Campos:**
+- `publicationId` (int, requerido): ID de la publicación asociada
+- `ratingForOfferor` (int, 1-6): Calificación del oferente
+- `commentForOfferor` (string, requerido, max 320 chars): Comentario sobre el oferente
+- `sendedAt` (DateTime, requerido): Fecha de envío de la review
+- `atTime` (bool): Si el oferente cumplió con los horarios acordados
+- `goodPresentation` (bool): Si el oferente fue profesional y organizado
+
+**Responses:**
+
+`200 OK`
+```json
+"Offeror review added successfully"
+```
+
+`401 Unauthorized`
+```json
+"No se pudo identificar al usuario autenticado."
+```
+
+`403 Forbidden`
+```json
+"Solo el estudiante de esta publicación puede dejar una review hacia el oferente."
+```
+
+`400 Bad Request`
+```json
+"Ya has completado tu review para este oferente."
+```
+
+`404 Not Found`
+```json
+"No se ha encontrado una reseña para el ID de publicación dado."
+```
+
+---
+
+### 4️⃣ Obtener Reviews de un Oferente
+
+**Endpoint:** `GET /api/reviews/GetReviews/{offerorId}`  
+**Autorización:** Pública  
+**Descripción:** Obtiene todas las reviews recibidas por un oferente.
+
+**Response:** `200 OK`
+```json
+[
+  {
+    "id": 1,
+    "ratingForStudent": 4,
+    "commentForStudent": "Buen trabajo...",
+    "ratingForOfferor": 5,
+    "commentForOfferor": "Excelente experiencia...",
+    "atTime": true,
+    "goodPresentation": true,
+    "studentId": 5,
+    "offerorId": 3,
+    "publicationId": 1,
+    "isCompleted": true
+  }
+]
+```
+
+---
+
+### 5️⃣ Obtener Promedio de Calificación
+
+**Endpoint:** `GET /api/reviews/GetAverage/{offerorId}`  
+**Autorización:** Pública  
+**Descripción:** Calcula el promedio de todas las calificaciones recibidas por un oferente.
+
+**Response:** `200 OK`
+```json
+4.7
+```
+
+---
+
+### 6️⃣ Eliminar Partes de una Review (Solo Admin)
+
+**Endpoint:** `DELETE /api/reviews/DeleteReviewPart`  
+**Autorización:** `[Authorize(Roles = "Admin")]` - Solo Administradores  
+**Descripción:** Permite a un administrador eliminar selectivamente partes de una review (estudiante, oferente, o ambas). Útil para moderar reviews falsas o inapropiadas sin eliminar toda la review.
+
+**Headers Requeridos:**
+```
+Authorization: Bearer {admin_jwt_token}
+Content-Type: application/json
+```
+
+**Request Body:**
+```json
+{
+  "reviewId": 1,
+  "deleteStudentPart": true,
+  "deleteOfferorPart": false
+}
+```
+
+**Campos:**
+- `reviewId` (int, requerido): ID de la review a modificar
+- `deleteStudentPart` (bool): Si es `true`, elimina la review del estudiante hacia el oferente
+- `deleteOfferorPart` (bool): Si es `true`, elimina la review del oferente hacia el estudiante
+- Al menos uno de los dos booleanos debe ser `true`
+
+**Casos de Uso:**
+
+**Ejemplo 1: Eliminar solo la review del estudiante (review falsa)**
+```json
+{
+  "reviewId": 1,
+  "deleteStudentPart": true,
+  "deleteOfferorPart": false
+}
+```
+**Efecto:**
+- ❌ Elimina: `RatingForOfferor`, `CommentForOfferor`, `AtTime`, `GoodPresentation`
+- ✅ Mantiene: `RatingForStudent`, `CommentForStudent`
+- Marca `StudentReviewCompleted = false`
+- No afecta las métricas del oferente
+
+**Ejemplo 2: Eliminar solo la review del oferente**
+```json
+{
+  "reviewId": 1,
+  "deleteStudentPart": false,
+  "deleteOfferorPart": true
+}
+```
+**Efecto:**
+- ❌ Elimina: `RatingForStudent`, `CommentForStudent`
+- ✅ Mantiene: `RatingForOfferor`, `CommentForOfferor`, `AtTime`, `GoodPresentation`
+- Marca `OfferorReviewCompleted = false`
+
+**Ejemplo 3: Eliminar toda la review (ambas partes)**
+```json
+{
+  "reviewId": 1,
+  "deleteStudentPart": true,
+  "deleteOfferorPart": true
+}
+```
+**Efecto:**
+- ❌ Elimina todas las calificaciones y comentarios
+- Marca `IsCompleted = false`
+- La review queda vacía pero sigue existiendo en la BD
+
+**Responses:**
+
+`200 OK`
+```json
+"Review part(s) deleted successfully"
+```
+
+`400 Bad Request`
+```json
+"Debe especificar al menos una parte de la review para eliminar."
+```
+
+`401 Unauthorized`
+```json
+{
+  "message": "No autorizado. Token inválido o no proporcionado."
+}
+```
+
+`403 Forbidden`
+```json
+{
+  "message": "Acceso denegado. Solo administradores pueden realizar esta acción."
+}
+```
+
+`404 Not Found`
+```json
+"No se encontró una review con ID 1."
+```
+
+---
+
+### 🔐 Notas de Seguridad
+
+1. **Solo Administradores:** Este endpoint está protegido con `[Authorize(Roles = "Admin")]`
+2. **Token JWT Requerido:** Debe incluir un token válido de un usuario con rol "Admin" en el header Authorization
+3. **Validaciones:** El sistema valida que al menos una parte debe ser eliminada
+4. **Integridad:** La review permanece en la base de datos pero con campos nulos
+5. **Métricas:** Al eliminar la review del estudiante, no afecta las estadísticas del oferente
 
 ---
 
