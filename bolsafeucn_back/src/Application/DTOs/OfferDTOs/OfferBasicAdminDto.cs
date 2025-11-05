@@ -33,5 +33,7 @@ namespace bolsafeucn_back.src.Application.DTOs.OfferDTOs
         /// Whether the offer is active.
         /// </summary>
         public bool Activa { get; set; }
+
+        public int Remuneration { get; set; }
     }
 }
