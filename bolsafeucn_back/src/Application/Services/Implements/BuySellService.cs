@@ -149,7 +149,7 @@ namespace bolsafeucn_back.src.Application.Services.Implements
             return result;
         }
 
-        public async Task<BuySellDetailDto> GetBuySellDetailForOfferer(int id)
+        public async Task<BuySellDetailDto> GetBuySellDetailForOfferer(int id,string userId)
         {
             // 1. Llamar al repositorio
             // (Tu BuySellRepository.cs ya incluye User e Images en GetByIdAsync, ¡perfecto!)
@@ -158,7 +158,23 @@ namespace bolsafeucn_back.src.Application.Services.Implements
             // 2. Verificar si se encontró
             if (buySell == null)
             {
-                throw new KeyNotFoundException($"La publicación con id {id} no fue encontrada.");
+
+                throw new KeyNotFoundException($"La oferta con id {id} no fue encontrada.");
+            }
+
+            if (!int.TryParse(userId, out int parsedUserId))
+            {
+                throw new UnauthorizedAccessException("El ID de usuario es inválido.");
+            }
+
+            if (buySell.UserId != parsedUserId)
+            {
+                // Lanza 404 para no revelar que la oferta existe pero no es suya
+                throw new KeyNotFoundException(
+                    $"La oferta con id {id} no fue encontrada o no pertenece al usuario."
+                );
+                
+                // throw new UnauthorizedAccessException("No tienes permiso para ver esta oferta.");
             }
 
             // 3. Mapear la entidad BuySell al DTO BuySellDetailDto

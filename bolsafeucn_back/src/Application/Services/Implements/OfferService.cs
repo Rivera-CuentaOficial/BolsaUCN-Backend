@@ -270,22 +270,34 @@ public class OfferService : IOfferService
         await _offerRepository.UpdateOfferAsync(offer);
     }
 
-    public async Task<OfferDetailDto> GetOfferDetailForOfferer(int id)
+    public async Task<OfferDetailDto> GetOfferDetailForOfferer(int id, string userId)
     {
-        // 1. Llamar al repositorio para obtener la entidad con sus relaciones
+
         var offer = await _offerRepository.GetByIdAsync(id);
 
-        // 2. Verificar si se encontró
+
         if (offer == null)
         {
-            // Es una buena práctica lanzar una excepción si no se encuentra
+
             throw new KeyNotFoundException($"La oferta con id {id} no fue encontrada.");
         }
 
-        // 3. Mapear la entidad Offer al DTO OfferDetailDto usando Mapster
+        if (!int.TryParse(userId, out int parsedUserId))
+        {
+            throw new UnauthorizedAccessException("El ID de usuario es inválido.");
+        }
+
+        if (offer.UserId != parsedUserId)
+        {
+            // Lanza 404 para no revelar que la oferta existe pero no es suya
+            throw new KeyNotFoundException(
+                $"La oferta con id {id} no fue encontrada o no pertenece al usuario."
+            );
+            
+            // throw new UnauthorizedAccessException("No tienes permiso para ver esta oferta.");
+        }
         var offerDetailDto = offer.Adapt<OfferDetailDto>();
 
-        // 4. Retornar el DTO
         return offerDetailDto;
     }
 

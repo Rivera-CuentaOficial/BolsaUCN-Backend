@@ -858,12 +858,18 @@ namespace bolsafeucn_back.src.API.Controllers
 
         [HttpGet("offerent/offer/{id:int}")]
         [Authorize(Roles = "Offerent")]
-        public async Task<IActionResult> GetOfferDetail(int id, int idUser)
+        public async Task<IActionResult> GetOfferDetail(int id)
         {
             try
             {
+                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                if (userId == null)
+                {
+                    return Unauthorized(new GenericResponse<object>("No autenticado."));
+                }
+
                 // 1. Llama al servicio que implementamos en el paso anterior
-                var offerDetailDto = await _offerService.GetOfferDetailForOfferer(id);
+                var offerDetailDto = await _offerService.GetOfferDetailForOfferer(id, userId);
 
                 // 2. Devuelve el DTO en una respuesta exitosa
                 return Ok(
@@ -894,8 +900,13 @@ namespace bolsafeucn_back.src.API.Controllers
         {
             try
             {
+                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                if (userId == null)
+                {
+                    return Unauthorized(new GenericResponse<object>("No autenticado."));
+                }
                 // 1. Llama al servicio correspondiente
-                var buySellDetailDto = await _buySellService.GetBuySellDetailForOfferer(id);
+                var buySellDetailDto = await _buySellService.GetBuySellDetailForOfferer(id, userId);
 
                 // 2. Devuelve el DTO
                 return Ok(

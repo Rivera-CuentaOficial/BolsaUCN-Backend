@@ -35,6 +35,8 @@ namespace bolsafeucn_back.src.Application.DTOs.PublicationDTO
         public decimal Remuneration { get; set; }
 
         [Required(ErrorMessage = "El tipo de oferta es obligatorio")]
+        [RegularExpression("^[0-9]+$", ErrorMessage = "La cantidad debe ser un número entero válido.")]
+        [Range(0, 1, ErrorMessage = "El Tipo debe ser 1 (Voluntario) o 0 (Oferta)")]
         public OfferTypes OfferType { get; set; }
 
         [StringLength(200, ErrorMessage = "La ubicación no puede exceder 200 caracteres")]
