@@ -167,5 +167,23 @@ namespace bolsafeucn_back.src.API.Controllers
             var reviews = await _reviewService.GetAllReviewsAsync();
             return Ok(reviews);
         }
+        
+        /// <summary>
+        /// Obtiene la información de las publicaciones asociadas a las reseñas del usuario autenticado.
+        /// Identifica automáticamente si el usuario es estudiante u oferente.
+        /// </summary>
+        /// <returns>Una lista de publicaciones asociadas a las reseñas del usuario.</returns>
+        [HttpGet("publications")]
+        [Authorize(Roles = "Applicant,Offerent")]
+        public async Task<IActionResult> GetMyPublicationInformation()
+        {
+            var userIdString = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userIdString) || !int.TryParse(userIdString, out int userId))
+            {
+                return Unauthorized("No se pudo identificar al usuario.");
+            }
+            var publicationInfo = await _reviewService.GetPublicationInformationAsync(userId);
+            return Ok(publicationInfo);
+        }
     }
 }
