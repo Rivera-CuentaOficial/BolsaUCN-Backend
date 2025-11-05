@@ -731,10 +731,10 @@ namespace bolsafeucn_back.src.API.Controllers
         // ... (dentro de tu clase PublicationController)
 
         /// <summary>
-        /// Obtiene todas las publicaciones PUBLICADAS del usuario autenticado.
+        /// Obtiene todas las publicaciones PUBLICADAS del particular/empresa autenticado.
         /// </summary>
-        [HttpGet("my-published")]
-        [Authorize]
+        [HttpGet("offerent/my-published")]
+        [Authorize(Roles = "Offerent")]
         public async Task<IActionResult> GetMyPublishedPublications()
         {
             try
@@ -755,7 +755,7 @@ namespace bolsafeucn_back.src.API.Controllers
 
                 return Ok(
                     new GenericResponse<IEnumerable<PublicationsDTO>>(
-                        "Ofertas pendientes obtenidas",
+                        "Ofertas Publicadas obtenidas",
                         publicationsDto
                     )
                 );
@@ -773,10 +773,10 @@ namespace bolsafeucn_back.src.API.Controllers
         }
 
         /// <summary>
-        /// Obtiene todas las publicaciones PENDIENTES del usuario autenticado.
+        /// Obtiene todas las publicaciones PENDIENTE/ENPROCESO del particular/empresa autenticado.
         /// </summary>
-        [HttpGet("my-pending")]
-        [Authorize]
+        [HttpGet("offerent/my-pending")]
+        [Authorize(Roles = "Offerent")]
         public async Task<IActionResult> GetMyPendingPublications()
         {
             try
@@ -815,10 +815,10 @@ namespace bolsafeucn_back.src.API.Controllers
         }
 
         /// <summary>
-        /// Obtiene todas las publicaciones RECHAZADAS del usuario autenticado.
+        /// Obtiene todas las publicaciones RECHAZADAS del particular/empresa autenticado.
         /// </summary>
-        [HttpGet("my-rejected")]
-        [Authorize]
+        [HttpGet("offerent/my-rejected")]
+        [Authorize(Roles = "Offerent")]
         public async Task<IActionResult> GetMyRejectedPublications()
         {
             try
@@ -839,7 +839,7 @@ namespace bolsafeucn_back.src.API.Controllers
 
                 return Ok(
                     new GenericResponse<IEnumerable<PublicationsDTO>>(
-                        "Ofertas pendientes obtenidas",
+                        "Ofertas Rechazadas obtenidas",
                         publicationsDto
                     )
                 );
@@ -856,9 +856,9 @@ namespace bolsafeucn_back.src.API.Controllers
             }
         }
 
-        [HttpGet("offernet/offer/{id:int}")]
-        [Authorize(Roles = "Empresa")]
-        public async Task<IActionResult> GetOfferDetail(int id)
+        [HttpGet("offerent/offer/{id:int}")]
+        [Authorize(Roles = "Offerent")]
+        public async Task<IActionResult> GetOfferDetail(int id, int idUser)
         {
             try
             {
@@ -868,7 +868,7 @@ namespace bolsafeucn_back.src.API.Controllers
                 // 2. Devuelve el DTO en una respuesta exitosa
                 return Ok(
                     new GenericResponse<OfferDetailDto>(
-                        "Detalle de la oferta obtenido",
+                        "Detalle de la oferta obtenida",
                         offerDetailDto
                     )
                 );
@@ -888,8 +888,8 @@ namespace bolsafeucn_back.src.API.Controllers
         /// <summary>
         /// Obtiene el detalle de una publicación de Compra/Venta por su ID.
         /// </summary>
-        [HttpGet("offernet/buysell/{id:int}")]
-        [Authorize(Roles = "Empresa")]
+        [HttpGet("offerent/buysell/{id:int}")]
+        [Authorize(Roles = "Offerent")]
         public async Task<IActionResult> GetBuySellDetail(int id)
         {
             try
@@ -900,7 +900,7 @@ namespace bolsafeucn_back.src.API.Controllers
                 // 2. Devuelve el DTO
                 return Ok(
                     new GenericResponse<BuySellDetailDto>(
-                        "Detalle de la publicación obtenido",
+                        "Detalle de la compra y venta obtenida",
                         buySellDetailDto
                     )
                 );
@@ -930,47 +930,79 @@ namespace bolsafeucn_back.src.API.Controllers
         /// </summary>
         /// <param name="offerId">El ID de la oferta</param>
         /// <returns>Una lista de los postulantes de la oferta</returns>
-        [HttpGet("offers/my-offer/{offerId}/applicants")] // <-- 1. RUTA CORREGIDA (para no chocar con la del Admin)
-        [Authorize(Roles = "Offerent")] 
+        [HttpGet("offerent/my-offer/{offerId}/applicants")] // <-- 1. RUTA CORREGIDA (para no chocar con la del Admin)
+        [Authorize(Roles = "Offerent")]
         public async Task<IActionResult> GetOfferApplicantsForOfferer(int offerId)
         {
             try
             {
                 // 1. Obtener el ID del oferente logueado desde el Token JWT
                 var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
-                
-                if (string.IsNullOrEmpty(userIdString) || !int.TryParse(userIdString, out var offererUserId))
+
+                if (
+                    string.IsNullOrEmpty(userIdString)
+                    || !int.TryParse(userIdString, out var offererUserId)
+                )
                 {
-                    _logger.LogWarning("GetOfferApplicants: Token JWT inválido o sin claim de NameIdentifier.");
-                    return Unauthorized(new GenericResponse<object>("No autenticado o token inválido"));
+                    _logger.LogWarning(
+                        "GetOfferApplicants: Token JWT inválido o sin claim de NameIdentifier."
+                    );
+                    return Unauthorized(
+                        new GenericResponse<object>("No autenticado o token inválido")
+                    );
                 }
 
-                _logger.LogInformation("Usuario {OffererId} solicitando postulantes para la oferta {OfferId}", offererUserId, offerId);
+                _logger.LogInformation(
+                    "Usuario {OffererId} solicitando postulantes para la oferta {OfferId}",
+                    offererUserId,
+                    offerId
+                );
 
                 // 2. Llamar al servicio
-                var applicants = await _jobApplicationService.GetApplicantsForOffererAsync(offerId, offererUserId);
+                var applicants = await _jobApplicationService.GetApplicantsForOffererAsync(
+                    offerId,
+                    offererUserId
+                );
 
-                return Ok(new GenericResponse<IEnumerable<OffererApplicantViewDto>>(
-                    "Postulantes obtenidos exitosamente",
-                    applicants
-                ));
+                return Ok(
+                    new GenericResponse<IEnumerable<OffererApplicantViewDto>>(
+                        "Postulantes obtenidos exitosamente",
+                        applicants
+                    )
+                );
             }
             catch (KeyNotFoundException ex)
             {
-                _logger.LogWarning(ex, "GetOfferApplicants: Oferta no encontrada. OfferID: {OfferId}", offerId);
+                _logger.LogWarning(
+                    ex,
+                    "GetOfferApplicants: Oferta no encontrada. OfferID: {OfferId}",
+                    offerId
+                );
                 return NotFound(new GenericResponse<object>(ex.Message));
             }
             catch (UnauthorizedAccessException ex)
             {
-                _logger.LogWarning(ex, "GetOfferApplicants: Intento de acceso no autorizado. UserID: {UserId}, OfferID: {OfferId}", User.FindFirstValue(ClaimTypes.NameIdentifier), offerId);
-                
+                _logger.LogWarning(
+                    ex,
+                    "GetOfferApplicants: Intento de acceso no autorizado. UserID: {UserId}, OfferID: {OfferId}",
+                    User.FindFirstValue(ClaimTypes.NameIdentifier),
+                    offerId
+                );
+
                 // 2. ARREGLO DEL ERROR (CS1503): Usamos StatusCode 403
-                return StatusCode(403, new GenericResponse<object>(ex.Message)); 
+                return StatusCode(403, new GenericResponse<object>(ex.Message));
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "GetOfferApplicants: Error interno al obtener postulantes. OfferID: {OfferId}", offerId);
-                return StatusCode(500, new GenericResponse<object>("Error interno al procesar la solicitud."));
+                _logger.LogError(
+                    ex,
+                    "GetOfferApplicants: Error interno al obtener postulantes. OfferID: {OfferId}",
+                    offerId
+                );
+                return StatusCode(
+                    500,
+                    new GenericResponse<object>("Error interno al procesar la solicitud.")
+                );
             }
         }
 
