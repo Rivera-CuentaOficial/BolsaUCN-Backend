@@ -366,6 +366,23 @@ namespace bolsafeucn_back.src.API.Controllers
 
         #region Validar ofertas (admin)
 
+        [Authorize(Roles = "Admin")]
+        [HttpGet("offers/{id}/validation")]
+        public async Task<IActionResult> GetOfferDetailsForOfferValidation(int id)
+        {
+            var offer = await _offerService.GetOfferDetailForOfferValidationAsync(id);
+            if (offer == null)
+            {
+                return NotFound(new GenericResponse<object>("No se encontro al postulante", null));
+            }
+            return Ok(
+                new GenericResponse<OfferDetailValidationDto>(
+                    "Informacion basica de oferta recibida con exito.",
+                    offer
+                )
+            );
+        }
+
 
         /// <summary>
         /// Acepta una oferta laboral específica (solo admin)

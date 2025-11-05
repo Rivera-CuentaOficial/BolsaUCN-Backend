@@ -234,6 +234,10 @@ public class OfferService : IOfferService
             CompanyName = ownerName,
             CorreoContacto = offer.ContactInfo,
             TelefonoContacto = offer.User?.PhoneNumber,
+            PublicationDate = offer.PublicationDate,
+            DeadlineDate = offer.DeadlineDate,
+            EndDate = offer.EndDate
+
         };
     }
 
