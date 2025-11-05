@@ -132,7 +132,7 @@ public class OfferService : IOfferService
     {
         var offer = await _offerRepository.GetAllPendingOffersAsync();
         return offer
-            .Select(o => new PendingOffersForAdminDto { Title = o.Title, Type = o.Type })
+            .Select(o => new PendingOffersForAdminDto { Id = o.Id,Title = o.Title, Description = o.Description, Location = o.Location , PostDate = o.PublicationDate, Remuneration = o.Remuneration})
             .ToList();
     }
 
@@ -262,7 +262,7 @@ public class OfferService : IOfferService
         if (offer.statusValidation != StatusValidation.InProcess)
         {
             throw new InvalidOperationException(
-                $"La oferta con ID {id} ya fue {offer.statusValidation}. No se puede publicar."
+                $"La oferta con ID {id} ya fue {offer.statusValidation}. No se puede rechazar."
             );
         }
         offer.IsActive = false;
@@ -291,7 +291,7 @@ public class OfferService : IOfferService
         {
             // Lanza 404 para no revelar que la oferta existe pero no es suya
             throw new KeyNotFoundException(
-                $"La oferta con id {id} no fue encontrada o no pertenece al usuario."
+                $"La oferta con id {id} no fue encontrada."
             );
             
             // throw new UnauthorizedAccessException("No tienes permiso para ver esta oferta.");

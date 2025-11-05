@@ -24,10 +24,10 @@ namespace bolsafeucn_back.src.Application.DTOs.PublicationDTO
         )]
         public string Description { get; set; } = null!;
 
-        [Required(ErrorMessage = "La fecha de finalización es obligatoria")]
+        [Required(ErrorMessage = "La fecha de finalización del trabajo es obligatoria")]
         public DateTime EndDate { get; set; }
 
-        [Required(ErrorMessage = "La fecha límite para postular es obligatoria")]
+        [Required(ErrorMessage = "La fecha Inicial de trabajo es obligatoria")]
         public DateTime DeadlineDate { get; set; }
 
         [Required(ErrorMessage = "La remuneración es obligatoria")]
@@ -35,7 +35,6 @@ namespace bolsafeucn_back.src.Application.DTOs.PublicationDTO
         public decimal Remuneration { get; set; }
 
         [Required(ErrorMessage = "El tipo de oferta es obligatorio")]
-        [RegularExpression("^[0-9]+$", ErrorMessage = "La cantidad debe ser un número entero válido.")]
         [Range(0, 1, ErrorMessage = "El Tipo debe ser 1 (Voluntario) o 0 (Oferta)")]
         public OfferTypes OfferType { get; set; }
 
