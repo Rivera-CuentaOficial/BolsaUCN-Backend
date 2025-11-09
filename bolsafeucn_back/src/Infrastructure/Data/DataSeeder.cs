@@ -237,7 +237,7 @@ namespace bolsafeucn_back.src.Application.Infrastructure.Data
                     UserType = UserType.Estudiante,
                     Rut = faker.Random.Replace("##.###.###-K"),
                     EmailConfirmed = true,
-                    Banned = false,
+                    Banned = faker.Random.Bool(0.3f),
                 };
                 var result = await userManager.CreateAsync(studentUser, "Password123!");
                 if (result.Succeeded)
@@ -248,7 +248,7 @@ namespace bolsafeucn_back.src.Application.Infrastructure.Data
                         GeneralUserId = studentUser.Id,
                         Name = faker.Name.FirstName(),
                         LastName = faker.Name.LastName(),
-                        Disability = Disability.Ninguna,
+                        Disability = faker.PickRandom<Disability>(),
                         GeneralUser = studentUser,
                     };
                     context.Students.Add(student);
@@ -265,7 +265,7 @@ namespace bolsafeucn_back.src.Application.Infrastructure.Data
                     UserType = UserType.Empresa,
                     Rut = faker.Random.Replace("##.###.###-K"),
                     EmailConfirmed = true,
-                    Banned = false,
+                    Banned = faker.Random.Bool(0.3f),
                 };
                 var result = await userManager.CreateAsync(companyUser, "Password123!");
                 if (result.Succeeded)
@@ -290,7 +290,7 @@ namespace bolsafeucn_back.src.Application.Infrastructure.Data
                 UserType = UserType.Particular,
                 Rut = faker.Random.Replace("##.###.###-K"),
                 EmailConfirmed = true,
-                Banned = false,
+                Banned = faker.Random.Bool(0.9f),
             };
             var randomIndividualResult = await userManager.CreateAsync(
                 randomIndividualUser,

@@ -14,6 +14,11 @@ namespace bolsafeucn_back.src.Infrastructure.Repositories.Interfaces
             _context = context;
         }
 
+        /// <summary>
+        /// Crea un nuevo código de verificación en la base de datos.
+        /// </summary>
+        /// <param name="code">El objeto VerificationCode a crear</param>
+        /// <returns>El código de verificación creado</returns>
         public async Task<VerificationCode> CreateCodeAsync(VerificationCode code)
         {
             Log.Information(
@@ -31,6 +36,11 @@ namespace bolsafeucn_back.src.Infrastructure.Repositories.Interfaces
             return code;
         }
 
+        /// <summary>
+        /// Actualiza un código de verificación existente en la base de datos.
+        /// </summary>
+        /// <param name="code">El objeto VerificationCode con los datos actualizados</param>
+        /// <returns>El código de verificación actualizado</returns>
         public async Task<VerificationCode> UpdateCodeAsync(VerificationCode code)
         {
             Log.Information(
@@ -56,6 +66,40 @@ namespace bolsafeucn_back.src.Infrastructure.Repositories.Interfaces
             return newVerificationCode!;
         }
 
+        /// <summary>
+        /// Obtiene un código de verificación por su valor y tipo.
+        /// </summary>
+        /// <param name="code">El valor del código de verificación</param>
+        /// <param name="type">El tipo de código de verificación</param>
+        /// <returns>El código de verificación encontrado</returns>
+        public async Task<VerificationCode> GetByCodeAsync(string code, CodeType type)
+        {
+            Log.Information("Obteniendo el codigo con el numero {code} de tipo {type}",
+                code,
+                type
+            );
+            var verificationCode = await _context.
+                VerificationCodes.Where(vc =>
+                    vc.Code == code && vc.CodeType == type
+                )
+                .OrderByDescending(vc => vc.CreatedAt)
+                .FirstOrDefaultAsync();
+            if (verificationCode != null)
+            {
+                Log.Information("Codigo de verificacion con el numero {code} de tipo {type}",
+                    code,
+                    type
+                );
+            }
+            return verificationCode!;
+        }
+
+        /// <summary>
+        /// Obtiene el último código de verificación para un usuario dado y tipo de código.
+        /// </summary>
+        /// <param name="userId">El ID del usuario</param>
+        /// <param name="codeType">El tipo de código de verificación</param>
+        /// <returns>El último código de verificación encontrado</returns>
         public async Task<VerificationCode> GetByLatestUserIdAsync(int userId, CodeType codeType)
         {
             Log.Information(
@@ -89,6 +133,12 @@ namespace bolsafeucn_back.src.Infrastructure.Repositories.Interfaces
             return verificationCode!;
         }
 
+        /// <summary>
+        /// Incrementa el número de intentos de verificación para un usuario y tipo de código dado.
+        /// </summary>
+        /// <param name="userId">El ID del usuario</param>
+        /// <param name="codeType">El tipo de código de verificación</param>
+        /// <returns>El número actualizado de intentos</returns>
         public async Task<int> IncreaseAttemptsAsync(int userId, CodeType codeType)
         {
             Log.Information(
@@ -117,6 +167,12 @@ namespace bolsafeucn_back.src.Infrastructure.Repositories.Interfaces
             return attempts;
         }
 
+        /// <summary>
+        /// Elimina los códigos de verificación para un usuario y tipo de código dado.
+        /// </summary>
+        /// <param name="userId">El ID del usuario</param>
+        /// <param name="codeType">El tipo de código de verificación</param>
+        /// <returns>True si la eliminación fue exitosa, de lo contrario False</returns>
         public async Task<bool> DeleteByUserIdAsync(int userId, CodeType codeType)
         {
             Log.Information(
