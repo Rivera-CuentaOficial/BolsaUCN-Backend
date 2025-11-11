@@ -1,6 +1,7 @@
 using bolsafe_ucn.src.Application.Services.Interfaces;
 using bolsafeucn_back.src.Application.DTOs.AuthDTOs;
 using bolsafeucn_back.src.Application.DTOs.AuthDTOs.ResetPasswordDTOs;
+using bolsafeucn_back.src.Application.DTOs.UserDTOs.UserProfileDTOs;
 using bolsafeucn_back.src.Application.Services.Interfaces;
 using bolsafeucn_back.src.Domain.Models;
 using bolsafeucn_back.src.Infrastructure.Repositories.Interfaces;
@@ -534,6 +535,15 @@ namespace bolsafeucn_back.src.Application.Services.Implements
             throw new Exception("Error al verificar el correo electrónico.");
         }
 
+        /// <summary>
+        /// Reenvia el mensaje de con el codigo de verificacion.
+        /// </summary>
+        /// <param name="resendVerificationDTO">Dto con los datos del usuatio</param>
+        /// <param name="httpContext">Contecto Http</param>
+        /// <returns>Mensaje de exito o error</returns>
+        /// <exception cref="KeyNotFoundException"></exception>
+        /// <exception cref="InvalidOperationException"></exception>
+        /// <exception cref="Exception"></exception>
         public async Task<string> ResendVerificationEmailAsync(
             ResendVerificationDTO resendVerificationDTO,
             HttpContext httpContext
@@ -725,6 +735,15 @@ namespace bolsafeucn_back.src.Application.Services.Implements
             throw new Exception("El codigo fue creado pero ocurrió un error al enviar el correo de verificación. Por favor, solicita un nuevo código de verificación.");
         }
 
+        /// <summary>
+        /// Verifica el codigo de reseteo de contraseña ingresado.
+        /// </summary>
+        /// <param name="verifyResetPasswordCodeDTO">Dto con los el codigo y contraseña</param>
+        /// <param name="httpContext">Contexto Http</param>
+        /// <returns>Mensaje de exito o error</returns>
+        /// <exception cref="KeyNotFoundException"></exception>
+        /// <exception cref="InvalidOperationException"></exception>
+        /// <exception cref="Exception"></exception>
         public async Task<string> VerifyResetPasswordCodeAsync(
             VerifyResetPasswordCodeDTO verifyResetPasswordCodeDTO,
             HttpContext httpContext
@@ -829,6 +848,21 @@ namespace bolsafeucn_back.src.Application.Services.Implements
             return "Contraseña actualizada exitosamente.";
         }
 
+        /// <summary>
+        /// Obtiene el perfil de un usuario por su ID.
+        /// </summary>
+        /// <param name="userId">ID del usuario</param>
+        /// <returns>Perfil del usuario</returns>
+        /// <exception cref="KeyNotFoundException"></exception>
+        public async Task<GetUserProfileDTO> GetUserProfileByIdAsync(int userId)
+        {
+            Log.Information("Buscando usuario con la ID: ", userId.ToString());
+            GeneralUser? user = await _userRepository.
+                GetByIdWithRelationsAsync(userId)
+                ?? throw new KeyNotFoundException("No existe usuario con ese ID");
+
+            return user.Adapt<GetUserProfileDTO>();
+        }
         /*public async Task<IEnumerable<GeneralUser>> GetUsuariosAsync()
         {
             return await _repo.GetAllAsync();
@@ -848,6 +882,12 @@ namespace bolsafeucn_back.src.Application.Services.Implements
         {
             return await _repo.DeleteAsync(id);
         }*/
+
+        /// <summary>
+        /// Funcion helper para normalizar el numero de telefono.
+        /// </summary>
+        /// <param name="phoneNumber">Numero de telefono del usuario</param>
+        /// <returns>Numero de telefono normalizado</returns>
         private string NormalizePhoneNumber(string phoneNumber)
         {
             var digits = new string(phoneNumber.Where(char.IsDigit).ToArray());

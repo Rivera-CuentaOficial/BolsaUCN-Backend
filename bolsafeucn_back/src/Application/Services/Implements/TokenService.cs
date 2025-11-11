@@ -3,19 +3,18 @@ using System.Security.Claims;
 using bolsafe_ucn.src.Application.Services.Interfaces;
 using bolsafeucn_back.src.Domain.Models;
 using Microsoft.IdentityModel.Tokens;
+using Serilog;
 
 namespace bolsafeucn_back.src.Application.Services.Implements
 {
     public class TokenService : ITokenService
     {
         private readonly IConfiguration _configuration;
-        private readonly ILogger<TokenService> _logger;
         private readonly string _jwtSecret;
 
-        public TokenService(IConfiguration configuration, ILogger<TokenService> logger)
+        public TokenService(IConfiguration configuration)
         {
             _configuration = configuration;
-            _logger = logger;
             _jwtSecret = _configuration.GetValue<string>("Jwt:Key")!;
         }
 
@@ -30,7 +29,7 @@ namespace bolsafeucn_back.src.Application.Services.Implements
         {
             try
             {
-                _logger.LogInformation(
+                Log.Information(
                     "Creando token JWT para usuario ID: {UserId}, Email: {Email}, Role: {Role}, RememberMe: {RememberMe}",
                     user.Id,
                     user.Email,
@@ -56,7 +55,7 @@ namespace bolsafeucn_back.src.Application.Services.Implements
                     signingCredentials: creds
                 );
 
-                _logger.LogInformation(
+                Log.Information(
                     "Token JWT creado exitosamente para usuario ID: {UserId}, expira en {Hours} horas",
                     user.Id,
                     expirationHours
@@ -65,7 +64,7 @@ namespace bolsafeucn_back.src.Application.Services.Implements
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error al crear token JWT para usuario ID: {UserId}", user.Id);
+                Log.Error(ex, "Error al crear token JWT para usuario ID: {UserId}", user.Id);
                 throw new InvalidOperationException("Error creando el token JWT.", ex);
             }
         }

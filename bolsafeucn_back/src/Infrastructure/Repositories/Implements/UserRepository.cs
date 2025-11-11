@@ -272,13 +272,14 @@ namespace bolsafeucn_back.src.Infrastructure.Repositories.Implements
             return await _context.Users.FindAsync(id);
         }
 
-        public async Task<GeneralUser?> GetByIdWithRelationsAsync(int id)
+        public async Task<GeneralUser?> GetByIdWithRelationsAsync(int userId)
         {
             return await _context
                 .Users.Include(u => u.Student)
                 .Include(u => u.Company)
                 .Include(u => u.Individual)
-                .FirstOrDefaultAsync(u => u.Id == id);
+                .AsNoTracking()
+                .FirstOrDefaultAsync(u => u.Id == userId);
         }
 
         public async Task<GeneralUser> AddAsync(GeneralUser user)
