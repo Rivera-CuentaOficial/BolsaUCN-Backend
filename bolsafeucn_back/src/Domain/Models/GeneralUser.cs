@@ -20,6 +20,10 @@ namespace bolsafeucn_back.src.Domain.Models
         public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
         public ICollection<Publication> Publications { get; set; } = new List<Publication>();
 
+        //Imagenes
+        public Image? ProfilePhoto { get; set; } = null;
+        public Image? ProfileBanner { get; set; } = null;
+
         //Coneccion con los tipos de usuario
         public Student? Student { get; set; }
         public Company? Company { get; set; }
