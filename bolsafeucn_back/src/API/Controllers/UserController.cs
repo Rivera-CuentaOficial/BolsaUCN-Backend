@@ -136,7 +136,7 @@ namespace bolsafeucn_back.src.API.Controllers
         public async Task<IActionResult> ChangeUserPassword([FromBody] ChangeUserPasswordDTO changeUserPasswordDTO)
         {
             (int userId, UserType userType) = GetIdAndTypeFromToken();
-            var result = await _userService.ChangeUserPassword(changeUserPasswordDTO, userId);
+            var result = await _userService.ChangeUserPasswordById(changeUserPasswordDTO, userId);
             return Ok(new GenericResponse<string>("Contraseña actualizada", result));
         }
 
