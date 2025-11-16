@@ -45,7 +45,8 @@ namespace bolsafeucn_back.src.Application.Services.Interfaces
         );
         #endregion
         #region Profile Management
-        Task<GetUserProfileDTO> GetUserProfileByIdAsync(int userId);
+        Task<IGetUserProfileDTO> GetUserProfileByIdAsync(int userId, UserType userType);
+        Task<string> UpdateUserProfile(IUpdateParamsDTO updateParamsDTO, int userId, UserType userType);
         #endregion 
     }
 }

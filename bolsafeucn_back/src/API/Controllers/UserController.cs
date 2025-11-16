@@ -2,6 +2,7 @@ using System.Security.Claims;
 using bolsafeucn_back.src.Application.DTOs.BaseResponse;
 using bolsafeucn_back.src.Application.DTOs.UserDTOs.UserProfileDTOs;
 using bolsafeucn_back.src.Application.Services.Interfaces;
+using bolsafeucn_back.src.Domain.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Serilog;
@@ -17,23 +18,141 @@ namespace bolsafeucn_back.src.API.Controllers
             _userService = userService;
         }
 
-        [HttpGet("profile")] //No estoy seguro si este es el endpoint correcto
+        /// <summary>
+        /// Obtiene el perfil del estudiante autenticado.
+        /// </summary>
+        /// <returns>Perfil del usuario autenticado</returns>
+        [HttpGet("profile/student")] //No estoy seguro si este es el endpoint correcto
         [Authorize]
-        public async Task<IActionResult> GetUserProfile()
+        public async Task<IActionResult> GetStudentProfile()
         {
-            Log.Information("Verificando token de autenticacion");
-            var userId =
-                (
-                    User.Identity?.IsAuthenticated == true
-                        ? User
-                            .Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)
-                            ?.Value
-                        : null
-                ) ?? throw new UnauthorizedAccessException("Usuario no autenticado.");
+            (int parsedUserId, UserType parsedUserType) = GetIdAndTypeFromToken();
+        
+            var result = await _userService.GetUserProfileByIdAsync(parsedUserId, parsedUserType);
+            return Ok(new GenericResponse<GetStudentProfileDTO>("Datos de perfil obtenidos.", (GetStudentProfileDTO)result));
+        }
+        
+        /// <summary>
+        /// Obtiene el perfil del usuario particular autenticado.
+        /// </summary>
+        /// <returns>Perfil del usuario autenticado</returns>
+        [HttpGet("profile/individual")]
+        [Authorize]
+        public async Task<IActionResult> GetIndividualProfile()
+        {
+            (int parsedUserId, UserType parsedUserType) = GetIdAndTypeFromToken();
+        
+            var result = await _userService.GetUserProfileByIdAsync(parsedUserId, parsedUserType);
+            return Ok(new GenericResponse<GetIndividualProfileDTO>("Datos de perfil obtenidos.", (GetIndividualProfileDTO)result));
+        }
 
+        /// <summary>
+        /// Obtiene el perfil del usuario empresa autenticado.
+        /// </summary>
+        /// <returns>Perfil del usuario autenticado</returns>
+        [HttpGet("profile/company")] //No estoy seguro si este es el endpoint correcto
+        [Authorize]
+        public async Task<IActionResult> GetCompanyProfile()
+        {
+            (int parsedUserId, UserType parsedUserType) = GetIdAndTypeFromToken();
+        
+            var result = await _userService.GetUserProfileByIdAsync(parsedUserId, parsedUserType);
+            return Ok(new GenericResponse<GetCompanyProfileDTO>("Datos de perfil obtenidos.", (GetCompanyProfileDTO)result));
+        }
+
+        /// <summary>
+        /// Obtiene el perfil del usuario administrador autenticado.
+        /// </summary>
+        /// <returns>Perfil del usuario autenticado</returns>
+        [HttpGet("profile/admin")] //No estoy seguro si este es el endpoint correcto
+        [Authorize]
+        public async Task<IActionResult> GetAdminProfile()
+        {
+            (int parsedUserId, UserType parsedUserType) = GetIdAndTypeFromToken();
+        
+            var result = await _userService.GetUserProfileByIdAsync(parsedUserId, parsedUserType);
+            return Ok(new GenericResponse<GetAdminProfileDTO>("Datos de perfil obtenidos.", (GetAdminProfileDTO)result));
+        }
+
+        /// <summary>
+        /// Actualiza el perfil del usuario estudiante autenticado.
+        /// </summary>
+        /// <param name="updateParamsDTO">Parámetros para actualizar el perfil del usuario.</param>
+        /// <returns>Respuesta genérica indicando el resultado de la operación.</returns>
+        [HttpPatch("profile/student")]
+        [Authorize]
+        public async Task<IActionResult> UpdateStudentProfile([FromBody] UpdateStudentParamsDTO updateParamsDTO)
+        {
+            (int userId, UserType userType) = GetIdAndTypeFromToken();
+            var result = await _userService.UpdateUserProfile(updateParamsDTO, userId, userType);
+            return Ok(new GenericResponse<string>("Perfil actualizado", result));
+        }
+
+        /// <summary>
+        /// Actualiza el perfil del usuario particular autenticado.
+        /// </summary>
+        /// <param name="updateParamsDTO">Parámetros para actualizar el perfil del usuario particular.</param>
+        /// <returns>Respuesta genérica indicando el resultado de la operación.</returns>
+        [HttpPatch("profile/individual")]
+        [Authorize]
+        public async Task<IActionResult> UpdateIndividualProfile([FromBody] UpdateIndividualParamsDTO updateParamsDTO)
+        {
+            (int userId, UserType userType) = GetIdAndTypeFromToken();
+            var result = await _userService.UpdateUserProfile(updateParamsDTO, userId, userType);
+            return Ok(new GenericResponse<string>("Perfil actualizado", result));
+        }
+
+        /// <summary>
+        /// Actualiza el perfil del usuario empresa autenticado.
+        /// </summary>
+        /// <param name="updateParamsDTO">Parámetros para actualizar el perfil del usuario empresa.</param>
+        /// <returns>Respuesta genérica indicando el resultado de la operación.</returns>
+        [HttpPatch("profile/company")]
+        [Authorize]
+        public async Task<IActionResult> UpdateCompanyProfile([FromBody] UpdateCompanyParamsDTO updateParamsDTO)
+        {
+            (int userId, UserType userType) = GetIdAndTypeFromToken();
+            var result = await _userService.UpdateUserProfile(updateParamsDTO, userId, userType);
+            return Ok(new GenericResponse<string>("Perfil actualizado", result));
+        }
+
+        /// <summary>
+        /// Actualiza el perfil del usuario administrador autenticado.
+        /// </summary>
+        /// <param name="updateParamsDTO">Parámetros para actualizar el perfil del usuario administrador.</param>
+        /// <returns>Respuesta genérica indicando el resultado de la operación.</returns>
+        [HttpPatch("profile/admin")]
+        [Authorize]
+        public async Task<IActionResult> UpdateAdminProfile([FromBody] UpdateAdminParamsDTO updateParamsDTO)
+        {
+            (int userId, UserType userType) = GetIdAndTypeFromToken();
+            var result = await _userService.UpdateUserProfile(updateParamsDTO, userId, userType);
+            return Ok(new GenericResponse<string>("Perfil actualizado", result));
+        }
+
+        /// <summary>
+        /// Obtiene el ID y tipo de usuario desde el token de autenticación.
+        /// </summary>
+        /// <returns>Tupla con el ID y tipo de usuario.</returns>
+        /// <exception cref="UnauthorizedAccessException"></exception>
+        /// <exception cref="ArgumentException"></exception>
+        private (int, UserType) GetIdAndTypeFromToken()
+        {
+             Log.Information("Verificando token de autenticacion");
+            if (User.Identity?.IsAuthenticated != true) 
+                throw new UnauthorizedAccessException("Usuario no autenticado.");
+            var userId = User.Claims
+                .FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?
+                .Value
+                ?? null;
+            var userType = User.Claims
+                .FirstOrDefault(c => c.Type == "userType")?
+                .Value
+                ?? null;
             int.TryParse(userId, out int parsedUserId);
-            var result = await _userService.GetUserProfileByIdAsync(parsedUserId);
-            return Ok(new GenericResponse<GetUserProfileDTO>("Datos de perfil obtenidos.", result));
+            if (!Enum.TryParse<UserType>(userType, ignoreCase: true, out var parsedUserType)) 
+                throw new ArgumentException("Tipo de usuario no existe");
+            return (parsedUserId, parsedUserType);
         }
     }
 }

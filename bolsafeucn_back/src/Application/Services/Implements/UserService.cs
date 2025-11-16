@@ -848,21 +848,56 @@ namespace bolsafeucn_back.src.Application.Services.Implements
             return "Contraseña actualizada exitosamente.";
         }
 
+        #region User Profiles
+
         /// <summary>
-        /// Obtiene el perfil de un usuario por su ID.
+        /// Obtiene el perfil de un estudiante por su ID.
         /// </summary>
         /// <param name="userId">ID del usuario</param>
         /// <returns>Perfil del usuario</returns>
         /// <exception cref="KeyNotFoundException"></exception>
-        public async Task<GetUserProfileDTO> GetUserProfileByIdAsync(int userId)
+        public async Task<IGetUserProfileDTO> GetUserProfileByIdAsync(int userId, UserType userType)
+        {
+            Log.Information($"Buscando usuario con la ID: {userId}");
+            GeneralUser? user = await _userRepository.
+                GetUntrackedWithTypeAsync(userId,userType)
+                ?? throw new KeyNotFoundException("No existe usuario con ese ID");
+
+            Log.Information("Buscando detalles relevantes");
+            return userType switch {
+                UserType.Estudiante => user.Adapt<GetStudentProfileDTO>(),
+                UserType.Particular => user.Adapt<GetIndividualProfileDTO>(),
+                UserType.Empresa => user.Adapt<GetCompanyProfileDTO>(),
+                _ => user.Adapt<GetAdminProfileDTO>(), //UserType.Administrador
+                };
+        }
+
+        /// <summary>
+        /// Actualiza el perfil de un usuario.
+        /// </summary>
+        /// <param name="updateParamsDTO">Parámetros de actualización</param>
+        /// <param name="userId">ID del usuario</param>
+        /// <param name="userType">Tipo de usuario</param>
+        /// <returns>Mensaje de exito</returns>
+        /// <exception cref="KeyNotFoundException"></exception>
+        /// <exception cref="Exception"></exception>
+        public async Task<string> UpdateUserProfile(IUpdateParamsDTO updateParamsDTO, int userId, UserType userType)
         {
             Log.Information("Buscando usuario con la ID: ", userId.ToString());
             GeneralUser? user = await _userRepository.
-                GetByIdWithRelationsAsync(userId)
+                GetTrackedWithTypeAsync(userId,userType)
                 ?? throw new KeyNotFoundException("No existe usuario con ese ID");
-
-            return user.Adapt<GetUserProfileDTO>();
+            updateParamsDTO.ApplyTo(user);
+            var result = await _userRepository.UpdateAsync(user);
+            if (!result)
+            {
+                throw new Exception("Error al actualizar los datos del usuario");
+            }
+            return "Datos del usuario actualizados correctamente";
         }
+
+        #endregion
+
         /*public async Task<IEnumerable<GeneralUser>> GetUsuariosAsync()
         {
             return await _repo.GetAllAsync();
