@@ -208,6 +208,12 @@ namespace bolsafeucn_back.src.Infrastructure.Repositories.Implements
             return await _userManager.CheckPasswordAsync(user, password);
         }
 
+        /// <summary>
+        /// Actualiza la información de un usuario.
+        /// </summary>
+        /// <param name="user">Usuario a actualizar</param>
+        /// <returns>True si la actualización fue exitosa, de lo contrario false.</returns>
+        /// <exception cref="InvalidOperationException"></exception>
         public async Task<bool> UpdateAsync(GeneralUser user)
         {
             Log.Information($"Actualizando informacion para el usuario Id: {user.Id}");

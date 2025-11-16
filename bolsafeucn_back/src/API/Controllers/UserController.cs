@@ -1,5 +1,6 @@
 using System.Security.Claims;
 using bolsafeucn_back.src.Application.DTOs.BaseResponse;
+using bolsafeucn_back.src.Application.DTOs.UserDTOs;
 using bolsafeucn_back.src.Application.DTOs.UserDTOs.UserProfileDTOs;
 using bolsafeucn_back.src.Application.Services.Interfaces;
 using bolsafeucn_back.src.Domain.Models;
@@ -84,7 +85,7 @@ namespace bolsafeucn_back.src.API.Controllers
         public async Task<IActionResult> UpdateStudentProfile([FromBody] UpdateStudentParamsDTO updateParamsDTO)
         {
             (int userId, UserType userType) = GetIdAndTypeFromToken();
-            var result = await _userService.UpdateUserProfile(updateParamsDTO, userId, userType);
+            var result = await _userService.UpdateUserProfileByIdAsync(updateParamsDTO, userId, userType);
             return Ok(new GenericResponse<string>("Perfil actualizado", result));
         }
 
@@ -98,7 +99,7 @@ namespace bolsafeucn_back.src.API.Controllers
         public async Task<IActionResult> UpdateIndividualProfile([FromBody] UpdateIndividualParamsDTO updateParamsDTO)
         {
             (int userId, UserType userType) = GetIdAndTypeFromToken();
-            var result = await _userService.UpdateUserProfile(updateParamsDTO, userId, userType);
+            var result = await _userService.UpdateUserProfileByIdAsync(updateParamsDTO, userId, userType);
             return Ok(new GenericResponse<string>("Perfil actualizado", result));
         }
 
@@ -112,7 +113,7 @@ namespace bolsafeucn_back.src.API.Controllers
         public async Task<IActionResult> UpdateCompanyProfile([FromBody] UpdateCompanyParamsDTO updateParamsDTO)
         {
             (int userId, UserType userType) = GetIdAndTypeFromToken();
-            var result = await _userService.UpdateUserProfile(updateParamsDTO, userId, userType);
+            var result = await _userService.UpdateUserProfileByIdAsync(updateParamsDTO, userId, userType);
             return Ok(new GenericResponse<string>("Perfil actualizado", result));
         }
 
@@ -126,8 +127,17 @@ namespace bolsafeucn_back.src.API.Controllers
         public async Task<IActionResult> UpdateAdminProfile([FromBody] UpdateAdminParamsDTO updateParamsDTO)
         {
             (int userId, UserType userType) = GetIdAndTypeFromToken();
-            var result = await _userService.UpdateUserProfile(updateParamsDTO, userId, userType);
+            var result = await _userService.UpdateUserProfileByIdAsync(updateParamsDTO, userId, userType);
             return Ok(new GenericResponse<string>("Perfil actualizado", result));
+        }
+
+        [HttpPatch("profile/chage-password")]
+        [Authorize]
+        public async Task<IActionResult> ChangeUserPassword([FromBody] ChangeUserPasswordDTO changeUserPasswordDTO)
+        {
+            (int userId, UserType userType) = GetIdAndTypeFromToken();
+            var result = await _userService.ChangeUserPassword(changeUserPasswordDTO, userId);
+            return Ok(new GenericResponse<string>("Contraseña actualizada", result));
         }
 
         /// <summary>

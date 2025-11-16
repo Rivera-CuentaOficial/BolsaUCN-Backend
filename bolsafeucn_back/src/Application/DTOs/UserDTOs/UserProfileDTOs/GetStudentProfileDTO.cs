@@ -14,10 +14,5 @@ namespace bolsafeucn_back.src.Application.DTOs.UserDTOs.UserProfileDTOs
         public required float Rating { get; set; }
         public required string AboutMe { get; set; }
         public required string CurriculumVitae { get; set; }
-
-        public void ApplyTo(GeneralUser user)
-        {
-            user.Adapt(this);
-        }
     }
 }

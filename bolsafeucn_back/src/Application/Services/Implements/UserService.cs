@@ -1,6 +1,7 @@
 using bolsafe_ucn.src.Application.Services.Interfaces;
 using bolsafeucn_back.src.Application.DTOs.AuthDTOs;
 using bolsafeucn_back.src.Application.DTOs.AuthDTOs.ResetPasswordDTOs;
+using bolsafeucn_back.src.Application.DTOs.UserDTOs;
 using bolsafeucn_back.src.Application.DTOs.UserDTOs.UserProfileDTOs;
 using bolsafeucn_back.src.Application.Services.Interfaces;
 using bolsafeucn_back.src.Domain.Models;
@@ -881,7 +882,7 @@ namespace bolsafeucn_back.src.Application.Services.Implements
         /// <returns>Mensaje de exito</returns>
         /// <exception cref="KeyNotFoundException"></exception>
         /// <exception cref="Exception"></exception>
-        public async Task<string> UpdateUserProfile(IUpdateParamsDTO updateParamsDTO, int userId, UserType userType)
+        public async Task<string> UpdateUserProfileByIdAsync(IUpdateParamsDTO updateParamsDTO, int userId, UserType userType)
         {
             Log.Information("Buscando usuario con la ID: ", userId.ToString());
             GeneralUser? user = await _userRepository.
@@ -894,6 +895,26 @@ namespace bolsafeucn_back.src.Application.Services.Implements
                 throw new Exception("Error al actualizar los datos del usuario");
             }
             return "Datos del usuario actualizados correctamente";
+        }
+
+        public async Task<string> ChangeUserPasswordById(ChangeUserPasswordDTO changeUserPasswordDTO, int userId)
+        {
+            Log.Information("Buscando usuario con la Id: {UserId}", userId.ToString());
+            GeneralUser? user = await _userRepository.GetByIdAsync(userId)
+                ?? throw new KeyNotFoundException("No existe usuario con ese Id");
+            var passwordValid = await _userRepository.CheckPasswordAsync(user, changeUserPasswordDTO.CurrentPassword);
+            if (!passwordValid)
+            {
+                Log.Warning("Intento de cambio de contraseña fallido para usuario ID: {UserId} debido a contraseña actual incorrecta", userId.ToString());
+                throw new UnauthorizedAccessException("La contraseña actual es incorrecta.");
+            }
+            var result = await _userRepository.UpdatePasswordAsync(user, changeUserPasswordDTO.NewPassword);
+            if (!result)
+            {
+                Log.Error("Error al actualizar la contraseña para usuario ID: {UserId}", userId.ToString());
+                throw new Exception("Error al actualizar la contraseña.");
+            }
+            return "Contraseña actualizada exitosamente.";
         }
 
         #endregion
