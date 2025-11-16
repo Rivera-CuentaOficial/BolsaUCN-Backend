@@ -73,8 +73,8 @@ namespace bolsafeucn_back.src.Application.Services.Implements
                     Title = offerDTO.Title,
                     Description = offerDTO.Description,
                     PublicationDate = DateTime.UtcNow,
-                    EndDate = offerDTO.EndDate,
-                    DeadlineDate = offerDTO.DeadlineDate,
+                    EndDate = offerDTO.EndDate.ToUniversalTime(),
+                    DeadlineDate = offerDTO.DeadlineDate.ToUniversalTime(),
                     Remuneration = (int)offerDTO.Remuneration,
                     OfferType = offerDTO.OfferType,
                     Location = offerDTO.Location,
@@ -234,19 +234,7 @@ namespace bolsafeucn_back.src.Application.Services.Implements
                 userId
             );
             // 2. Mapea y devuelve el DTO
-            var publicationsDto = publications.Select(p => new PublicationsDTO
-            {
-                IdPublication = p.Id,
-                Title = p.Title,
-                PublicationDate = p.PublicationDate,
-                statusValidation = p.statusValidation,
-                UserId = p.UserId,
-                Images = p.Images,
-                types = p.Type,
-                IsActive = p.IsActive,
-            });
-
-            return publicationsDto;
-        }
+            return _mapper.Adapt<IEnumerable<PublicationsDTO>>((TypeAdapterConfig)publications);
+        }    
     }
 }
