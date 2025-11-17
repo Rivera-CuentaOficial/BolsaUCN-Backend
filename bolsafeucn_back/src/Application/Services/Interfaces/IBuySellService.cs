@@ -36,6 +36,12 @@ namespace bolsafeucn_back.src.Application.Services.Interfaces
         /// <param name="buySellId"></param>
         /// <returns></returns>
         Task GetBuySellForAdminToPublish(int buySellId);
+
+        /// <summary>
+        /// Meotdo que rechaza la compra/venta, (lo utiliza el admin)
+        /// </summary>
+        /// <param name="buySellId"></param>
+        /// <returns></returns>
         Task GetBuySellForAdminToReject(int buySellId);
     }
 }
