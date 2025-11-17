@@ -1,6 +1,7 @@
 using Bogus.Bson;
 using bolsafeucn_back.src.Application.DTOs.PublicationDTO;
 using bolsafeucn_back.src.Application.Services.Interfaces;
+using bolsafeucn_back.src.Domain.Models;
 using bolsafeucn_back.src.Infrastructure.Repositories.Interfaces;
 using Mapster;
 using Microsoft.Extensions.Logging;
@@ -150,7 +151,7 @@ namespace bolsafeucn_back.src.Application.Services.Implements
             return result;
         }
 
-        public async Task<BuySellDetailDto> GetBuySellDetailForOfferer(int id,string userId)
+        public async Task<BuySellDetailDto> GetBuySellDetailForOfferer(int id, string userId)
         {
             // 1. Llamar al repositorio
             // (Tu BuySellRepository.cs ya incluye User e Images en GetByIdAsync, ¡perfecto!)
@@ -159,7 +160,6 @@ namespace bolsafeucn_back.src.Application.Services.Implements
             // 2. Verificar si se encontró
             if (buySell == null)
             {
-
                 throw new KeyNotFoundException($"La oferta con id {id} no fue encontrada.");
             }
 
@@ -174,7 +174,7 @@ namespace bolsafeucn_back.src.Application.Services.Implements
                 throw new KeyNotFoundException(
                     $"La oferta con id {id} no fue encontrada o no pertenece al usuario."
                 );
-                
+
                 // throw new UnauthorizedAccessException("No tienes permiso para ver esta oferta.");
             }
 
@@ -183,6 +183,42 @@ namespace bolsafeucn_back.src.Application.Services.Implements
 
             // 4. Retornar el DTO
             return buySellDetailDto;
+        }
+
+        public async Task GetBuySellForAdminToPublish(int id)
+        {
+            var buySell = await _buySellRepository.GetByIdAsync(id);
+            if (buySell == null)
+            {
+                throw new KeyNotFoundException($"La compra/venta con id {id} no fue encontrada.");
+            }
+            if (buySell.statusValidation != StatusValidation.InProcess)
+            {
+                throw new InvalidOperationException(
+                    $"La compra/venta con ID {id} ya fue {buySell.statusValidation}. No se puede publicar."
+                );
+            }
+            buySell.IsActive = true;
+            buySell.statusValidation = StatusValidation.Published;
+            await _buySellRepository.UpdateAsync(buySell);
+        }
+
+        public async Task GetBuySellForAdminToReject(int id)
+        {
+            var buySell = await _buySellRepository.GetByIdAsync(id);
+            if (buySell == null)
+            {
+                throw new KeyNotFoundException($"La compra/venta con id {id} no fue encontrada.");
+            }
+            if (buySell.statusValidation != StatusValidation.InProcess)
+            {
+                throw new InvalidOperationException(
+                    $"La compra/venta con ID {id} ya fue {buySell.statusValidation}. No se puede rechazar."
+                );
+            }
+            buySell.IsActive = false;
+            buySell.statusValidation = StatusValidation.Rejected;
+            await _buySellRepository.UpdateAsync(buySell);
         }
     }
 }
