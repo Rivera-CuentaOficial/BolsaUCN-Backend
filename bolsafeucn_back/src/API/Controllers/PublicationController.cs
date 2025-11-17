@@ -166,7 +166,7 @@ namespace bolsafeucn_back.src.API.Controllers
 
         #endregion
 
-        #region Obtiene publicaciones y mas (admin)
+        #region Administra buysells Admin
 
         /// <summary>
         /// Obtiene todas las ofertas pendientes de validación solo disponibles para admin
@@ -359,6 +359,74 @@ namespace bolsafeucn_back.src.API.Controllers
         }
 
         /// <summary>
+        /// Acepta una compra/venta especifica SOLO ADMIN
+        /// </summary>
+        [Authorize(Roles = "Admin")]
+        [HttpPatch("buysells/{id}/publish")]
+        public async Task<IActionResult> PublishBuySell(int id)
+        {
+            try
+            {
+                await _buySellService.GetBuySellForAdminToPublish(id);
+                return Ok(
+                    new GenericResponse<object>($"Compra/Venta {id} publicada con exito", id)
+                );
+            }
+            catch (KeyNotFoundException)
+            {
+                return NotFound(
+                    new GenericResponse<object>("No se encontro la Compra/Venta", null)
+                );
+            }
+            catch (InvalidOperationException ex)
+            {
+                return Conflict(new GenericResponse<object>(ex.Message));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error cerrando Compra/Venta ID: {Compra/Venta id}", id);
+                return StatusCode(
+                    500,
+                    new GenericResponse<object>("Error interno al cerrar la compra/venta.", null)
+                );
+            }
+        }
+
+        /// <summary>
+        /// Rechaza una compra/venta especifica SOLO ADMIN
+        /// </summary>
+        [Authorize(Roles = "Admin")]
+        [HttpPatch("buysells/{id}/reject")]
+        public async Task<IActionResult> RejectBuySell(int id)
+        {
+            try
+            {
+                await _offerService.GetOfferForAdminToReject(id);
+                return Ok(
+                    new GenericResponse<object>($"Compra/Venta {id} rechazada con exito", id)
+                );
+            }
+            catch (KeyNotFoundException)
+            {
+                return NotFound(
+                    new GenericResponse<object>("No se encontro la Compra/Venta", null)
+                );
+            }
+            catch (InvalidOperationException ex)
+            {
+                return Conflict(new GenericResponse<object>(ex.Message));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error cerrando Compra/Venta ID: {Compra/VentaId}", id);
+                return StatusCode(
+                    500,
+                    new GenericResponse<object>("Error interno al cerrar la Compra/Venta.", null)
+                );
+            }
+        }
+
+        /// <summary>
         /// Elimina la oferta de trabajo de parte del admin
         /// </summary>
         /// TODO: agregar endpoint proximamente para siguiente iteracion
@@ -382,7 +450,6 @@ namespace bolsafeucn_back.src.API.Controllers
                 )
             );
         }
-
 
         /// <summary>
         /// Acepta una oferta laboral específica (solo admin)
