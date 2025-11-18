@@ -3,9 +3,17 @@
 # hice esto con claude pq me da flojera apreneder makefile
 DOTNET_DIR := ./bolsafeucn_back
 CONTAINER_NAME := bolsafeucn-docker
-POSTGRES_USER := bolsafeucn-user
-POSTGRES_PASSWORD := bolsafeucn-password
-POSTGRES_DB := bolsafeucn-db
+
+# Extraer variables de la cadena de conexión en appsettings.json
+# Valores esperados (deben coincidir con appsettings.json):
+#   POSTGRES_USER := bolsafeucn-user
+#   POSTGRES_PASSWORD := bolsafeucn-password
+#   POSTGRES_DB := bolsafeucn-db
+APPSETTINGS_FILE := $(DOTNET_DIR)/appsettings.json
+CONNECTION_STRING := $(shell grep -o '"DefaultConnection": *"[^"]*"' $(APPSETTINGS_FILE) | sed 's/"DefaultConnection": *"\(.*\)"/\1/')
+POSTGRES_USER := $(shell echo '$(CONNECTION_STRING)' | grep -o 'Username=[^;]*' | cut -d= -f2)
+POSTGRES_PASSWORD := $(shell echo '$(CONNECTION_STRING)' | grep -o 'Password=[^;]*' | cut -d= -f2)
+POSTGRES_DB := $(shell echo '$(CONNECTION_STRING)' | grep -o 'Database=[^;]*' | cut -d= -f2)
 
 .PHONY: help db-restart run watch docker-create docker-rm docker-start docker-stop
 
