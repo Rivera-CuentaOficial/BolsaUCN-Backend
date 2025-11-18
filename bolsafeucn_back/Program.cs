@@ -136,6 +136,7 @@ try
     builder.Services.AddScoped<CompanyMapper>();
     builder.Services.AddScoped<AdminMapper>();
     builder.Services.AddScoped<OfferMapper>();
+    builder.Services.AddScoped<ProfileMapper>();
 
     builder.Services.AddScoped<IUserRepository, UserRepository>();
     builder.Services.AddScoped<IOfferRepository, OfferRepository>();

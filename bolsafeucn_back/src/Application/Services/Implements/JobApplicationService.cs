@@ -258,5 +258,50 @@ namespace bolsafeucn_back.src.Application.Services.Implements
                 // TODO: falta descripcion
             };
         }
+
+
+
+        public async Task<IEnumerable<OffererApplicantViewDto>> GetApplicantsForOffererAsync(int offerId, int offererUserId)
+        {
+            
+            var offer = await _offerRepository.GetByIdAsync(offerId);
+            if (offer == null)
+            {
+                throw new KeyNotFoundException($"La oferta con id {offerId} no fue encontrada.");
+            }
+
+            
+            // Comprueba que el ID del usuario de la oferta (offer.UserId) 
+            // sea el mismo que el ID del usuario logueado (offererUserId).
+            if (offer.UserId != offererUserId)
+            {
+                throw new UnauthorizedAccessException("No tienes permiso para ver los postulantes de esta oferta, ya que no eres el propietario.");
+            }
+
+           
+            // Tu repositorio GetByOfferIdAsync ya incluye Student y Student.Student (según tu código)
+            var applications = await _jobApplicationRepository.GetByOfferIdAsync(offerId);
+
+            // 4. Mapear al nuevo DTO que creamos
+            var applicantDtos = applications.Select(app => new OffererApplicantViewDto
+            {
+                ApplicationId = app.Id,
+                StudentId = app.StudentId,
+                ApplicantName = $"{app.Student.Student?.Name} {app.Student.Student?.LastName}",
+                Status = app.Status,
+                ApplicationDate = app.ApplicationDate,
+                // Enviamos el link del CV directamente
+                CurriculumVitaeUrl = app.Student.Student?.CurriculumVitae 
+            }).ToList();
+
+            return applicantDtos;
+        }
+
+
+
+
+
+
+
     }
 }
