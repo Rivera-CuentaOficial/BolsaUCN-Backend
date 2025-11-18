@@ -46,7 +46,6 @@ namespace bolsafeucn_back.src.API.Controllers
             var reviews = await _reviewService.GetReviewsByStudentAsync(studentId);
             return Ok(reviews);
         }
-
         /// <summary>
         /// Obtiene todas las reseñas del usuario autenticado.
         /// Funciona tanto para estudiantes (Applicant) como para oferentes (Offerent).
