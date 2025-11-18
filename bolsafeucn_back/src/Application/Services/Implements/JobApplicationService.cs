@@ -87,9 +87,9 @@ namespace bolsafeucn_back.src.Application.Services.Implements
             var jobApplication = new JobApplication
             {
                 StudentId = studentId,
-                Student = student,
                 JobOfferId = offerId,
-                JobOffer = offer,
+                Student = null!,
+                JobOffer = null!,
                 Status = "Pendiente",
                 ApplicationDate = DateTime.UtcNow,
             };
