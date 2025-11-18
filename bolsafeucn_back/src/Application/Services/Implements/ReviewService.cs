@@ -93,9 +93,6 @@ namespace bolsafeucn_back.src.Application.Services.Implements
                 throw new InvalidOperationException("No se puede agregar la Review hacia el estudiante, ya que esta ya ha sido eliminada.");
             }
             ReviewMapper.studentUpdateReview(dto, review);
-            if(review.OfferorReviewCompleted) {
-                review.IsCompleted = true;
-            }
             await _repository.UpdateAsync(review);
             Log.Information("Offeror {OfferorId} added review for student in publication {PublicationId}", currentUserId, dto.PublicationId);
         }
@@ -132,10 +129,6 @@ namespace bolsafeucn_back.src.Application.Services.Implements
                 throw new InvalidOperationException("No se puede agregar la Review hacia el oferente, ya que esta ya ha sido eliminada.");
             }
             ReviewMapper.offerorUpdateReview(dto, review);
-            if(review.OfferorReviewCompleted) {
-                review.IsCompleted = true;
-                //await BothReviewsCompletedAsync();
-            }
             await _repository.UpdateAsync(review);
             Log.Information("Student {StudentId} added review for offeror in publication {PublicationId}", currentUserId, dto.PublicationId);
         }

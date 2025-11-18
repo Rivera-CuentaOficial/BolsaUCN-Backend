@@ -23,6 +23,7 @@ namespace bolsafeucn_back.src.Application.Mappers
             review.AtTime = dto.atTime;
             review.GoodPresentation = dto.goodPresentation;
             review.StudentReviewCompleted = true;
+            review.IsCompleted = review.StudentReviewCompleted && review.OfferorReviewCompleted;
             return review;
         }
         
@@ -38,6 +39,7 @@ namespace bolsafeucn_back.src.Application.Mappers
             review.RatingForOfferor = dto.RatingForOfferor;
             review.CommentForOfferor = dto.CommentForOfferor;
             review.OfferorReviewCompleted = true;
+            review.IsCompleted = review.StudentReviewCompleted && review.OfferorReviewCompleted;
             return review;
         }
 
