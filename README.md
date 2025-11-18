@@ -44,6 +44,16 @@ docker-compose up -d
 docker ps
 ```
 
+#### Comandos Make
+De forma alternativa, tambien puedes crear el contenedor con el comando
+```bash
+Make docker-create
+```
+Una vez se crea, se debe correr con el comando
+```bash
+Make docker-start
+```
+
 Deberías ver un contenedor llamado `bolsafeucn-container` en estado `Up`.
 
 #### Credenciales de desarrollo
