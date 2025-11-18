@@ -27,7 +27,7 @@ namespace bolsafeucn_back.src.Application.Services.Implements
         /// <param name="email">El correo electrónico del usuario.</param>
         /// <param name="code">El código de verificación generado.</param>
         /// <returns></returns>
-        public async Task SendVerificationEmailAsync(string email, string code)
+        public async Task<bool> SendVerificationEmailAsync(string email, string code)
         {
             try
             {
@@ -49,15 +49,23 @@ namespace bolsafeucn_back.src.Application.Services.Implements
                     throw new Exception("Error al enviar el correo de verificación.");
                 }
                 Log.Information("Email de verificación enviado exitosamente a: {Email}", email);
+                return true;
             }
             catch (Exception ex)
             {
                 Log.Error(ex, "Error al enviar email de verificación a: {Email}", email);
-                throw;
+                return false;
+                //throw new Exception("Error al enviar el correo de verificación.", ex);
             }
         }
 
-        public async Task SendResetPasswordVerificationEmailAsync(string email, string code)
+        /// <summary>
+        /// Envía un correo de restablecimiento de contraseña al email proporcionado con el código dado.
+        /// </summary>
+        /// <param name="email">El correo electrónico del usuario.</param>
+        /// <param name="code">El código de verificación generado.</param>
+        /// <returns></returns>
+        public async Task<bool> SendResetPasswordVerificationEmailAsync(string email, string code)
         {
             try
             {
@@ -74,11 +82,12 @@ namespace bolsafeucn_back.src.Application.Services.Implements
                 };
                 await _resend.EmailSendAsync(message);
                 Log.Information("Email de verificación enviado exitosamente a: {Email}", email);
+                return true;
             }
             catch (Exception ex)
             {
                 Log.Error(ex, "Error al enviar email de verificación a: {Email}", email);
-                throw;
+                return false;
             }
         }
 
@@ -87,7 +96,7 @@ namespace bolsafeucn_back.src.Application.Services.Implements
         /// </summary>
         /// <param name="email">El correo electrónico del usuario.</param>
         /// <returns></returns>
-        public async Task SendWelcomeEmailAsync(string email)
+        public async Task<bool> SendWelcomeEmailAsync(string email)
         {
             try
             {
@@ -102,11 +111,12 @@ namespace bolsafeucn_back.src.Application.Services.Implements
                 };
                 await _resend.EmailSendAsync(message);
                 Log.Information("Email de bienvenida enviado exitosamente a: {Email}", email);
+                return true;
             }
             catch (Exception ex)
             {
                 Log.Error(ex, "Error al enviar email de bienvenida a: {Email}", email);
-                throw;
+                return false;
             }
         }
 
@@ -139,7 +149,7 @@ namespace bolsafeucn_back.src.Application.Services.Implements
             catch (Exception ex)
             {
                 Log.Error(ex, "Error al cargar template de email: {TemplateName}", templateName);
-                throw;
+                throw new Exception("Error al cargar el template.", ex);
             }
         }
     }
