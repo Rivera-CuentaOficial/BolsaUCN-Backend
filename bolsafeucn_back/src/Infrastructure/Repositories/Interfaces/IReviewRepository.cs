@@ -33,7 +33,13 @@ namespace bolsafeucn_back.src.Infrastructure.Repositories.Interfaces
         /// </summary>
         /// <param name="providerId">El identificador del oferente.</param>
         /// <returns>El promedio de calificaciones, o null si no hay reseñas.</returns>
-        Task<double?> GetAverageRatingAsync(int providerId);
+        Task<double?> GetOfferorAverageRatingAsync(int providerId);
+        /// <summary>
+        /// Calcula el promedio de calificaciones de un estudiante.
+        /// </summary>
+        /// <param name="studentId">El identificador del estudiante.</param>
+        /// <returns>El promedio de calificaciones, o null si no hay reseñas.</returns>
+        Task<double?> GetStudentAverageRatingAsync(int studentId);
         
         /// <summary>
         /// Obtiene una reseña asociada a una publicación específica.

@@ -7,11 +7,12 @@ POSTGRES_USER := bolsafeucn-user
 POSTGRES_PASSWORD := bolsafeucn-password
 POSTGRES_DB := bolsafeucn-db
 
-.PHONY: help db-restart watch docker-create docker-rm docker-start docker-stop
+.PHONY: help db-restart run watch docker-create docker-rm docker-start docker-stop
 
 help:
 	@echo "Makefile - targets disponibles:"
 	@echo "  make db-restart      -> drop, update DB y ejecutar dotnet watch (no-hot-reload)"
+	@echo "  make run             -> ejecutar dotnet run"
 	@echo "  make watch           -> ejecutar dotnet watch (no-hot-reload)"
 	@echo "  make docker-create   -> crear y ejecutar contenedor PostgreSQL"
 	@echo "  make docker-rm       -> detener y eliminar contenedor PostgreSQL"
@@ -26,12 +27,17 @@ db-restart:
 		dotnet ef database update && \
 		dotnet watch --no-hot-reload
 
-# 2) dotnet watch simple
+# 2) dotnet run simple
+run:
+	@echo "Ejecutando: cd $(DOTNET_DIR) && dotnet run"
+	cd $(DOTNET_DIR) && dotnet run
+
+# 3) dotnet watch simple
 watch:
 	@echo "Ejecutando: cd $(DOTNET_DIR) && dotnet watch --no-hot-reload"
 	cd $(DOTNET_DIR) && dotnet watch --no-hot-reload
 
-# 3) Crear y ejecutar contenedor PostgreSQL
+# 4) Crear y ejecutar contenedor PostgreSQL
 docker-create:
 	@echo "Creando contenedor PostgreSQL: $(CONTAINER_NAME)"
 	docker run --name $(CONTAINER_NAME) \
@@ -41,19 +47,19 @@ docker-create:
 		-p 5432:5432 \
 		-d postgres
 
-# 4) Detener y eliminar contenedor PostgreSQL (si existe)
+# 5) Detener y eliminar contenedor PostgreSQL (si existe)
 docker-rm:
 	@echo "Deteniendo y eliminando contenedor PostgreSQL: $(CONTAINER_NAME)"
 	-@docker stop $(CONTAINER_NAME) >/dev/null 2>&1 || true
 	-@docker rm $(CONTAINER_NAME) >/dev/null 2>&1 || true
 	@echo "Contenedor $(CONTAINER_NAME) eliminado (si existía)."
 
-# 5) Iniciar contenedor PostgreSQL existente
+# 6) Iniciar contenedor PostgreSQL existente
 docker-start:
 	@echo "Iniciando contenedor PostgreSQL: $(CONTAINER_NAME)"
 	docker start $(CONTAINER_NAME)
 
-# 6) Detener contenedor PostgreSQL
+# 7) Detener contenedor PostgreSQL
 docker-stop:
 	@echo "Deteniendo contenedor PostgreSQL: $(CONTAINER_NAME)"
 	docker stop $(CONTAINER_NAME)

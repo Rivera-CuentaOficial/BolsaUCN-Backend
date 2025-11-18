@@ -60,16 +60,28 @@ namespace bolsafeucn_back.src.Infrastructure.Repositories.Implements
         }
 
         /// <summary>
-        /// Calcula el promedio de calificaciones recibidas por un oferente.
+        /// Calcula el promedio de calificaciones de un oferente.
         /// Solo considera las calificaciones completadas (RatingForOfferor no null).
         /// </summary>
         /// <param name="offerorId">El identificador del oferente.</param>
         /// <returns>El promedio de calificaciones, o null si no hay reseñas.</returns>
-        public async Task<double?> GetAverageRatingAsync(int offerorId)
+        public async Task<double?> GetOfferorAverageRatingAsync(int offerorId)
         {
             return await _context.Reviews
                 .Where(r => r.OfferorId == offerorId)
                 .AverageAsync(r => (double?)r.RatingForOfferor);
+        }
+        /// <summary>
+        /// Calcula el promedio de calificaciones de un estudiante.
+        /// Solo considera las calificaciones completadas (RatingForStudent no null).
+        /// </summary>
+        /// <param name="studentId">El identificador del estudiante.</param>
+        /// <returns>El promedio de calificaciones, o null si no hay reseñas.</returns>
+        public async Task<double?> GetStudentAverageRatingAsync(int studentId)
+        {
+            return await _context.Reviews
+                .Where(r => r.StudentId == studentId)
+                .AverageAsync(r => (double?)r.RatingForStudent);
         }
 
         /// <summary>

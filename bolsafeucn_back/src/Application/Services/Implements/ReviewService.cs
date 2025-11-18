@@ -57,9 +57,13 @@ namespace bolsafeucn_back.src.Application.Services.Implements
         /// </summary>
         /// <param name="offerorId">El identificador del oferente.</param>
         /// <returns>El promedio de calificaciones, o null si no hay reseñas.</returns>
-        public async Task<double?> GetAverageRatingAsync(int offerorId)
+        public async Task<double?> GetOfferorAverageRatingAsync(int offerorId)
         {
-            return await _repository.GetAverageRatingAsync(offerorId);
+            return await _repository.GetOfferorAverageRatingAsync(offerorId);
+        }
+        public async Task<double?> GetStudentAverageRatingAsync(int studentId)
+        {
+            return await _repository.GetStudentAverageRatingAsync(studentId);
         }
 
         /// <summary>
@@ -93,6 +97,7 @@ namespace bolsafeucn_back.src.Application.Services.Implements
                 throw new InvalidOperationException("No se puede agregar la Review hacia el estudiante, ya que esta ya ha sido eliminada.");
             }
             ReviewMapper.studentUpdateReview(dto, review);
+            if(review.IsCompleted) await BothReviewsCompletedAsync(review);
             await _repository.UpdateAsync(review);
             Log.Information("Offeror {OfferorId} added review for student in publication {PublicationId}", currentUserId, dto.PublicationId);
         }
@@ -129,18 +134,23 @@ namespace bolsafeucn_back.src.Application.Services.Implements
                 throw new InvalidOperationException("No se puede agregar la Review hacia el oferente, ya que esta ya ha sido eliminada.");
             }
             ReviewMapper.offerorUpdateReview(dto, review);
+            if(review.IsCompleted) await BothReviewsCompletedAsync(review);
             await _repository.UpdateAsync(review);
             Log.Information("Student {StudentId} added review for offeror in publication {PublicationId}", currentUserId, dto.PublicationId);
         }
 
         /// <summary>
         /// Método para ejecutar acciones cuando ambas partes completan sus reseñas.
-        /// Actualmente no implementado - reservado para lógica futura.
+        /// Actualiza los ratings promedio tanto del oferente como del estudiante.
         /// </summary>
-        /// <exception cref="NotImplementedException">Este método no está implementado.</exception>
-        public Task BothReviewsCompletedAsync()
+        /// <param name="review">La reseña que ha sido completada por ambas partes.</param>
+        public async Task BothReviewsCompletedAsync(Review review)
         {
-            throw new NotImplementedException();
+            // Actualizar el Rating del oferente y del estudiante
+            await UpdateUserRatingAsync(review.OfferorId);
+            await UpdateUserRatingAsync(review.StudentId);
+            Log.Information("Se actualizan rating para el oferente: {OfferorId} y el estudiante {StudentId} despues de completar la Review", 
+                review.OfferorId, review.StudentId);
         }
 
         /// <summary>
@@ -197,6 +207,7 @@ namespace bolsafeucn_back.src.Application.Services.Implements
             {
                 throw new KeyNotFoundException($"No se encontró una review con ID {dto.ReviewId}.");
             }
+            //TODO: Pasar logica al Mapper
             // Eliminar la parte del estudiante si se solicita
             if (dto.DeleteReviewForStudent)
             {
@@ -277,6 +288,52 @@ namespace bolsafeucn_back.src.Application.Services.Implements
             if(!publicationsList.Any())
                 throw new KeyNotFoundException($"No se encontró información de publicación para el usuario con ID {userId}.");
             return publicationsList.Select(PublicationMapper.ToDTO);
+        }
+        public async Task UpdateUserRatingAsync(int userId)
+        {
+            var user = await _userRepository.GetByIdAsync(userId);
+            if (user == null)
+            {
+                throw new KeyNotFoundException($"No se encontró el usuario con ID {userId}.");
+            }
+            double? averageRating = null;
+            // Determinar el tipo de usuario y obtener su calificación promedio
+            if (user.UserType == UserType.Estudiante)
+            {
+                averageRating = await _repository.GetStudentAverageRatingAsync(userId);
+            }
+            else if (user.UserType == UserType.Empresa || user.UserType == UserType.Particular)
+            {
+                averageRating = await _repository.GetOfferorAverageRatingAsync(userId);
+            }
+            else
+            {
+                throw new InvalidOperationException($"El tipo de usuario {user.UserType} no puede tener calificaciones.");
+            }
+            // Actualizar el rating del usuario (usar 0.0 si no hay calificaciones)
+            user.Rating = averageRating ?? 0.0;
+            await _userRepository.UpdateAsync(user);
+            Log.Information("Se actualizo el rating del usuario: {UserId} a: {Rating}", userId, user.Rating);
+        }
+        public async Task<Double?> GetUserAverageRatingAsync(int userId)
+        {
+            var user = await _userRepository.GetByIdAsync(userId);
+            if (user == null)
+            {
+                throw new KeyNotFoundException($"No se encontró el usuario con ID {userId}.");
+            }
+            if (user.UserType == UserType.Estudiante)
+            {
+                return await GetStudentAverageRatingAsync(userId);
+            }
+            else if (user.UserType == UserType.Empresa || user.UserType == UserType.Particular)
+            {
+                return await GetOfferorAverageRatingAsync(userId);
+            }
+            else
+            {
+                throw new InvalidOperationException($"El tipo de usuario {user.UserType} no puede tener calificaciones.");
+            }
         }
     }
 }

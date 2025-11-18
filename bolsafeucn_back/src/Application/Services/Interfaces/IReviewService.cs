@@ -37,7 +37,7 @@ namespace bolsafeucn_back.src.Application.Services.Interfaces
         /// Actualmente no implementado.
         /// </summary>
         /// <returns>Una tarea que representa la operación asíncrona.</returns>
-        Task BothReviewsCompletedAsync();
+        Task BothReviewsCompletedAsync(Review review);
         
         /// <summary>
         /// Agrega una nueva reseña completa (obsoleto - no implementado).
@@ -55,11 +55,17 @@ namespace bolsafeucn_back.src.Application.Services.Interfaces
         Task<IEnumerable<ReviewDTO>> GetReviewsByOfferorAsync(int offerorId);
         
         /// <summary>
-        /// Calcula el promedio de calificaciones recibidas por un oferente.
+        /// Calcula el promedio de calificaciones de un oferente.
         /// </summary>
         /// <param name="offerorId">El identificador del oferente.</param>
         /// <returns>El promedio de calificaciones, o null si no hay reseñas.</returns>
-        Task<double?> GetAverageRatingAsync(int offerorId);
+        Task<double?> GetOfferorAverageRatingAsync(int offerorId);
+        /// <summary>
+        /// Calcula el promedio de calificaciones de un estudiante.
+        /// </summary>
+        /// <param name="studentId">El identificador del estudiante.</param>
+        /// <returns>El promedio de calificaciones, o null si no hay reseñas.</returns>
+        Task<double?> GetStudentAverageRatingAsync(int studentId);
         
         /// <summary>
         /// Crea una reseña inicial en estado pendiente para una publicación.
@@ -104,5 +110,7 @@ namespace bolsafeucn_back.src.Application.Services.Interfaces
         /// <exception cref="KeyNotFoundException">Lanzada si no se encuentra el usuario o no hay publicaciones.</exception>
         /// <exception cref="InvalidOperationException">Lanzada si el tipo de usuario no puede tener reseñas.</exception>
         Task<IEnumerable<PublicationsDTO>> GetPublicationInformationAsync(int userId);
+        Task UpdateUserRatingAsync(int userId);
+        Task<Double?> GetUserAverageRatingAsync(int userId);
     }
 }

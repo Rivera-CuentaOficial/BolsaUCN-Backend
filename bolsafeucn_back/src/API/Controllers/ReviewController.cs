@@ -87,12 +87,13 @@ namespace bolsafeucn_back.src.API.Controllers
         /// <summary>
         /// Obtiene la calificación promedio de un oferente específico.
         /// </summary>
-        /// <param name="offerorId"></param>
+        /// <param name="userId"></param>
         /// <returns></returns>
-        [HttpGet("average/{offerorId}")]
-        public async Task<IActionResult> GetAverage(int offerorId)
+        [HttpGet("rating/{userId}")]
+        // esta funcion deberia estar en usercontroller pero no me quiero meter ahi.
+        public async Task<IActionResult> GetRating(int userId)
         {
-            var avg = await _reviewService.GetAverageRatingAsync(offerorId);
+            var avg = await _reviewService.GetUserAverageRatingAsync(userId);
             return Ok(avg);
         }
         /// <summary>

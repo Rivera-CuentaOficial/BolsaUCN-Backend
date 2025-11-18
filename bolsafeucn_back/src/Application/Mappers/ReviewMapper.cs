@@ -89,8 +89,8 @@ namespace bolsafeucn_back.src.Application.Mappers
                 AtTime = entity.AtTime,
                 GoodPresentation = entity.GoodPresentation,
                 ReviewWindowEndDate = entity.ReviewWindowEndDate,
-                IdStudent = entity.StudentId ?? 0,
-                IdOfferor = entity.OfferorId ?? 0,
+                IdStudent = entity.StudentId,
+                IdOfferor = entity.OfferorId,
                 IdPublication = entity.PublicationId,
                 HasReviewForOfferorBeenDeleted = entity.HasReviewForOfferorBeenDeleted,
                 HasReviewForStudentBeenDeleted = entity.HasReviewForStudentBeenDeleted

@@ -28,7 +28,7 @@ namespace bolsafeucn_back.src.Application.Mappers
                 .Map(dest => dest.Name, src => src.Name)
                 .Map(dest => dest.LastName, src => src.LastName)
                 .Map(dest => dest.Disability, src => src.Disability)
-                .Map(dest => dest.Rating, src => 0.0f)
+                //.Map(dest => dest.Rating, src => 0.0f) El rating inicial se establece en 0.0f por defecto
                 .Map(dest => dest.CurriculumVitae, src => string.Empty)
                 .Map(dest => dest.MotivationLetter, src => string.Empty);
         }
