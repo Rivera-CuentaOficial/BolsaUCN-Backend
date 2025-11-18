@@ -297,6 +297,32 @@ namespace bolsafeucn_back.src.Application.Services.Implements
             return applicantDtos;
         }
 
+        public async Task<JobApplicationDetailDto?> GetApplicationDetailAsync(int applicationId)
+        {
+            var application = await _jobApplicationRepository.GetByIdAsync(applicationId);
+            
+            if (application == null)
+                return null;
+
+            return new JobApplicationDetailDto
+            {
+                Id = application.Id,
+                Status = application.Status,
+                ApplicationDate = application.ApplicationDate,
+                
+                OfferId = application.JobOfferId,
+                OfferTitle = application.JobOffer.Title,
+                Description = application.JobOffer.Description,
+                Requirements = application.JobOffer.Requirements,
+                OfferType = application.JobOffer.OfferType.ToString(),
+                Remuneration = application.JobOffer.Remuneration,
+                Location = application.JobOffer.Location,
+                DeadlineDate = application.JobOffer.DeadlineDate,
+                CompanyName = application.JobOffer.User?.Company?.CompanyName,
+                ContactInfo = application.JobOffer.ContactInfo
+    };
+        }
+
 
 
 
