@@ -1,0 +1,45 @@
+version: '3.8'
+
+services:
+  # Servicio de la Base de Datos PostgreSQL
+  db:
+    image: postgres:15-alpine # Imagen estable y ligera
+    container_name: pis_db
+    restart: always
+    environment:
+      # *ATENCIÓN:* Cambie estos valores por credenciales seguras y reales
+      POSTGRES_DB: pisdb
+      POSTGRES_USER: pisuser
+      POSTGRES_PASSWORD: pispassword
+    ports:
+      # Puerto de la DB: Host_Port:Container_Port
+      - "5431:5432"
+    volumes:
+      # Persistencia de datos: los datos de la DB no se pierden al reiniciar
+      - postgres_data:/var/lib/postgresql/data
+
+  # Servicio del Backend .NET (bolsafeucn_back)
+  api:
+    build:
+      # El contexto de construcción es la carpeta actual (backend-PIS)
+      context: . 
+      # Apunta al Dockerfile que acabamos de crear
+      dockerfile: ./bolsafeucn_back/Dockerfile 
+    container_name: bolsafeucn_api
+    restart: always
+    ports:
+      # Puerto de la API: Host_Port:Container_Port
+      # El frontend (localhost:3000) debe llamar al backend en localhost:5000
+      - "5000:8080" 
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: http://+:8080
+      # *CADENA DE CONEXIÓN CRÍTICA:*
+      # Usa el nombre del servicio 'db' (Host=db) para conectarse a PostgreSQL
+      ConnectionStrings__DefaultConnection: Host=db;Port=5432;Database=pisdb;Username=pisuser;Password=pispassword
+    depends_on:
+      - db # Asegura que la DB se inicie antes que la API
+
+volumes:
+  # Define el volumen para la persistencia de la base de datos
+  postgres_data:
