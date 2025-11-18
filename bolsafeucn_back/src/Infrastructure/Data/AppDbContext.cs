@@ -123,4 +123,6 @@ namespace bolsafeucn_back.src.Infrastructure.Data
                 .OnDelete(DeleteBehavior.Restrict);
         }
     }
+    // todo: sobrecarga de SaveChangesAsync para manejar IsCompleted en Review.
+    
 }
