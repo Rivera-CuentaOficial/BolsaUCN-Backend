@@ -15,6 +15,7 @@ namespace bolsafeucn_back.src.Infrastructure.Data
 
         // DbSets - Representan las tablas en la base de datos
         public DbSet<Image> Images { get; set; }
+        public DbSet<UserImage> UserImages { get; set; }
         public DbSet<Student> Students { get; set; }
         public DbSet<Company> Companies { get; set; }
         public DbSet<Individual> Individuals { get; set; }
@@ -120,6 +121,21 @@ namespace bolsafeucn_back.src.Infrastructure.Data
                 .HasOne(r => r.Offeror)
                 .WithMany()
                 .HasForeignKey(r => r.OfferorId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // Relaciones de UserImage (Imágenes de usuario)
+            // Relación uno a uno entre GeneralUser y sus imágenes de perfil y banner
+            builder
+                .Entity<GeneralUser>()
+                .HasOne(gu => gu.ProfilePhoto)
+                .WithMany()
+                .HasForeignKey(gu => gu.ProfilePhotoId)
+                .OnDelete(DeleteBehavior.Restrict);
+            builder
+                .Entity<GeneralUser>()
+                .HasOne(gu => gu.ProfileBanner)
+                .WithMany()
+                .HasForeignKey(gu => gu.ProfileBannerId)
                 .OnDelete(DeleteBehavior.Restrict);
         }
     }

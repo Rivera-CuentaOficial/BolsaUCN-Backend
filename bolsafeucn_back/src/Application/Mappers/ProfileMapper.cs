@@ -33,7 +33,9 @@ namespace bolsafeucn_back.src.Application.Mappers
                 .Map(dest => dest.Rut, src => src.Rut)
                 .Map(dest => dest.Email, src => src.Email)
                 .Map(dest => dest.PhoneNumber, src => src.PhoneNumber)
-                .Map(dest => dest.AboutMe, src => src.AboutMe);
+                .Map(dest => dest.AboutMe, src => src.AboutMe)
+                .Map(dest => dest.ProfilePhoto, src => src.ProfilePhoto != null ? src.ProfilePhoto.Url : null)
+                .Map(dest => dest.ProfileBanner, src => src.ProfileBanner != null ? src.ProfileBanner.Url : null);
 
             TypeAdapterConfig<GeneralUser, GetIndividualProfileDTO>
                 .NewConfig()
@@ -44,7 +46,9 @@ namespace bolsafeucn_back.src.Application.Mappers
                 .Map(dest => dest.Rut, src => src.Rut)
                 .Map(dest => dest.Email, src => src.Email)
                 .Map(dest => dest.PhoneNumber, src => src.PhoneNumber)
-                .Map(dest => dest.AboutMe, src => src.AboutMe);
+                .Map(dest => dest.AboutMe, src => src.AboutMe)
+                .Map(dest => dest.ProfilePhoto, src => src.ProfilePhoto != null ? src.ProfilePhoto.Url : null)
+                .Map(dest => dest.ProfileBanner, src => src.ProfileBanner != null ? src.ProfileBanner.Url : null);
 
             TypeAdapterConfig<GeneralUser, GetCompanyProfileDTO>
                 .NewConfig()
@@ -55,7 +59,9 @@ namespace bolsafeucn_back.src.Application.Mappers
                 .Map(dest => dest.Rut, src => src.Rut)
                 .Map(dest => dest.Email, src => src.Email)
                 .Map(dest => dest.PhoneNumber, src => src.PhoneNumber)
-                .Map(dest => dest.AboutMe, src => src.AboutMe);
+                .Map(dest => dest.AboutMe, src => src.AboutMe)
+                .Map(dest => dest.ProfilePhoto, src => src.ProfilePhoto != null ? src.ProfilePhoto.Url : null)
+                .Map(dest => dest.ProfileBanner, src => src.ProfileBanner != null ? src.ProfileBanner.Url : null);
                 
             TypeAdapterConfig<GeneralUser, GetAdminProfileDTO>
                 .NewConfig()
@@ -65,7 +71,9 @@ namespace bolsafeucn_back.src.Application.Mappers
                 .Map(dest => dest.Rut, src => src.Rut)
                 .Map(dest => dest.Email, src => src.Email)
                 .Map(dest => dest.PhoneNumber, src => src.PhoneNumber)
-                .Map(dest => dest.AboutMe, src => src.AboutMe);
+                .Map(dest => dest.AboutMe, src => src.AboutMe)
+                .Map(dest => dest.ProfilePhoto, src => src.ProfilePhoto != null ? src.ProfilePhoto.Url : null)
+                .Map(dest => dest.ProfileBanner, src => src.ProfileBanner != null ? src.ProfileBanner.Url : null);
 
             /*TypeAdapterConfig<GeneralUser, GetUserProfileDTO>
                 .NewConfig()
@@ -102,6 +110,8 @@ namespace bolsafeucn_back.src.Application.Mappers
             TypeAdapterConfig<UpdateStudentParamsDTO, GeneralUser>
             .NewConfig()
             .IgnoreNullValues(true)
+            .Ignore(src => src.ProfilePhoto!)
+            .Ignore(src => src.ProfileBanner!)
             .Map(dest => dest.UserName, src => src.UserName)
             .Map(dest => dest.Student!.Name, src => src.Name)
             .Map(dest => dest.Student!.LastName, src => src.LastName)

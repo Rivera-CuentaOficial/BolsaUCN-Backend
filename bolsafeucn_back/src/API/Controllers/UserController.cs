@@ -82,7 +82,7 @@ namespace bolsafeucn_back.src.API.Controllers
         /// <returns>Respuesta genérica indicando el resultado de la operación.</returns>
         [HttpPatch("profile/student")]
         [Authorize]
-        public async Task<IActionResult> UpdateStudentProfile([FromBody] UpdateStudentParamsDTO updateParamsDTO)
+        public async Task<IActionResult> UpdateStudentProfile([FromForm] UpdateStudentParamsDTO updateParamsDTO)
         {
             (int userId, UserType userType) = GetIdAndTypeFromToken();
             var result = await _userService.UpdateUserProfileByIdAsync(updateParamsDTO, userId, userType);
@@ -96,7 +96,7 @@ namespace bolsafeucn_back.src.API.Controllers
         /// <returns>Respuesta genérica indicando el resultado de la operación.</returns>
         [HttpPatch("profile/individual")]
         [Authorize]
-        public async Task<IActionResult> UpdateIndividualProfile([FromBody] UpdateIndividualParamsDTO updateParamsDTO)
+        public async Task<IActionResult> UpdateIndividualProfile([FromForm] UpdateIndividualParamsDTO updateParamsDTO)
         {
             (int userId, UserType userType) = GetIdAndTypeFromToken();
             var result = await _userService.UpdateUserProfileByIdAsync(updateParamsDTO, userId, userType);
@@ -110,7 +110,7 @@ namespace bolsafeucn_back.src.API.Controllers
         /// <returns>Respuesta genérica indicando el resultado de la operación.</returns>
         [HttpPatch("profile/company")]
         [Authorize]
-        public async Task<IActionResult> UpdateCompanyProfile([FromBody] UpdateCompanyParamsDTO updateParamsDTO)
+        public async Task<IActionResult> UpdateCompanyProfile([FromForm] UpdateCompanyParamsDTO updateParamsDTO)
         {
             (int userId, UserType userType) = GetIdAndTypeFromToken();
             var result = await _userService.UpdateUserProfileByIdAsync(updateParamsDTO, userId, userType);
@@ -124,18 +124,23 @@ namespace bolsafeucn_back.src.API.Controllers
         /// <returns>Respuesta genérica indicando el resultado de la operación.</returns>
         [HttpPatch("profile/admin")]
         [Authorize]
-        public async Task<IActionResult> UpdateAdminProfile([FromBody] UpdateAdminParamsDTO updateParamsDTO)
+        public async Task<IActionResult> UpdateAdminProfile([FromForm] UpdateAdminParamsDTO updateParamsDTO)
         {
             (int userId, UserType userType) = GetIdAndTypeFromToken();
             var result = await _userService.UpdateUserProfileByIdAsync(updateParamsDTO, userId, userType);
             return Ok(new GenericResponse<string>("Perfil actualizado", result));
         }
 
-        [HttpPatch("profile/chage-password")]
+        /// <summary>
+        /// Cambia la contraseña del usuario autenticado.
+        /// </summary>
+        /// <param name="changeUserPasswordDTO">Parámetros para cambiar la contraseña del usuario.</param>
+        /// <returns>Respuesta genérica indicando el resultado de la operación.</returns>
+        [HttpPatch("profile/change-password")]
         [Authorize]
         public async Task<IActionResult> ChangeUserPassword([FromBody] ChangeUserPasswordDTO changeUserPasswordDTO)
         {
-            (int userId, UserType userType) = GetIdAndTypeFromToken();
+            int userId = GetUserIdFromToken();
             var result = await _userService.ChangeUserPasswordById(changeUserPasswordDTO, userId);
             return Ok(new GenericResponse<string>("Contraseña actualizada", result));
         }
@@ -163,6 +168,42 @@ namespace bolsafeucn_back.src.API.Controllers
             if (!Enum.TryParse<UserType>(userType, ignoreCase: true, out var parsedUserType)) 
                 throw new ArgumentException("Tipo de usuario no existe");
             return (parsedUserId, parsedUserType);
+        }
+
+        /// <summary>
+        /// Obtiene el ID del usuario desde el token de autenticación.
+        /// </summary>
+        /// <returns>ID del usuario.</returns>
+        /// <exception cref="UnauthorizedAccessException"></exception>
+        private int GetUserIdFromToken()
+        {
+            if (User.Identity?.IsAuthenticated != true) 
+                throw new UnauthorizedAccessException("Usuario no autenticado.");
+            var userId = User.Claims
+                .FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?
+                .Value
+                ?? null;
+            int.TryParse(userId, out int parsedUserId);
+            return parsedUserId;
+        }
+
+        /// <summary>
+        /// Obtiene el tipo de usuario desde el token de autenticación.
+        /// </summary>
+        /// <returns>Tipo de usuario.</returns>
+        /// <exception cref="UnauthorizedAccessException"></exception>
+        /// <exception cref="ArgumentException"></exception>
+        private UserType GetTypeFromToken()
+        {
+            if (User.Identity?.IsAuthenticated != true) 
+                throw new UnauthorizedAccessException("Usuario no autenticado.");
+            var userType = User.Claims
+                .FirstOrDefault(c => c.Type == "userType")?
+                .Value
+                ?? null;
+            if (!Enum.TryParse<UserType>(userType, ignoreCase: true, out var parsedUserType)) 
+                throw new ArgumentException("Tipo de usuario no existe");
+            return parsedUserType;
         }
     }
 }

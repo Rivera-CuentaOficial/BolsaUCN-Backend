@@ -325,7 +325,10 @@ namespace bolsafeucn_back.src.Infrastructure.Repositories.Implements
                 case UserType.Administrador: query = query.Include(u => u.Admin); break;
                 default: return null;
             };
-            return await query.FirstOrDefaultAsync(u => u.Id == userId);
+            return await query
+                            .Include(u => u.ProfilePhoto)
+                            .Include(u => u.ProfileBanner)
+                            .FirstOrDefaultAsync(u => u.Id == userId);
         }
 
         /// <summary>
@@ -345,7 +348,10 @@ namespace bolsafeucn_back.src.Infrastructure.Repositories.Implements
                 case UserType.Administrador: query = query.Include(u => u.Admin); break;
                 default: return null;
             };
-            return await query.FirstOrDefaultAsync(u => u.Id == userId);
+            return await query
+                            .Include(u => u.ProfilePhoto)
+                            .Include(u => u.ProfileBanner)
+                            .FirstOrDefaultAsync(u => u.Id == userId);
         }
 
         public async Task<GeneralUser> AddAsync(GeneralUser user)
