@@ -522,7 +522,7 @@ namespace bolsafeucn_back.src.Application.Services.Implements
                             "Error al enviar email de bienvenida a: {Email}",
                             user.Email
                         );
-                        throw new Exception("Correo verificado, pero hubo un error al enviar el email de bienvenida.");
+                        return "Correo verificado, pero hubo un error al enviar el email de bienvenida.";
                     }
                 }
                 Log.Error(
