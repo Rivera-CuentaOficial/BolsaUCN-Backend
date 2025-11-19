@@ -50,14 +50,15 @@ namespace bolsafeucn_back.src.Application.Mappers
         /// </summary>
         /// <param name="dto">DTO con los identificadores del estudiante, oferente y publicación.</param>
         /// <returns>Una nueva entidad Review con estado inicial y ventana de revisión de 14 días.</returns>
-        public static Review CreateInitialReviewAsync(InitialReviewDTO dto)
+        public static Review CreateInitialReviewAsync(InitialReviewDTO dto, GeneralUser student, GeneralUser offeror)
         {
             return new Review
             {
                 StudentId = dto.StudentId,
+                Student = student,
                 OfferorId = dto.OfferorId,
-                PublicationId = dto.PublicationId,
-                ReviewWindowEndDate = DateTime.UtcNow.AddDays(14) // 14 días automáticos desde que se recibe el DTO
+                Offeror = offeror,
+                PublicationId = dto.PublicationId
             };
         }
         // TODO: Revisar si es necesario este método

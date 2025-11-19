@@ -3,3 +3,4 @@ TODO:
 2. Proceso de generar el reporte PDF.
 3. Arreglar archivos DTO para entregar solamente la informacion esencial desde el backend.
 4. Automatizar creacion de Review al finalizar una publicacion.
+5. mermaid

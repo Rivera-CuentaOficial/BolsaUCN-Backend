@@ -68,7 +68,7 @@ namespace bolsafeucn_back.src.Application.DTOs.UserDTOs.UserProfileDTOs
 
         public bool IsSuperAdmin { get; set; }
 
-        /*TODO
+        /*
         public string? ProfilePicture { get; set; }
         public string? ProfileBanner { get; set; }
         */

@@ -4,13 +4,8 @@ namespace bolsafeucn_back.src.Domain.Models
     /// Representa una reseña bidireccional entre un oferente y un estudiante.
     /// Permite que ambas partes evalúen mutuamente su experiencia laboral.
     /// </summary>
-    public class Review
+    public class Review : ModelBase // TODO: Probar si funciona bien la herencia.
     {
-        /// <summary>
-        /// Identificador único de la reseña.
-        /// </summary>
-        public int Id { get; set; }
-        
         /// <summary>
         /// Calificación otorgada por el oferente al estudiante (1-6).
         /// Null si el oferente aún no ha completado su evaluación.
@@ -46,7 +41,7 @@ namespace bolsafeucn_back.src.Domain.Models
         /// Fecha y hora límite para completar la ventana de revisión.
         /// Después de esta fecha, puede que no se permitan más modificaciones.
         /// </summary>
-        public required DateTime ReviewWindowEndDate { get; set; }
+        public DateTime ReviewWindowEndDate { get; set; } = DateTime.UtcNow.AddDays(14);
         
         /// <summary>
         /// Referencia de navegación al estudiante evaluado.

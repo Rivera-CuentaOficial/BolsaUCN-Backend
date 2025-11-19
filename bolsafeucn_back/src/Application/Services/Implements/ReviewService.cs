@@ -165,23 +165,15 @@ namespace bolsafeucn_back.src.Application.Services.Implements
         public async Task<Review> CreateInitialReviewAsync(InitialReviewDTO dto)
         {
             // Validar que existan el estudiante y el oferente
-            var student = await _userRepository.GetByIdAsync(dto.StudentId);
-            if (student == null)
-            {
-                throw new ArgumentException($"El estudiante con ID {dto.StudentId} no existe.");
-            }
-            var offeror = await _userRepository.GetByIdAsync(dto.OfferorId);
-            if (offeror == null)
-            {
-                throw new ArgumentException($"El oferente con ID {dto.OfferorId} no existe.");
-            }
+            var student = await _userRepository.GetByIdAsync(dto.StudentId) ?? throw new ArgumentException($"El estudiante con ID {dto.StudentId} no existe.");
+            var offeror = await _userRepository.GetByIdAsync(dto.OfferorId) ?? throw new ArgumentException($"El oferente con ID {dto.OfferorId} no existe.");
             // Validar que no exista ya una review para esta publicación
             var existingReview = await _repository.GetByPublicationIdAsync(dto.PublicationId);
             if (existingReview != null)
             {
                 throw new InvalidOperationException($"Ya existe una review para la publicación con ID {dto.PublicationId}.");
             }
-            var review = ReviewMapper.CreateInitialReviewAsync(dto);
+            var review = ReviewMapper.CreateInitialReviewAsync(dto, student, offeror);
             await _repository.AddAsync(review);
             return review;
         }

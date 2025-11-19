@@ -9,7 +9,7 @@ CONTAINER_NAME := bolsafeucn-docker
 #   POSTGRES_USER := bolsafeucn-user
 #   POSTGRES_PASSWORD := bolsafeucn-password
 #   POSTGRES_DB := bolsafeucn-db
-APPSETTINGS_FILE := $(DOTNET_DIR)/appsettings.json
+APPSETTINGS_FILE := $(DOTNET_DIR)/appsettings.json # Pueden cambiar el appsettings.json por sus variables.
 CONNECTION_STRING := $(shell grep -o '"DefaultConnection": *"[^"]*"' $(APPSETTINGS_FILE) | sed 's/"DefaultConnection": *"\(.*\)"/\1/')
 POSTGRES_USER := $(shell echo '$(CONNECTION_STRING)' | grep -o 'Username=[^;]*' | cut -d= -f2)
 POSTGRES_PASSWORD := $(shell echo '$(CONNECTION_STRING)' | grep -o 'Password=[^;]*' | cut -d= -f2)

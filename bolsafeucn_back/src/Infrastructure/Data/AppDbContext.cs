@@ -95,15 +95,15 @@ namespace bolsafeucn_back.src.Infrastructure.Data
                 .OnDelete(DeleteBehavior.Cascade);
 
             // Relaciones de Review
-            
+            // TODO: Implementar eliminacion de filas despues de probar que funciona todo.
             // Review - Publication (1:1)
             // Una publicación puede tener una review
             builder
                 .Entity<Review>()
                 .HasOne(r => r.Publication)
                 .WithOne()
-                .HasForeignKey<Review>(r => r.PublicationId)
-                .OnDelete(DeleteBehavior.Cascade);
+                .HasForeignKey<Review>(r => r.PublicationId);
+                // .OnDelete(DeleteBehavior.Cascade);
 
             // Review - Student (Many:1)
             // Un estudiante puede tener muchas reviews (como estudiante evaluado)
@@ -111,8 +111,8 @@ namespace bolsafeucn_back.src.Infrastructure.Data
                 .Entity<Review>()
                 .HasOne(r => r.Student)
                 .WithMany()
-                .HasForeignKey(r => r.StudentId)
-                .OnDelete(DeleteBehavior.Restrict);
+                .HasForeignKey(r => r.StudentId);
+                // .OnDelete(DeleteBehavior.Restrict);
 
             // Review - Offeror (Many:1)
             // Un proveedor puede tener muchas reviews (como oferente evaluado)
@@ -120,8 +120,7 @@ namespace bolsafeucn_back.src.Infrastructure.Data
                 .Entity<Review>()
                 .HasOne(r => r.Offeror)
                 .WithMany()
-                .HasForeignKey(r => r.OfferorId)
-                .OnDelete(DeleteBehavior.Restrict);
+                .HasForeignKey(r => r.OfferorId);
         }
     }
     // todo: sobrecarga de SaveChangesAsync para manejar IsCompleted en Review.
