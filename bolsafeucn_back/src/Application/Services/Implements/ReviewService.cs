@@ -79,11 +79,11 @@ namespace bolsafeucn_back.src.Application.Services.Implements
         public async Task AddStudentReviewAsync(ReviewForStudentDTO dto, int currentUserId)
         {
             var review = await _repository.GetByPublicationIdAsync(dto.PublicationId);
-            if(review == null)
+            if (review == null)
                 throw new KeyNotFoundException("No se ha encontrado una reseña para el ID de publicación dado.");
-            
+
             // Validar que el usuario actual sea el OFERENTE (quien califica al estudiante)
-            if(review.OfferorId != currentUserId)
+            if (review.OfferorId != currentUserId)
             {
                 throw new UnauthorizedAccessException("Solo el oferente de esta publicación puede dejar una review hacia el estudiante.");
             }
@@ -92,12 +92,17 @@ namespace bolsafeucn_back.src.Application.Services.Implements
             {
                 throw new InvalidOperationException("Ya has completado tu review para este estudiante.");
             }
-            if(review.HasReviewForStudentBeenDeleted)
+            // Validar que la review no esté cerrada por el proceso automático
+            if (review.IsClosed)
+            {
+                throw new InvalidOperationException("No se puede modificar esta review porque ha sido cerrada.");
+            }
+            if (review.HasReviewForStudentBeenDeleted)
             {
                 throw new InvalidOperationException("No se puede agregar la Review hacia el estudiante, ya que esta ya ha sido eliminada.");
             }
             ReviewMapper.studentUpdateReview(dto, review);
-            if(review.IsCompleted) await BothReviewsCompletedAsync(review);
+            if (review.IsCompleted) await BothReviewsCompletedAsync(review);
             await _repository.UpdateAsync(review);
             Log.Information("Offeror {OfferorId} added review for student in publication {PublicationId}", currentUserId, dto.PublicationId);
         }
@@ -115,12 +120,12 @@ namespace bolsafeucn_back.src.Application.Services.Implements
         public async Task AddOfferorReviewAsync(ReviewForOfferorDTO dto, int currentUserId)
         {
             var review = await _repository.GetByPublicationIdAsync(dto.PublicationId);
-            if(review == null)
+            if (review == null)
             {
                 throw new KeyNotFoundException("No se ha encontrado una reseña para el ID de publicación dado.");
             }
             // Validar que el usuario actual sea el ESTUDIANTE (quien califica al oferente)
-            if(review.StudentId != currentUserId)
+            if (review.StudentId != currentUserId)
             {
                 throw new UnauthorizedAccessException("Solo el estudiante de esta publicación puede dejar una review hacia el oferente.");
             }
@@ -129,12 +134,17 @@ namespace bolsafeucn_back.src.Application.Services.Implements
             {
                 throw new InvalidOperationException("Ya has completado tu review para este oferente.");
             }
-            if(review.HasReviewForOfferorBeenDeleted)
+            // Validar que la review no esté cerrada por el proceso automático
+            if (review.IsClosed)
+            {
+                throw new InvalidOperationException("No se puede modificar esta review porque ha sido cerrada.");
+            }
+            if (review.HasReviewForOfferorBeenDeleted)
             {
                 throw new InvalidOperationException("No se puede agregar la Review hacia el oferente, ya que esta ya ha sido eliminada.");
             }
             ReviewMapper.offerorUpdateReview(dto, review);
-            if(review.IsCompleted) await BothReviewsCompletedAsync(review);
+            if (review.IsCompleted) await BothReviewsCompletedAsync(review);
             await _repository.UpdateAsync(review);
             Log.Information("Student {StudentId} added review for offeror in publication {PublicationId}", currentUserId, dto.PublicationId);
         }
@@ -149,7 +159,7 @@ namespace bolsafeucn_back.src.Application.Services.Implements
             // Actualizar el Rating del oferente y del estudiante
             await UpdateUserRatingAsync(review.OfferorId);
             await UpdateUserRatingAsync(review.StudentId);
-            Log.Information("Se actualizan rating para el oferente: {OfferorId} y el estudiante {StudentId} despues de completar la Review", 
+            Log.Information("Se actualizan rating para el oferente: {OfferorId} y el estudiante {StudentId} despues de completar la Review",
                 review.OfferorId, review.StudentId);
         }
 
@@ -199,6 +209,11 @@ namespace bolsafeucn_back.src.Application.Services.Implements
             {
                 throw new KeyNotFoundException($"No se encontró una review con ID {dto.ReviewId}.");
             }
+            // Si la review fue cerrada automáticamente, no se permiten cambios
+            if (review.IsClosed)
+            {
+                throw new InvalidOperationException("No se puede eliminar parte de esta review porque ha sido cerrada.");
+            }
             //TODO: Pasar logica al Mapper
             // Eliminar la parte del estudiante si se solicita
             if (dto.DeleteReviewForStudent)
@@ -228,7 +243,7 @@ namespace bolsafeucn_back.src.Application.Services.Implements
         public async Task<ReviewDTO> GetReviewAsync(int id)
         {
             var review = await _repository.GetByIdAsync(id);
-            if(review == null)
+            if (review == null)
                 throw new KeyNotFoundException($"No se encontró una review con ID {id}.");
             return ReviewMapper.ToDTO(review);
         }
@@ -236,7 +251,7 @@ namespace bolsafeucn_back.src.Application.Services.Implements
         public async Task<IEnumerable<ReviewDTO>> GetReviewsByStudentAsync(int studentId)
         {
             var reviews = await _repository.GetByStudentIdAsync(studentId);
-            if(reviews == null || !reviews.Any())
+            if (reviews == null || !reviews.Any())
                 throw new KeyNotFoundException($"No se encontraron reseñas para el estudiante con ID {studentId}.");
             return reviews.Select(ReviewMapper.ToDTO);
         }
@@ -249,19 +264,19 @@ namespace bolsafeucn_back.src.Application.Services.Implements
         public async Task<IEnumerable<PublicationsDTO>> GetPublicationInformationAsync(int userId)
         {
             var user = await _userRepository.GetByIdAsync(userId);
-            if(user == null)
+            if (user == null)
                 throw new KeyNotFoundException($"No se encontró el usuario con ID {userId}.");
             IEnumerable<Review> reviews;
-            if(user.UserType == UserType.Estudiante)
+            if (user.UserType == UserType.Estudiante)
             {
                 reviews = await _repository.GetByStudentIdAsync(userId);
-                if(reviews == null || !reviews.Any())
+                if (reviews == null || !reviews.Any())
                     throw new KeyNotFoundException($"No se encontraron reseñas para el estudiante con ID {userId}.");
             }
-            else if(user.UserType == UserType.Empresa || user.UserType == UserType.Particular)
+            else if (user.UserType == UserType.Empresa || user.UserType == UserType.Particular)
             {
                 reviews = await _repository.GetByOfferorIdAsync(userId);
-                if(reviews == null || !reviews.Any())
+                if (reviews == null || !reviews.Any())
                     throw new KeyNotFoundException($"No se encontraron reseñas para el oferente con ID {userId}.");
             }
             else
@@ -269,15 +284,15 @@ namespace bolsafeucn_back.src.Application.Services.Implements
                 throw new InvalidOperationException($"El tipo de usuario {user.UserType} no puede tener reseñas.");
             }
             var publicationsList = new List<Publication>();
-            foreach(var review in reviews)
+            foreach (var review in reviews)
             {
                 var publications = await _repository.GetPublicationInformationAsync(review.Id);
-                if(publications != null)
+                if (publications != null)
                 {
                     publicationsList.AddRange(publications);
                 }
             }
-            if(!publicationsList.Any())
+            if (!publicationsList.Any())
                 throw new KeyNotFoundException($"No se encontró información de publicación para el usuario con ID {userId}.");
             return publicationsList.Select(PublicationMapper.ToDTO);
         }
@@ -326,6 +341,27 @@ namespace bolsafeucn_back.src.Application.Services.Implements
             {
                 throw new InvalidOperationException($"El tipo de usuario {user.UserType} no puede tener calificaciones.");
             }
+        }
+
+        /// <summary>
+        /// Cierra las reseñas cuya ventana de revisión terminó y las marca como no modificables.
+        /// </summary>
+        public async Task CloseExpiredReviewsAsync()
+        {
+            var now = DateTime.UtcNow;
+            var expiredReviews = await _repository.GetExpiredReviewsAsync(now);
+            if (expiredReviews == null || !expiredReviews.Any())
+            {
+                Log.Information("No hay reviews vencidas para cerrar a las {Now}", now);
+                return;
+            }
+            foreach (var review in expiredReviews)
+            {
+                review.IsClosed = true;
+                await _repository.UpdateAsync(review);
+                Log.Information("Review {ReviewId} cerrada automáticamente por vencimiento.", review.Id);
+            }
+            Log.Information("Cierre automático de reviews vencidas completado. Total cerrado: {Count}", expiredReviews.Count());
         }
     }
 }

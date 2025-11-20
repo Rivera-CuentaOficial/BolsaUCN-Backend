@@ -1,3 +1,4 @@
+using System;
 using bolsafeucn_back.src.Domain.Models;
 
 namespace bolsafeucn_back.src.Infrastructure.Repositories.Interfaces
@@ -27,7 +28,7 @@ namespace bolsafeucn_back.src.Infrastructure.Repositories.Interfaces
         /// <param name="studentId">El identificador del estudiante.</param>
         /// <returns>Una colección de reseñas del estudiante.</returns>
         Task<IEnumerable<Review>> GetByStudentIdAsync(int studentId);
-        
+
         /// <summary>
         /// Calcula el promedio de calificaciones recibidas por un oferente.
         /// </summary>
@@ -40,14 +41,14 @@ namespace bolsafeucn_back.src.Infrastructure.Repositories.Interfaces
         /// <param name="studentId">El identificador del estudiante.</param>
         /// <returns>El promedio de calificaciones, o null si no hay reseñas.</returns>
         Task<double?> GetStudentAverageRatingAsync(int studentId);
-        
+
         /// <summary>
         /// Obtiene una reseña asociada a una publicación específica.
         /// </summary>
         /// <param name="publicationId">El identificador de la publicación.</param>
         /// <returns>La reseña asociada a la publicación, o null si no existe.</returns>
         Task<Review?> GetByPublicationIdAsync(int publicationId);
-        
+
         /// <summary>
         /// Obtiene una reseña por su identificador único.
         /// </summary>
@@ -66,6 +67,11 @@ namespace bolsafeucn_back.src.Infrastructure.Repositories.Interfaces
         /// </summary>
         /// <returns></returns>
         Task<IEnumerable<Review>> GetAllAsync();
+        /// <summary>
+        /// Obtiene reseñas cuya ventana de revisión terminó y que aún no han sido cerradas.
+        /// </summary>
+        /// <param name="now">Fecha de referencia para determinar vencimiento.</param>
+        Task<IEnumerable<Review>> GetExpiredReviewsAsync(DateTime now);
         Task<IEnumerable<Publication>> GetPublicationInformationAsync(int publicationId);
     }
 }

@@ -20,7 +20,7 @@ namespace bolsafeucn_back.src.Application.Services.Interfaces
         /// <exception cref="UnauthorizedAccessException">Lanzada si el usuario no es el oferente.</exception>
         /// <exception cref="InvalidOperationException">Lanzada si ya completó su evaluación.</exception>
         Task AddStudentReviewAsync(ReviewForStudentDTO dto, int currentUserId);
-        
+
         /// <summary>
         /// Agrega la evaluación del estudiante hacia el oferente.
         /// </summary>
@@ -31,14 +31,14 @@ namespace bolsafeucn_back.src.Application.Services.Interfaces
         /// <exception cref="UnauthorizedAccessException">Lanzada si el usuario no es el estudiante.</exception>
         /// <exception cref="InvalidOperationException">Lanzada si ya completó su evaluación.</exception>
         Task AddOfferorReviewAsync(ReviewForOfferorDTO dto, int currentUserId);
-        
+
         /// <summary>
         /// Método para ejecutar acciones cuando ambas partes completan sus reseñas.
         /// Actualmente no implementado.
         /// </summary>
         /// <returns>Una tarea que representa la operación asíncrona.</returns>
         Task BothReviewsCompletedAsync(Review review);
-        
+
         /// <summary>
         /// Agrega una nueva reseña completa (obsoleto - no implementado).
         /// </summary>
@@ -46,14 +46,14 @@ namespace bolsafeucn_back.src.Application.Services.Interfaces
         /// <returns>Una tarea que representa la operación asíncrona.</returns>
         /// <exception cref="NotImplementedException">Este método no está implementado.</exception>
         Task AddReviewAsync(ReviewDTO dto);
-        
+
         /// <summary>
         /// Obtiene todas las reseñas asociadas a un oferente específico.
         /// </summary>
         /// <param name="offerorId">El identificador del oferente.</param>
         /// <returns>Una colección de DTOs de reseñas del oferente.</returns>
         Task<IEnumerable<ReviewDTO>> GetReviewsByOfferorAsync(int offerorId);
-        
+
         /// <summary>
         /// Calcula el promedio de calificaciones de un oferente.
         /// </summary>
@@ -66,7 +66,7 @@ namespace bolsafeucn_back.src.Application.Services.Interfaces
         /// <param name="studentId">El identificador del estudiante.</param>
         /// <returns>El promedio de calificaciones, o null si no hay reseñas.</returns>
         Task<double?> GetStudentAverageRatingAsync(int studentId);
-        
+
         /// <summary>
         /// Crea una reseña inicial en estado pendiente para una publicación.
         /// Ambas partes deben completar sus evaluaciones posteriormente.
@@ -112,5 +112,10 @@ namespace bolsafeucn_back.src.Application.Services.Interfaces
         Task<IEnumerable<PublicationsDTO>> GetPublicationInformationAsync(int userId);
         Task UpdateUserRatingAsync(int userId);
         Task<Double?> GetUserAverageRatingAsync(int userId);
+        /// <summary>
+        /// Cierra las reseñas cuya ventana de revisión terminó, marcándolas como no modificables.
+        /// Este método será invocado por un job en segundo plano.
+        /// </summary>
+        Task CloseExpiredReviewsAsync();
     }
 }
