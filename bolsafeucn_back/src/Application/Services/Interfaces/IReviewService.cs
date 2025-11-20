@@ -52,7 +52,7 @@ namespace bolsafeucn_back.src.Application.Services.Interfaces
         /// </summary>
         /// <param name="offerorId">El identificador del oferente.</param>
         /// <returns>Una colección de DTOs de reseñas del oferente.</returns>
-        Task<IEnumerable<ReviewDTO>> GetReviewsByOfferorAsync(int offerorId);
+        Task<IEnumerable<ShowReviewDTO>> GetReviewsByOfferorAsync(int offerorId);
 
         /// <summary>
         /// Calcula el promedio de calificaciones de un oferente.
@@ -89,13 +89,13 @@ namespace bolsafeucn_back.src.Application.Services.Interfaces
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
-        Task<ReviewDTO> GetReviewAsync(int id);
+        Task<ShowReviewDTO> GetReviewAsync(int id);
         /// <summary>
         /// Obtiene todas las reseñas asociadas a un estudiante específico.
         /// </summary>
         /// <param name="studentId"></param>
         /// <returns></returns>
-        Task<IEnumerable<ReviewDTO>> GetReviewsByStudentAsync(int studentId);
+        Task<IEnumerable<ShowReviewDTO>> GetReviewsByStudentAsync(int studentId);
         /// <summary>
         /// Obtiene todas las reseñas del sistema.
         /// </summary>

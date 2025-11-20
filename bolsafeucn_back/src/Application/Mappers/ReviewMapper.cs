@@ -26,7 +26,7 @@ namespace bolsafeucn_back.src.Application.Mappers
             review.IsCompleted = review.StudentReviewCompleted && review.OfferorReviewCompleted;
             return review;
         }
-        
+
         /// <summary>
         /// Actualiza una reseña existente con la evaluación del estudiante hacia el oferente.
         /// Marca la evaluación del estudiante como completada.
@@ -86,7 +86,7 @@ namespace bolsafeucn_back.src.Application.Mappers
                 RatingForStudent = entity.RatingForStudent,
                 CommentForStudent = entity.CommentForStudent,
                 RatingForOfferor = entity.RatingForOfferor,
-                CommentForOfferor =  entity.CommentForOfferor,
+                CommentForOfferor = entity.CommentForOfferor,
                 AtTime = entity.AtTime,
                 GoodPresentation = entity.GoodPresentation,
                 ReviewWindowEndDate = entity.ReviewWindowEndDate,
@@ -94,7 +94,22 @@ namespace bolsafeucn_back.src.Application.Mappers
                 IdOfferor = entity.OfferorId,
                 IdPublication = entity.PublicationId,
                 HasReviewForOfferorBeenDeleted = entity.HasReviewForOfferorBeenDeleted,
-                HasReviewForStudentBeenDeleted = entity.HasReviewForStudentBeenDeleted
+                HasReviewForStudentBeenDeleted = entity.HasReviewForStudentBeenDeleted,
+                IsComplete = entity.IsCompleted
+            };
+        }
+        public static ShowReviewDTO ShowReviewDTO(Review entity)
+        {
+            return new ShowReviewDTO
+            {
+                idReview = entity.Id,
+                RatingForStudent = entity.RatingForStudent ?? 0,
+                CommentForStudent = entity.CommentForStudent ?? string.Empty,
+                RatingForOfferor = entity.RatingForOfferor ?? 0,
+                CommentForOfferor = entity.CommentForOfferor ?? string.Empty,
+                AtTime = entity.AtTime,
+                GoodPresentation = entity.GoodPresentation,
+                IsComplete = entity.IsCompleted
             };
         }
     }
