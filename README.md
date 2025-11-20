@@ -198,6 +198,11 @@ El modelo de base de datos (en formato Visual Paradigm .vpp) se encuentra en:
 Consulta la documentación completa de endpoints en:  
 `/bolsafeucn_back/API_ENDPOINTS.md`
 
+## Uso de Resend
+
+Consulta la documentacion completa para el uso correcto de Resend con el plan gratuito en:
+`/bolsafeucn_back/RESEND_README.md`
+
 ## 🧠 Autores
 
 Estudiantes de Proyecto Integrador Software II-2025  
