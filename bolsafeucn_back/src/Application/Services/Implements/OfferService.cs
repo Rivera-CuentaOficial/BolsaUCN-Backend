@@ -132,7 +132,7 @@ public class OfferService : IOfferService
     {
         var offer = await _offerRepository.GetAllPendingOffersAsync();
         return offer
-            .Select(o => new PendingOffersForAdminDto { Id = o.Id,Title = o.Title, Description = o.Description, Location = o.Location , PostDate = o.PublicationDate, Remuneration = o.Remuneration})
+            .Select(o => new PendingOffersForAdminDto { Id = o.Id, Title = o.Title, Description = o.Description, Location = o.Location , PostDate = o.PublicationDate, Remuneration = o.Remuneration})
             .ToList();
     }
 
@@ -150,11 +150,13 @@ public class OfferService : IOfferService
                     : (o.User?.UserName ?? "UCN");
                 return new OfferBasicAdminDto
                 {
+                    Id = o.Id,
                     Title = o.Title,
                     CompanyName = ownerName,
                     PublicationDate = o.PublicationDate,
                     OfferType = o.OfferType,
                     Activa = o.IsActive,
+                    Remuneration = o.Remuneration
                 };
             })
             .ToList();
@@ -184,9 +186,12 @@ public class OfferService : IOfferService
             Images = imageForDTO,
             CompanyName = ownerName,
             PublicationDate = offer.PublicationDate,
+            EndDate = offer.EndDate,
+            DeadlineDate = offer.DeadlineDate,
             Type = offer.Type,
             Active = offer.IsActive,
             statusValidation = offer.statusValidation,
+            Remuneration = offer.Remuneration
         };
         _logger.LogInformation("Detalles de oferta ID: {OfferId} obtenidos exitosamente", offerId);
         return result;
@@ -231,6 +236,11 @@ public class OfferService : IOfferService
             CompanyName = ownerName,
             CorreoContacto = offer.ContactInfo,
             TelefonoContacto = offer.User?.PhoneNumber,
+            PublicationDate = offer.PublicationDate,
+            DeadlineDate = offer.DeadlineDate,
+            EndDate = offer.EndDate,
+            Remuneration = offer.Remuneration
+
         };
     }
 
