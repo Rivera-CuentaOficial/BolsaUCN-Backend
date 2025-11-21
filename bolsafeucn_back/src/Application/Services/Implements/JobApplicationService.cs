@@ -152,8 +152,8 @@ namespace bolsafeucn_back.src.Application.Services.Implements
             var statusMessage = application.Status switch
             {
                 "Pendiente" => "Su solicitud fue enviada con éxito; será contactado a la brevedad.",
-                "Aceptado" => "¡Felicidades! Tu solicitud ha sido aceptada.",
-                "Rechazado" => "Lamentablemente, tu solicitud ha sido rechazado.",
+                "Seleccionado" => "¡Felicidades! Tu solicitud ha sido aceptada.",
+                "No seleccionado" => "Lamentablemente, tu solicitud ha sido rechazado.",
                 _ => ""
             };
 
@@ -163,6 +163,7 @@ namespace bolsafeucn_back.src.Application.Services.Implements
                 OfferTitle = offer.Title,
                 CompanyName = authorName,
                 ApplicationDate = application.ApplicationDate,
+                PublicationDate = offer.PublicationDate,
                 EndDate = offer.EndDate,
                 Remuneration = offer.Remuneration,
                 Description = offer.Description,

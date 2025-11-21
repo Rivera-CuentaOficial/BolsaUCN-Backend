@@ -28,6 +28,7 @@ namespace bolsafeucn_back.src.Application.DTOs.JobAplicationDTO
         // Información de fechas y remuneración
         public DateTime ApplicationDate { get; set; }              // Postulada hasta: 20/09/2025
         
+        public DateTime PublicationDate { get; set; }            // Fecha de publicación: 01/09/2025
         public DateTime? EndDate { get; set; }                    // Duración fin
         public int Remuneration { get; set; }                     // Remuneración: $5.000 CLP
 
