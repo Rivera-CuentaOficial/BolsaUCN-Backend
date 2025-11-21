@@ -44,6 +44,16 @@ docker-compose up -d
 docker ps
 ```
 
+#### Comandos Make
+De forma alternativa, tambien puedes crear el contenedor con el comando
+```bash
+Make docker-create
+```
+Una vez se crea, se debe correr con el comando
+```bash
+Make docker-start
+```
+
 Deberías ver un contenedor llamado `bolsafeucn-container` en estado `Up`.
 
 #### Credenciales de desarrollo
@@ -187,6 +197,11 @@ El modelo de base de datos (en formato Visual Paradigm .vpp) se encuentra en:
 
 Consulta la documentación completa de endpoints en:  
 `/bolsafeucn_back/API_ENDPOINTS.md`
+
+## Uso de Resend
+
+Consulta la documentacion completa para el uso correcto de Resend con el plan gratuito en:
+`/bolsafeucn_back/RESEND_README.md`
 
 ## 🧠 Autores
 
