@@ -127,6 +127,51 @@ namespace bolsafeucn_back.src.Application.Services.Implements
                 MotivationLetter = app.Student.Student?.MotivationLetter,
             });
         }
+        public async Task<JobApplicationDetailDto?> GetApplicationDetailAsync(int applicationId)
+        {
+            // Obtener la postulación
+            var application = await _jobApplicationRepository.GetByIdAsync(applicationId);
+            
+            if (application == null)
+                return null;
+
+            
+            var offer = await _offerRepository.GetByIdAsync(application.JobOfferId);
+            
+            if (offer == null)
+                return null;
+
+           
+            var user = await _userRepository.GetByIdWithRelationsAsync(offer.UserId);
+
+            var authorName = user?.UserType == UserType.Empresa
+                ? (user.Company?.CompanyName ?? "Empresa desconocida")
+            : user?.UserType == UserType.Particular
+                ? $"{(user.Individual?.Name ?? "").Trim()} {(user.Individual?.LastName ?? "").Trim()}".Trim()
+            : (user?.UserName ?? "UCN");
+            var statusMessage = application.Status switch
+            {
+                "Pendiente" => "Su solicitud fue enviada con éxito; será contactado a la brevedad.",
+                "Aceptado" => "¡Felicidades! Tu solicitud ha sido aceptada.",
+                "Rechazado" => "Lamentablemente, tu solicitud ha sido rechazado.",
+                _ => ""
+            };
+
+            return new JobApplicationDetailDto
+            {
+                Id = application.Id,
+                OfferTitle = offer.Title,
+                CompanyName = authorName,
+                ApplicationDate = application.ApplicationDate,
+                EndDate = offer.EndDate,
+                Remuneration = offer.Remuneration,
+                Description = offer.Description,
+                Requirements = offer.Requirements,
+                ContactInfo = offer.ContactInfo,
+                Status = application.Status,
+                StatusMessage = statusMessage
+            };
+        }
 
         public async Task<IEnumerable<JobApplicationResponseDto>> GetApplicationsByOfferIdAsync(
             int offerId
@@ -297,31 +342,7 @@ namespace bolsafeucn_back.src.Application.Services.Implements
             return applicantDtos;
         }
 
-        public async Task<JobApplicationDetailDto?> GetApplicationDetailAsync(int applicationId)
-        {
-            var application = await _jobApplicationRepository.GetByIdAsync(applicationId);
-            
-            if (application == null)
-                return null;
-
-            return new JobApplicationDetailDto
-            {
-                Id = application.Id,
-                Status = application.Status,
-                ApplicationDate = application.ApplicationDate,
-                
-                OfferId = application.JobOfferId,
-                OfferTitle = application.JobOffer.Title,
-                Description = application.JobOffer.Description,
-                Requirements = application.JobOffer.Requirements,
-                OfferType = application.JobOffer.OfferType.ToString(),
-                Remuneration = application.JobOffer.Remuneration,
-                Location = application.JobOffer.Location,
-                DeadlineDate = application.JobOffer.DeadlineDate,
-                CompanyName = application.JobOffer.User?.Company?.CompanyName,
-                ContactInfo = application.JobOffer.ContactInfo
-    };
-        }
+        
 
 
 
