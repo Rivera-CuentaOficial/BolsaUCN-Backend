@@ -430,7 +430,7 @@ namespace bolsafeucn_back.src.API.Controllers
         /// Elimina la oferta de trabajo de parte del admin
         /// </summary>
         [Authorize(Roles = "Admin")]
-        [HttpDelete("offers/{offerId}")]
+        [HttpPatch("offers/{offerId}")]
         public async Task<IActionResult> ClosePublishedOffer(int offerId)
         {
             try
@@ -462,7 +462,7 @@ namespace bolsafeucn_back.src.API.Controllers
         /// Elimina la compra y venta de parte del admin
         /// </summary>
         [Authorize(Roles = "Admin")]
-        [HttpDelete("buysells/{buySellId}")]
+        [HttpPatch("buysells/{buySellId}")]
         public async Task<IActionResult> ClosePublishedBuySell(int buySellId)
         {
             try
