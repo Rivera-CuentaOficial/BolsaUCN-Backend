@@ -429,7 +429,71 @@ namespace bolsafeucn_back.src.API.Controllers
         /// <summary>
         /// Elimina la oferta de trabajo de parte del admin
         /// </summary>
-        /// TODO: agregar endpoint proximamente para siguiente iteracion
+        [Authorize(Roles = "Admin")]
+        [HttpDelete("offers/{offerId}")]
+        public async Task<IActionResult> ClosePublishedOffer(int offerId)
+        {
+            try
+            {
+                await _offerService.ClosePublishedOfferAsync(offerId);
+                return Ok(
+                    new GenericResponse<object>($"Oferta {offerId} cerrada con exito", offerId)
+                );
+            }
+            catch (KeyNotFoundException)
+            {
+                return NotFound(new GenericResponse<object>("No se encontro la oferta", null));
+            }
+            catch (InvalidOperationException ex)
+            {
+                return Conflict(new GenericResponse<object>(ex.Message));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error cerrando oferta ID: {OfferId}", offerId);
+                return StatusCode(
+                    500,
+                    new GenericResponse<object>("Error interno al cerrar la oferta.", null)
+                );
+            }
+        }
+
+        /// <summary>
+        /// Elimina la compra y venta de parte del admin
+        /// </summary>
+        [Authorize(Roles = "Admin")]
+        [HttpDelete("buysells/{buySellId}")]
+        public async Task<IActionResult> ClosePublishedBuySell(int buySellId)
+        {
+            try
+            {
+                await _buySellService.ClosePublishedBuySellAsync(buySellId);
+                return Ok(
+                    new GenericResponse<object>(
+                        $"Compra/Venta {buySellId} cerrada con exito",
+                        buySellId
+                    )
+                );
+            }
+            catch (KeyNotFoundException)
+            {
+                return NotFound(
+                    new GenericResponse<object>("No se encontro la Compra/Venta", null)
+                );
+            }
+            catch (InvalidOperationException ex)
+            {
+                return Conflict(new GenericResponse<object>(ex.Message));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error cerrando Compra/Venta ID: {BuySellId}", buySellId);
+                return StatusCode(
+                    500,
+                    new GenericResponse<object>("Error interno al cerrar la Compra/Venta.", null)
+                );
+            }
+        }
         #endregion
 
         #region Validar ofertas (admin)
