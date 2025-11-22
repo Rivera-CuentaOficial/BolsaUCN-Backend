@@ -220,7 +220,7 @@ namespace bolsafeucn_back.src.Application.Services.Implements
         )
         {
             // Validar que el estado sea válido
-            var validStatuses = new[] { "Pendiente", "Aceptado", "Rechazado" };
+            var validStatuses = new[] { "Pendiente", "Aceptada", "Rechazada" };
             if (!validStatuses.Contains(newStatus))
             {
                 throw new ArgumentException(
@@ -349,6 +349,8 @@ namespace bolsafeucn_back.src.Application.Services.Implements
 
             return applicantDtos;
         }
+
+        
 
         public async Task<ViewApplicantUserDetailDto> GetApplicantDetailForOfferer(
             int studentId,
