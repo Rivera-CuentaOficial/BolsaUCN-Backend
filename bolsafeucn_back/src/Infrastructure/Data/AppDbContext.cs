@@ -24,6 +24,7 @@ namespace bolsafeucn_back.src.Infrastructure.Data
         public DbSet<Publication> Publications { get; set; }
         public DbSet<Offer> Offers { get; set; }
         public DbSet<BuySell> BuySells { get; set; }
+        public DbSet<NotificationDTO> Notifications { get; set; }
         public DbSet<JobApplication> JobApplications { get; set; }
         public DbSet<Review> Reviews { get; set; }
 
@@ -139,4 +140,6 @@ namespace bolsafeucn_back.src.Infrastructure.Data
                 .OnDelete(DeleteBehavior.Restrict);
         }
     }
+    // todo: sobrecarga de SaveChangesAsync para manejar IsCompleted en Review.
+    
 }

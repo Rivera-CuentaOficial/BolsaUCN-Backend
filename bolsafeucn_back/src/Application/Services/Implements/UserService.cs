@@ -143,7 +143,7 @@ namespace bolsafeucn_back.src.Application.Services.Implements
                 );
                 return "Usuario registrado exitosamente. Por favor, verifica tu correo electrónico.";
             }
-            throw new Exception("El usuario fue registrado pero ocurrió un error al enviar el correo de verificación. Por favor, solicita un nuevo código de verificación.");
+            return "El usuario fue registrado pero ocurrió un error al enviar el correo de verificación. Por favor, solicita un nuevo código de verificación.";
         }
 
         /// <summary>
@@ -250,7 +250,7 @@ namespace bolsafeucn_back.src.Application.Services.Implements
                 );
                 return "Usuario registrado exitosamente. Por favor, verifica tu correo electrónico.";
             }
-            throw new Exception("El usuario fue registrado pero ocurrió un error al enviar el correo de verificación. Por favor, solicita un nuevo código de verificación.");
+            return "El usuario fue registrado pero ocurrió un error al enviar el correo de verificación. Por favor, solicita un nuevo código de verificación.";
         }
 
         /// <summary>
@@ -357,7 +357,7 @@ namespace bolsafeucn_back.src.Application.Services.Implements
                 );
                 return "Usuario registrado exitosamente. Por favor, verifica tu correo electrónico.";
             }
-            throw new Exception("El usuario fue registrado pero ocurrió un error al enviar el correo de verificación. Por favor, solicita un nuevo código de verificación.");
+            return "El usuario fue registrado pero ocurrió un error al enviar el correo de verificación. Por favor, solicita un nuevo código de verificación.";
         }
 
         /// <summary>
@@ -471,7 +471,7 @@ namespace bolsafeucn_back.src.Application.Services.Implements
                 );
                 return "Usuario registrado exitosamente. Por favor, verifica tu correo electrónico.";
             }
-            throw new Exception("El usuario fue registrado pero ocurrió un error al enviar el correo de verificación. Por favor, solicita un nuevo código de verificación.");
+            return "El usuario fue registrado pero ocurrió un error al enviar el correo de verificación. Por favor, solicita un nuevo código de verificación.";
         }
 
         /// <summary>
@@ -599,7 +599,7 @@ namespace bolsafeucn_back.src.Application.Services.Implements
                             "Error al enviar email de bienvenida a: {Email}",
                             user.Email
                         );
-                        throw new Exception("Correo verificado, pero hubo un error al enviar el email de bienvenida.");
+                        return "Correo verificado, pero hubo un error al enviar el email de bienvenida.";
                     }
                 }
                 Log.Error(
@@ -751,6 +751,14 @@ namespace bolsafeucn_back.src.Application.Services.Implements
             return _tokenService.CreateToken(user, role, loginDTO.RememberMe);
         }
 
+        /// <summary>
+        /// Envía un código de verificación para el reseteo de contraseña al correo electrónico del usuario.
+        /// </summary>
+        /// <param name="requestResetPasswordCodeDTO">Dto que contiene el email para enviar el código de verificación</param>
+        /// <param name="httpContext">Contexto HTTP</param>
+        /// <returns>Mensaje indicando el resultado del envío del código de verificación</returns>
+        /// <exception cref="KeyNotFoundException"></exception>
+        /// <exception cref="InvalidOperationException"></exception>
         public async Task<string> SendResetPasswordVerificationCodeEmailAsync(
             RequestResetPasswordCodeDTO requestResetPasswordCodeDTO,
             HttpContext httpContext
@@ -809,7 +817,7 @@ namespace bolsafeucn_back.src.Application.Services.Implements
                 );
                 return "Correo de reseteo de contraseña enviado exitosamente.";
             }
-            throw new Exception("El codigo fue creado pero ocurrió un error al enviar el correo de verificación. Por favor, solicita un nuevo código de verificación.");
+            return "El codigo fue creado pero ocurrió un error al enviar el correo de verificación. Por favor, solicita un nuevo código de verificación.";
         }
 
         /// <summary>

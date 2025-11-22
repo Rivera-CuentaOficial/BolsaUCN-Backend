@@ -46,5 +46,18 @@ namespace bolsafeucn_back.src.Application.Services.Interfaces
         /// Obtiene los detalles de un postulante que postula a una oferta de trabajo
         /// </summary>
         Task<ViewApplicantDetailAdminDto> GetApplicantDetailForAdmin(int studentId);
+
+
+        /// <summary>
+        /// Obtiene los postulantes para una oferta específica, validando que el oferente sea el dueño.
+        /// </summary>
+        Task<IEnumerable<OffererApplicantViewDto>> GetApplicantsForOffererAsync(int offerId, int offererUserId);
+
+        /// <summary>
+        /// Obtiene los detalles de un postulante para un oferente, validando que el oferente sea el dueño.
+        /// </summary>      
+        Task<JobApplicationDetailDto> GetApplicationDetailAsync(int applicationId);
+
+
     }
 }
