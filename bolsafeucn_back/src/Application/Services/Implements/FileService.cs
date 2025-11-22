@@ -15,6 +15,7 @@ namespace bolsafeucn_back.src.Application.Services.Implements
         private readonly string[] _allowedExtensions;
         private readonly int _maxFileSizeInBytes;
         private readonly IFileRepository _fileRepository;
+        private readonly IUserRepository _userRepository;
         private readonly string _cloudName;
         private readonly string _cloudApiKey;
         private readonly string _cloudApiSecret;
@@ -23,10 +24,11 @@ namespace bolsafeucn_back.src.Application.Services.Implements
         private readonly string _transformationQuality;
         private readonly string _transformationFetchFormat;
 
-        public FileService(IConfiguration configuration, IFileRepository fileRepository)
+        public FileService(IConfiguration configuration, IFileRepository fileRepository, IUserRepository userRepository)
         {
             _configuration = configuration;
             _fileRepository = fileRepository;
+            _userRepository = userRepository;
             _cloudName =
                 _configuration["Cloudinary:CloudName"]
                 ?? throw new InvalidOperationException(
@@ -44,28 +46,28 @@ namespace bolsafeucn_back.src.Application.Services.Implements
             _cloudinary = new Cloudinary(account);
             _cloudinary.Api.Secure = true; // Aseguramos  que las URLs sean seguras con HTTPS
             _allowedExtensions =
-                _configuration.GetSection("Products:ImageAllowedExtensions").Get<string[]>()
+                _configuration.GetSection("Images:ImageAllowedExtensions").Get<string[]>()
                 ?? throw new InvalidOperationException(
                     "La configuración de las extensiones de las imágenes es obligatoria"
                 );
             _transformationQuality =
-                _configuration["Products:TransformationQuality"]
+                _configuration["Images:TransformationQuality"]
                 ?? throw new InvalidOperationException(
                     "La configuración de la calidad de la transformación es obligatoria"
                 );
             _transformationCrop =
-                _configuration["Products:TransformationCrop"]
+                _configuration["Images:TransformationCrop"]
                 ?? throw new InvalidOperationException(
                     "La configuración del recorte de la transformación es obligatoria"
                 );
             _transformationFetchFormat =
-                _configuration["Products:TransformationFetchFormat"]
+                _configuration["Images:TransformationFetchFormat"]
                 ?? throw new InvalidOperationException(
                     "La configuración del formato de la transformación es obligatoria"
                 );
             if (
                 !int.TryParse(
-                    _configuration["Products:ImageMaxSizeInBytes"],
+                    _configuration["Images:ImageMaxSizeInBytes"],
                     out _maxFileSizeInBytes
                 )
             )
@@ -76,7 +78,7 @@ namespace bolsafeucn_back.src.Application.Services.Implements
             }
             if (
                 !int.TryParse(
-                    _configuration["Products:TransformationWidth"],
+                    _configuration["Images:TransformationWidth"],
                     out _transformationWidth
                 )
             )
@@ -267,8 +269,6 @@ namespace bolsafeucn_back.src.Application.Services.Implements
             {
                 PublicId = uploadResult.PublicId,
                 Url = uploadResult.SecureUrl.ToString(),
-                GeneralUser = user,
-                UserId = user.Id,
                 ImageType = imageType
             };
 
@@ -295,6 +295,22 @@ namespace bolsafeucn_back.src.Application.Services.Implements
             }
 
             Log.Information($"Imagen subida exitosamente: {uploadResult.SecureUrl}");
+
+            switch (imageType)
+            {
+                case UserImageType.Perfil:
+                    user.ProfilePhoto = image;
+                    user.ProfilePhotoId = image.Id;
+                    break;
+                case UserImageType.Banner:
+                    user.ProfileBanner = image;
+                    user.ProfileBannerId = image.Id;
+                    break;
+                default:
+                    Log.Error($"Tipo de imagen de usuario no soportado: {imageType}");
+                    throw new ArgumentException("Tipo de imagen de usuario no soportado");
+            }
+
             return true;
         }
 

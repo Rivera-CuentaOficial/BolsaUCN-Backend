@@ -72,16 +72,29 @@ namespace bolsafeucn_back.src.Application.Services.Implements
                 Log.Warning("Intento de registro con RUT duplicado: {Rut}", registerStudentDTO.Rut);
                 throw new InvalidOperationException("El RUT ya está en uso.");
             }
+
             var user = registerStudentDTO.Adapt<GeneralUser>();
             user.PhoneNumber = NormalizePhoneNumber(registerStudentDTO.PhoneNumber);
+
             var profile = new UserImage()
             {
-                Url = _configuration.GetValue<string>("Products:DefaultUserImageUrl")!,
-                PublicId = _configuration.GetValue<string>("Products:DefaultUserImagePublicId")!,
-                GeneralUser = user,
-                UserId = user.Id,
+                Url = _configuration.GetValue<string>("Images:DefaultUserImageUrl")!,
+                PublicId = _configuration.GetValue<string>("Images:DefaultUserImagePublicId")!,
+                ImageType = UserImageType.Banner
+            };
+            var banner = new UserImage()
+            {
+                Url = _configuration.GetValue<string>("Images:DefaultBannerImageUrl")!,
+                PublicId = _configuration.GetValue<string>("Images:DefaultBannerImagePublicId")!,
                 ImageType = UserImageType.Perfil
             };
+            await _fileRepository.CreateUserImageAsync(profile);
+            await _fileRepository.CreateUserImageAsync(banner);
+            user.ProfilePhoto = profile;
+            user.ProfilePhotoId = profile.Id;       
+            user.ProfileBanner = banner;
+            user.ProfileBannerId = banner.Id;
+
             var result = await _userRepository.CreateUserAsync(
                 user,
                 registerStudentDTO.Password,
@@ -96,15 +109,7 @@ namespace bolsafeucn_back.src.Application.Services.Implements
                 throw new Exception("Error al crear el usuario.");
             }
 
-            bool profileResult = await CreateUserImage(profile);
-            if (!profileResult)
-            {
-                Log.Error(
-                    "Error al crear imagen de perfil por defecto para usuario con email: {Email}",
-                    registerStudentDTO.Email
-                );
-                throw new Exception("Error al crear la imagen de perfil.");
-            }
+            
             var student = registerStudentDTO.Adapt<Student>();
             student.GeneralUserId = user.Id;
             result = await _userRepository.CreateStudentAsync(student);
@@ -184,21 +189,22 @@ namespace bolsafeucn_back.src.Application.Services.Implements
             user.PhoneNumber = NormalizePhoneNumber(registerIndividualDTO.PhoneNumber);
             var profile = new UserImage()
             {
-                Url = _configuration.GetValue<string>("Product:DefaultUserImageUrl")!,
-                PublicId = _configuration.GetValue<string>("Product:DefaultUserImagePublicId")!,
-                GeneralUser = user,
-                UserId = user.Id,
+                Url = _configuration.GetValue<string>("Images:DefaultUserImageUrl")!,
+                PublicId = _configuration.GetValue<string>("Images:DefaultUserImagePublicId")!,
+                ImageType = UserImageType.Banner
+            };
+            var banner = new UserImage()
+            {
+                Url = _configuration.GetValue<string>("Images:DefaultBannerImageUrl")!,
+                PublicId = _configuration.GetValue<string>("Images:DefaultBannerImagePublicId")!,
                 ImageType = UserImageType.Perfil
             };
-            bool profileResult = await CreateUserImage(profile);
-            if (!profileResult)
-            {
-                Log.Error(
-                    "Error al crear imagen de perfil por defecto para usuario con email: {Email}",
-                    registerIndividualDTO.Email
-                );
-                throw new Exception("Error al crear la imagen de perfil.");
-            }
+            await _fileRepository.CreateUserImageAsync(profile);
+            await _fileRepository.CreateUserImageAsync(banner);
+            user.ProfilePhoto = profile;
+            user.ProfilePhotoId = profile.Id;       
+            user.ProfileBanner = banner;
+            user.ProfileBannerId = banner.Id;
             var result = await _userRepository.CreateUserAsync(
                 user,
                 registerIndividualDTO.Password,
@@ -291,21 +297,22 @@ namespace bolsafeucn_back.src.Application.Services.Implements
             user.PhoneNumber = NormalizePhoneNumber(registerCompanyDTO.PhoneNumber);
             var profile = new UserImage()
             {
-                Url = _configuration.GetValue<string>("Product:DefaultUserImageUrl")!,
-                PublicId = _configuration.GetValue<string>("Product:DefaultUserImagePublicId")!,
-                GeneralUser = user,
-                UserId = user.Id,
+                Url = _configuration.GetValue<string>("Images:DefaultUserImageUrl")!,
+                PublicId = _configuration.GetValue<string>("Images:DefaultUserImagePublicId")!,
+                ImageType = UserImageType.Banner
+            };
+            var banner = new UserImage()
+            {
+                Url = _configuration.GetValue<string>("Images:DefaultBannerImageUrl")!,
+                PublicId = _configuration.GetValue<string>("Images:DefaultBannerImagePublicId")!,
                 ImageType = UserImageType.Perfil
             };
-            bool profileResult = await CreateUserImage(profile);
-            if (!profileResult)
-            {
-                Log.Error(
-                    "Error al crear imagen de perfil por defecto para usuario con email: {Email}",
-                    registerCompanyDTO.Email
-                );
-                throw new Exception("Error al crear la imagen de perfil.");
-            }
+            await _fileRepository.CreateUserImageAsync(profile);
+            await _fileRepository.CreateUserImageAsync(banner);
+            user.ProfilePhoto = profile;
+            user.ProfilePhotoId = profile.Id;       
+            user.ProfileBanner = banner;
+            user.ProfileBannerId = banner.Id;
             var result = await _userRepository.CreateUserAsync(
                 user,
                 registerCompanyDTO.Password,
@@ -399,21 +406,23 @@ namespace bolsafeucn_back.src.Application.Services.Implements
             user.PhoneNumber = NormalizePhoneNumber(registerAdminDTO.PhoneNumber);
             var profile = new UserImage()
             {
-                Url = _configuration.GetValue<string>("Product:DefaultUserImageUrl")!,
-                PublicId = _configuration.GetValue<string>("Product:DefaultUserImagePublicId")!,
-                GeneralUser = user,
-                UserId = user.Id,
+                Url = _configuration.GetValue<string>("Images:DefaultUserImageUrl")!,
+                PublicId = _configuration.GetValue<string>("Images:DefaultUserImagePublicId")!,
+                ImageType = UserImageType.Banner
+            };
+            var banner = new UserImage()
+            {
+                Url = _configuration.GetValue<string>("Images:DefaultBannerImageUrl")!,
+                PublicId = _configuration.GetValue<string>("Images:DefaultBannerImagePublicId")!,
                 ImageType = UserImageType.Perfil
             };
-            bool profileResult = await CreateUserImage(profile);
-            if (!profileResult)
-            {
-                Log.Error(
-                    "Error al crear imagen de perfil por defecto para usuario con email: {Email}",
-                    registerAdminDTO.Email
-                );
-                throw new Exception("Error al crear la imagen de perfil.");
-            }
+            await _fileRepository.CreateUserImageAsync(profile);
+            await _fileRepository.CreateUserImageAsync(banner);
+            user.ProfilePhoto = profile;
+            user.ProfilePhotoId = profile.Id;       
+            user.ProfileBanner = banner;
+            user.ProfileBannerId = banner.Id;
+
             string role = "Admin";
             if (registerAdminDTO.SuperAdmin)
             {
@@ -977,11 +986,13 @@ namespace bolsafeucn_back.src.Application.Services.Implements
             // Validar que los campos requeridos por el sistema estén presentes después de aplicar los cambios
             if (string.IsNullOrWhiteSpace(user.Email) || string.IsNullOrWhiteSpace(user.Rut))
             {
+                Log.Error("El usuario actualizado no tiene todos los campos requeridos. UserId: {UserId}", userId);
                 throw new Exception("El usuario actualizado no tiene todos los campos requeridos.");
             }
 
             var images = new UserImagesDTO();
             updateParamsDTO.ApplyTo(images);
+            
             if (images.ProfilePhoto != null) 
                 await _fileService.UploadUserImageAsync(
                     images.ProfilePhoto, 
@@ -995,11 +1006,9 @@ namespace bolsafeucn_back.src.Application.Services.Implements
             var result = await _userRepository.UpdateAsync(user);
             if (!result)
             {
+                Log.Error("Error al actualizar los datos del usuario con ID: {UserId}", userId);
                 throw new Exception("Error al actualizar los datos del usuario");
             }
-
-            
-
             return "Datos del usuario actualizados correctamente";
         }
 
@@ -1055,28 +1064,6 @@ namespace bolsafeucn_back.src.Application.Services.Implements
         {
             var digits = new string(phoneNumber.Where(char.IsDigit).ToArray());
             return "+56" + digits;
-        }
-
-        /// <summary>
-        /// Crea una imagen de usuario en la base de datos.
-        /// </summary>
-        /// <param name="image">Imagen de usuario a crear</param>
-        /// <returns>Indica si la imagen fue creada exitosamente</returns>
-        /// <exception cref="Exception"></exception>
-        private async Task<bool> CreateUserImage(UserImage image)
-        {
-            var imageResult = await _fileRepository.CreateUserImageAsync(image);
-            if (imageResult is bool && !imageResult.Value!)
-            {
-                Log.Error($"Error al guardar la imagen en la base de datos.");
-                throw new Exception("Error al guardar la imagen en la base de datos");
-            }
-            else if (imageResult is null)
-            {
-                Log.Warning($"La imagen ya existe en la base de datos");
-                return false;
-            }
-            return true;
         }
 
         #endregion

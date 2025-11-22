@@ -129,15 +129,15 @@ namespace bolsafeucn_back.src.Infrastructure.Data
             builder
                 .Entity<GeneralUser>()
                 .HasOne(gu => gu.ProfilePhoto)
-                .WithMany()
-                .HasForeignKey(gu => gu.ProfilePhotoId)
-                .OnDelete(DeleteBehavior.Restrict);
+                .WithOne()
+                .HasForeignKey<GeneralUser>(gu => gu.ProfilePhotoId)
+                .OnDelete(DeleteBehavior.SetNull);
             builder
                 .Entity<GeneralUser>()
                 .HasOne(gu => gu.ProfileBanner)
-                .WithMany()
-                .HasForeignKey(gu => gu.ProfileBannerId)
-                .OnDelete(DeleteBehavior.Restrict);
+                .WithOne()
+                .HasForeignKey<GeneralUser>(gu => gu.ProfileBannerId)
+                .OnDelete(DeleteBehavior.SetNull);
         }
     }
     // todo: sobrecarga de SaveChangesAsync para manejar IsCompleted en Review.
