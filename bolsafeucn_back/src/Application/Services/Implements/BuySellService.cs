@@ -220,5 +220,25 @@ namespace bolsafeucn_back.src.Application.Services.Implements
             buySell.statusValidation = StatusValidation.Rejected;
             await _buySellRepository.UpdateAsync(buySell);
         }
+
+        public async Task ClosePublishedBuySellAsync(int buySellId)
+        {
+            var buySell = await _buySellRepository.GetByIdAsync(buySellId);
+            if (buySell == null)
+            {
+                throw new KeyNotFoundException(
+                    $"La compra/venta con id {buySellId} no fue encontrada."
+                );
+            }
+            if (buySell.statusValidation != StatusValidation.Published)
+            {
+                throw new InvalidOperationException(
+                    $"La compra/venta con ID {buySellId} está {buySell.statusValidation}. No se puede cerrar."
+                );
+            }
+            buySell.IsActive = false;
+            buySell.statusValidation = StatusValidation.Closed;
+            await _buySellRepository.UpdateAsync(buySell);
+        }
     }
 }
