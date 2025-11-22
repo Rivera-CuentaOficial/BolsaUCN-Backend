@@ -29,6 +29,7 @@ namespace bolsafeucn_back.src.Application.Services.Implements
             _userRepository = userRepository;
         }
 
+        #region Obtener Reviews y Ratings
         /// <summary>
         /// Agrega una nueva reseña completa (obsoleto - no implementado).
         /// </summary>
@@ -66,7 +67,28 @@ namespace bolsafeucn_back.src.Application.Services.Implements
         {
             return await _repository.GetStudentAverageRatingAsync(studentId);
         }
+        public async Task<ShowReviewDTO> GetReviewAsync(int id)
+        {
+            var review = await _repository.GetByIdAsync(id);
+            if (review == null)
+                throw new KeyNotFoundException($"No se encontró una review con ID {id}.");
+            return ReviewMapper.ShowReviewDTO(review);
+        }
 
+        public async Task<IEnumerable<ShowReviewDTO>> GetReviewsByStudentAsync(int studentId)
+        {
+            var reviews = await _repository.GetByStudentIdAsync(studentId);
+            if (reviews == null || !reviews.Any())
+                throw new KeyNotFoundException($"No se encontraron reseñas para el estudiante con ID {studentId}.");
+            return reviews.Select(ReviewMapper.ShowReviewDTO);
+        }
+        public async Task<IEnumerable<ReviewDTO>> GetAllReviewsAsync()
+        {
+            var reviews = await _repository.GetAllAsync();
+            return reviews.Select(ReviewMapper.ToDTO);
+        }
+        #endregion
+        #region Agregar Reviews
         /// <summary>
         /// Agrega la evaluación del oferente hacia el estudiante.
         /// Valida que el usuario autenticado sea el oferente y que no haya completado previamente su evaluación.
@@ -79,9 +101,7 @@ namespace bolsafeucn_back.src.Application.Services.Implements
         /// <exception cref="InvalidOperationException">Lanzada si el oferente ya completó su evaluación.</exception>
         public async Task AddStudentReviewAsync(ReviewForStudentDTO dto, int currentUserId)
         {
-            var review = await _repository.GetByPublicationIdAsync(dto.PublicationId);
-            if (review == null)
-                throw new KeyNotFoundException("No se ha encontrado una reseña para el ID de publicación dado.");
+            var review = await _repository.GetByPublicationIdAsync(dto.PublicationId) ?? throw new KeyNotFoundException("No se ha encontrado una reseña para el ID de publicación dado.");
 
             // Validar que el usuario actual sea el OFERENTE (quien califica al estudiante)
             if (review.OfferorId != currentUserId)
@@ -120,11 +140,7 @@ namespace bolsafeucn_back.src.Application.Services.Implements
         /// <exception cref="InvalidOperationException">Lanzada si el estudiante ya completó su evaluación.</exception>
         public async Task AddOfferorReviewAsync(ReviewForOfferorDTO dto, int currentUserId)
         {
-            var review = await _repository.GetByPublicationIdAsync(dto.PublicationId);
-            if (review == null)
-            {
-                throw new KeyNotFoundException("No se ha encontrado una reseña para el ID de publicación dado.");
-            }
+            var review = await _repository.GetByPublicationIdAsync(dto.PublicationId) ?? throw new KeyNotFoundException("No se ha encontrado una reseña para el ID de publicación dado.");
             // Validar que el usuario actual sea el ESTUDIANTE (quien califica al oferente)
             if (review.StudentId != currentUserId)
             {
@@ -188,7 +204,8 @@ namespace bolsafeucn_back.src.Application.Services.Implements
             await _repository.AddAsync(review);
             return review;
         }
-
+        #endregion 
+        #region Eliminar Reviews
         /// <summary>
         /// Elimina parcial o completamente una reseña.
         /// Permite eliminar la parte del estudiante, del oferente, o ambas.
@@ -205,62 +222,20 @@ namespace bolsafeucn_back.src.Application.Services.Implements
                 throw new InvalidOperationException("Debe especificar al menos una parte de la review para eliminar.");
             }
             // Obtener la review
-            var review = await _repository.GetByIdAsync(dto.ReviewId);
-            if (review == null)
-            {
-                throw new KeyNotFoundException($"No se encontró una review con ID {dto.ReviewId}.");
-            }
+            var review = await _repository.GetByIdAsync(dto.ReviewId) ?? throw new KeyNotFoundException($"No se encontró una review con ID {dto.ReviewId}.");
             // Si la review fue cerrada automáticamente, no se permiten cambios
             if (review.IsClosed)
             {
                 throw new InvalidOperationException("No se puede eliminar parte de esta review porque ha sido cerrada.");
             }
-            //TODO: Pasar logica al Mapper
             // Eliminar la parte del estudiante si se solicita
-            if (dto.DeleteReviewForStudent)
-            {
-                review.RatingForStudent = null;
-                review.CommentForStudent = null;
-                review.AtTime = false;
-                review.GoodPresentation = false;
-                review.StudentReviewCompleted = false;
-                review.IsCompleted = false;
-                review.HasReviewForStudentBeenDeleted = true;
-                Log.Information("Deleted student part of review ID {ReviewId}", dto.ReviewId);
-            }
+            if (dto.DeleteReviewForStudent) ReviewMapper.DeleteReviewForStudent(review);
             // Eliminar la parte del oferente si se solicita
-            if (dto.DeleteReviewForOfferor)
-            {
-                review.RatingForOfferor = null;
-                review.CommentForOfferor = null;
-                review.OfferorReviewCompleted = false;
-                review.IsCompleted = false;
-                review.HasReviewForOfferorBeenDeleted = true;
-                Log.Information("Deleted offeror part of review ID {ReviewId}", dto.ReviewId);
-            }
+            if (dto.DeleteReviewForOfferor) ReviewMapper.DeleteReviewForOfferor(review);
             await _repository.UpdateAsync(review);
         }
-
-        public async Task<ShowReviewDTO> GetReviewAsync(int id)
-        {
-            var review = await _repository.GetByIdAsync(id);
-            if (review == null)
-                throw new KeyNotFoundException($"No se encontró una review con ID {id}.");
-            return ReviewMapper.ShowReviewDTO(review);
-        }
-
-        public async Task<IEnumerable<ShowReviewDTO>> GetReviewsByStudentAsync(int studentId)
-        {
-            var reviews = await _repository.GetByStudentIdAsync(studentId);
-            if (reviews == null || !reviews.Any())
-                throw new KeyNotFoundException($"No se encontraron reseñas para el estudiante con ID {studentId}.");
-            return reviews.Select(ReviewMapper.ShowReviewDTO);
-        }
-        public async Task<IEnumerable<ReviewDTO>> GetAllReviewsAsync()
-        {
-            var reviews = await _repository.GetAllAsync();
-            return reviews.Select(ReviewMapper.ToDTO);
-        }
+        #endregion
+        #region Otras operaciones
 
         public async Task<IEnumerable<PublicationsDTO>> GetPublicationInformationAsync(int userId)
         {
@@ -299,11 +274,7 @@ namespace bolsafeucn_back.src.Application.Services.Implements
         }
         public async Task UpdateUserRatingAsync(int userId)
         {
-            var user = await _userRepository.GetByIdAsync(userId);
-            if (user == null)
-            {
-                throw new KeyNotFoundException($"No se encontró el usuario con ID {userId}.");
-            }
+            var user = await _userRepository.GetByIdAsync(userId) ?? throw new KeyNotFoundException($"No se encontró el usuario con ID {userId}.");
             double? averageRating = null;
             // Determinar el tipo de usuario y obtener su calificación promedio
             if (user.UserType == UserType.Estudiante)
@@ -343,7 +314,8 @@ namespace bolsafeucn_back.src.Application.Services.Implements
                 throw new InvalidOperationException($"El tipo de usuario {user.UserType} no puede tener calificaciones.");
             }
         }
-
+        #endregion
+        #region Hangfire
         /// <summary>
         /// Cierra las reseñas cuya ventana de revisión terminó y las marca como no modificables.
         /// </summary>
@@ -364,5 +336,6 @@ namespace bolsafeucn_back.src.Application.Services.Implements
             }
             Log.Information("Cierre automático de reviews vencidas completado. Total cerrado: {Count}", expiredReviews.Count());
         }
+        #endregion
     }
 }

@@ -1,5 +1,6 @@
 using bolsafeucn_back.src.Application.DTOs.ReviewDTO;
 using bolsafeucn_back.src.Domain.Models;
+using Serilog;
 
 namespace bolsafeucn_back.src.Application.Mappers
 {
@@ -111,6 +112,28 @@ namespace bolsafeucn_back.src.Application.Mappers
                 GoodPresentation = entity.GoodPresentation,
                 IsComplete = entity.IsCompleted
             };
+        }
+        public static Review DeleteReviewForOfferor(Review review)
+        {
+            review.RatingForOfferor = null;
+            review.CommentForOfferor = null;
+            review.OfferorReviewCompleted = false;
+            review.IsCompleted = false;
+            review.HasReviewForOfferorBeenDeleted = true;
+            Log.Information("Deleted offeror part of review ID {ReviewId}", review.Id);
+            return review;
+        }
+        public static Review DeleteReviewForStudent(Review review)
+        {
+            review.RatingForStudent = null;
+            review.CommentForStudent = null;
+            review.AtTime = false;
+            review.GoodPresentation = false;
+            review.StudentReviewCompleted = false;
+            review.IsCompleted = false;
+            review.HasReviewForStudentBeenDeleted = true;
+            Log.Information("Deleted student part of review ID {ReviewId}", review.Id);
+            return review;
         }
     }
 }

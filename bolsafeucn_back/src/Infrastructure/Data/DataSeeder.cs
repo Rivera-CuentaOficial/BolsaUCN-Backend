@@ -1,4 +1,5 @@
 using Bogus;
+using bolsafeucn_back.src.Application.Services.Implements;
 using bolsafeucn_back.src.Domain.Models;
 using bolsafeucn_back.src.Infrastructure.Data;
 using Microsoft.AspNetCore.Identity;
@@ -655,33 +656,33 @@ namespace bolsafeucn_back.src.Application.Infrastructure.Data
             var students = await context.Users
                 .Where(u => u.UserType == UserType.Estudiante)
                 .ToListAsync();
-            
+
             var offerents = await context.Users
                 .Where(u => u.UserType == UserType.Empresa || u.UserType == UserType.Particular)
                 .ToListAsync();
-            
+
             var publications = await context.Offers.ToListAsync();
-            
+
             if (students.Count == 0 || offerents.Count == 0 || publications.Count == 0)
             {
                 Log.Warning("DataSeeder: No se pueden crear reviews - faltan usuarios o publicaciones");
                 return;
             }
-            
+
             var now = DateTime.UtcNow;
             var reviews = new List<Review>();
             var faker = new Faker("es");
-            
+
             // Crear 12 reviews (6 completas + 6 incompletas)
             for (int i = 0; i < 12; i++)
             {
                 var student = students[i % students.Count];
                 var offerent = offerents[i % offerents.Count];
                 var publication = publications[i % publications.Count];
-                
+
                 // Las primeras 6 reviews están completas (más de 14 días desde creación)
                 bool isCompleted = i < 6;
-                
+
                 var review = new Review
                 {
                     StudentId = student.Id,
@@ -690,34 +691,85 @@ namespace bolsafeucn_back.src.Application.Infrastructure.Data
                     Offeror = offerent,
                     PublicationId = publication.Id,
                     Publication = publication,
-                    
+
                     // Evaluación del oferente hacia el estudiante
                     RatingForStudent = faker.Random.Int(1, 6),
                     CommentForStudent = GenerateOfferentComment(faker, i),
                     AtTime = faker.Random.Bool(0.7f),
                     GoodPresentation = faker.Random.Bool(0.8f),
                     StudentReviewCompleted = true,
-                    
+
                     // Evaluación del estudiante hacia el oferente (completa solo si isCompleted)
                     RatingForOfferor = isCompleted ? faker.Random.Int(1, 6) : (int?)null,
                     CommentForOfferor = isCompleted ? GenerateStudentComment(faker, i) : null,
                     OfferorReviewCompleted = isCompleted,
-                    
+
                     IsCompleted = isCompleted,
                     ReviewWindowEndDate = isCompleted ? now.AddDays(-15) : now.AddDays(10),
                     HasReviewForStudentBeenDeleted = false,
                     HasReviewForOfferorBeenDeleted = false,
                 };
-                
+
                 reviews.Add(review);
             }
-            
+
             await context.Reviews.AddRangeAsync(reviews);
             await context.SaveChangesAsync();
-            
+
             Log.Information("DataSeeder: {Count} reviews creadas exitosamente (6 completas, 6 incompletas)", reviews.Count);
+            // Lo genere casi todo con IA. Esto es innecesario ya que en el Service cada vez que se completa una Review se
+            // actualiza el rating del usuario correspondiente. Pero aca como se generan las Rewiews manual sin pasar por
+            // el service, se actualiza manualmente con el codigo de abajo.
+            // Actualizar ratings de todos los usuarios involucrados
+            Log.Information("DataSeeder: Actualizando ratings de estudiantes y oferentes...");
+
+            var allUserIds = new HashSet<int>();
+            foreach (var review in reviews)
+            {
+                allUserIds.Add(review.StudentId);
+                allUserIds.Add(review.OfferorId);
+            }
+
+            foreach (var userId in allUserIds)
+            {
+                var user = await context.Users.FindAsync(userId);
+                if (user == null) continue;
+
+                double? averageRating = null;
+
+                if (user.UserType == UserType.Estudiante)
+                {
+                    // Calcular promedio de ratings para estudiante
+                    var studentReviews = await context.Reviews
+                        .Where(r => r.StudentId == userId && r.RatingForStudent.HasValue)
+                        .ToListAsync();
+
+                    if (studentReviews.Any())
+                    {
+                        averageRating = studentReviews.Average(r => r.RatingForStudent!.Value);
+                    }
+                }
+                else if (user.UserType == UserType.Empresa || user.UserType == UserType.Particular)
+                {
+                    // Calcular promedio de ratings para oferente
+                    var offerorReviews = await context.Reviews
+                        .Where(r => r.OfferorId == userId && r.RatingForOfferor.HasValue)
+                        .ToListAsync();
+
+                    if (offerorReviews.Any())
+                    {
+                        averageRating = offerorReviews.Average(r => r.RatingForOfferor!.Value);
+                    }
+                }
+
+                user.Rating = averageRating ?? 0.0;
+                context.Users.Update(user);
+            }
+
+            await context.SaveChangesAsync();
+            Log.Information("DataSeeder: Ratings actualizados exitosamente para {Count} usuarios", allUserIds.Count);
         }
-        
+
         private static string GenerateOfferentComment(Faker faker, int index)
         {
             var comments = new[]
@@ -737,7 +789,7 @@ namespace bolsafeucn_back.src.Application.Infrastructure.Data
             };
             return comments[index % comments.Length];
         }
-        
+
         private static string GenerateStudentComment(Faker faker, int index)
         {
             var comments = new[]
