@@ -43,5 +43,6 @@ namespace bolsafeucn_back.src.Application.Services.Interfaces
         /// <param name="buySellId"></param>
         /// <returns></returns>
         Task GetBuySellForAdminToReject(int buySellId);
+        Task ClosePublishedBuySellAsync(int buySellId);
     }
 }
