@@ -136,18 +136,22 @@ try
     builder.Services.AddScoped<CompanyMapper>();
     builder.Services.AddScoped<AdminMapper>();
     builder.Services.AddScoped<OfferMapper>();
+    builder.Services.AddScoped<ProfileMapper>();
 
     builder.Services.AddScoped<IUserRepository, UserRepository>();
     builder.Services.AddScoped<IOfferRepository, OfferRepository>();
     builder.Services.AddScoped<IBuySellRepository, BuySellRepository>();
     builder.Services.AddScoped<IVerificationCodeRepository, VerificationCodeRepository>();
     builder.Services.AddScoped<IJobApplicationRepository, JobApplicationRepository>();
+    builder.Services.AddScoped<INotificationRepository, NotificationRepository>();
+    builder.Services.AddScoped<INotificationService, NotificationService>();
 
     builder.Services.AddScoped<IUserService, UserService>();
     builder.Services.AddScoped<IEmailService, EmailService>();
     builder.Services.AddScoped<ITokenService, TokenService>();
     builder.Services.AddScoped<IOfferService, OfferService>();
     builder.Services.AddScoped<IJobApplicationService, JobApplicationService>();
+    builder.Services.AddScoped<INotificationRepository, NotificationRepository>();
     builder.Services.AddScoped<IPublicationService, PublicationService>();
     builder.Services.AddScoped<IBuySellService, BuySellService>();
     builder.Services.AddScoped<IPublicationRepository, PublicationRepository>();

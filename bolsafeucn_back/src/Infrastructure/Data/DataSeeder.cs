@@ -74,6 +74,12 @@ namespace bolsafeucn_back.src.Application.Infrastructure.Data
                     await SeedJobApplications(context);
                     Log.Information("DataSeeder: Postulaciones de prueba creadas exitosamente.");
                 }
+                if (!await context.Reviews.AnyAsync())
+                {
+                    Log.Information("DataSeeder: No se encontraron reviews, creando reviews de prueba...");
+                    await SeedReviews(context);
+                    Log.Information("DataSeeder: Reviews de prueba creadas exitosamente.");
+                }
             }
             catch (Exception ex)
             {
@@ -639,6 +645,76 @@ namespace bolsafeucn_back.src.Application.Infrastructure.Data
                 "DataSeeder: Postulaciones de prueba cargadas ({Count})",
                 applications.Count
             );
+        }
+
+        private static async Task SeedReviews(AppDbContext context)
+        {
+            var studentUser = await context.Users.FirstOrDefaultAsync(u => u.Email == "estudiante@alumnos.ucn.cl");
+            var offerentUser = await context.Users.FirstOrDefaultAsync(u => u.Email == "empresa@techcorp.cl");
+            var publication = await context.Offers.FirstOrDefaultAsync();
+            if (studentUser == null || offerentUser == null || publication == null)
+            {
+                Log.Warning("DataSeeder: No se pueden crear reviews - faltan usuarios o publicaciones");
+                return;
+            }
+            var now = DateTime.UtcNow;
+            var review1 = new Review
+            {
+                StudentId = studentUser.Id,
+                Student = studentUser,
+                OfferorId = offerentUser.Id,
+                Offeror = offerentUser,
+                PublicationId = publication.Id,
+                Publication = publication,
+                // Evaluación del oferente hacia el estudiante
+                RatingForStudent = 5,
+                CommentForStudent = "Excelente estudiante, muy responsable y puntual. Cumplió con todas las tareas asignadas de manera profesional.",
+                AtTime = true,
+                GoodPresentation = true,
+                StudentReviewCompleted = true,
+                // Evaluación del estudiante hacia el oferente
+                RatingForOfferor = 5,
+                CommentForOfferor = "Muy buena experiencia laboral. El ambiente de trabajo fue excelente y aprendí mucho durante el proceso.",
+                OfferorReviewCompleted = true,
+                
+                IsCompleted = true,
+                ReviewWindowEndDate = now.AddDays(30),
+                HasReviewForStudentBeenDeleted = false,
+                HasReviewForOfferorBeenDeleted = false,
+            };
+            var publication2 = await context.Offers.Skip(1).FirstOrDefaultAsync();
+            if (publication2 != null)
+            {
+                var review2 = new Review
+                {
+                    StudentId = studentUser.Id,
+                    Student = studentUser,
+                    OfferorId = offerentUser.Id,
+                    Offeror = offerentUser,
+                    PublicationId = publication2.Id,
+                    Publication = publication2,
+                    
+                    // Solo el oferente ha evaluado
+                    RatingForStudent = 4,
+                    CommentForStudent = "Buen desempeño general, aunque tuvo algunos retrasos menores. Muestra potencial y ganas de aprender.",
+                    AtTime = false,
+                    GoodPresentation = true,
+                    StudentReviewCompleted = true,
+                    
+                    // El estudiante aún no ha evaluado
+                    RatingForOfferor = null,
+                    CommentForOfferor = null,
+                    OfferorReviewCompleted = false,
+                    
+                    IsCompleted = false,
+                    ReviewWindowEndDate = now.AddDays(15),
+                    HasReviewForStudentBeenDeleted = false,
+                    HasReviewForOfferorBeenDeleted = false,
+                };
+                context.Reviews.Add(review2);
+            }
+            context.Reviews.Add(review1);
+            await context.SaveChangesAsync();
         }
     }
 }
