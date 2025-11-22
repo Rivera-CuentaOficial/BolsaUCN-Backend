@@ -12,10 +12,12 @@ namespace bolsafeucn_back.src.API.Controllers
     public class ReviewController : BaseController
     {
         private readonly IReviewService _reviewService;
+        private readonly IPdfGeneratorService _pdfGeneratorService;
 
-        public ReviewController(IReviewService reviewService)
+        public ReviewController(IReviewService reviewService, IPdfGeneratorService pdfGeneratorService)
         {
             _reviewService = reviewService;
+            _pdfGeneratorService = pdfGeneratorService;
         }
         /// <summary>
         /// Agrega una nueva reseña.
@@ -39,7 +41,7 @@ namespace bolsafeucn_back.src.API.Controllers
             var reviews = await _reviewService.GetReviewsByOfferorAsync(offerorId);
             return Ok(reviews);
         }
-        
+
         [HttpGet("student/{studentId}")]
         public async Task<IActionResult> GetReviewsByStudentId(int studentId)
         {
@@ -76,6 +78,37 @@ namespace bolsafeucn_back.src.API.Controllers
                 return Ok(reviews);
             }
             return Unauthorized("El usuario no tiene un rol válido para ver reseñas.");
+        }
+
+        /// <summary>
+        /// Genera un PDF con todas las reviews del usuario autenticado.
+        /// El PDF incluye un resumen con el promedio de calificación y el detalle de cada review.
+        /// </summary>
+        /// <returns>Archivo PDF con el reporte de calificaciones</returns>
+        [HttpGet("my-reviews/pdf")]
+        [Authorize(Roles = "Applicant,Offerent")]
+        public async Task<IActionResult> GetMyReviewsPdf()
+        {
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out int currentUserId))
+            {
+                return Unauthorized("No se pudo identificar al usuario autenticado.");
+            }
+
+            try
+            {
+                var pdfBytes = await _pdfGeneratorService.GenerateUserReviewsPdfAsync(currentUserId);
+
+                return File(pdfBytes, "application/pdf", $"reviews_{currentUserId}_{DateTime.Now:yyyyMMdd}.pdf");
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Error generando PDF: {ex.Message}");
+            }
         }
 
         [HttpGet("{id}")]
@@ -167,7 +200,7 @@ namespace bolsafeucn_back.src.API.Controllers
             var reviews = await _reviewService.GetAllReviewsAsync();
             return Ok(reviews);
         }
-        
+
         /// <summary>
         /// Obtiene la información de las publicaciones asociadas a las reseñas del usuario autenticado.
         /// Identifica automáticamente si el usuario es estudiante u oferente.

@@ -180,6 +180,7 @@ try
     builder.Services.AddScoped<IPublicationRepository, PublicationRepository>();
     builder.Services.AddScoped<IReviewRepository, ReviewRepository>();
     builder.Services.AddScoped<IReviewService, ReviewService>();
+    builder.Services.AddScoped<IPdfGeneratorService, PdfGeneratorService>();
 
     builder.Services.AddMapster();
 
