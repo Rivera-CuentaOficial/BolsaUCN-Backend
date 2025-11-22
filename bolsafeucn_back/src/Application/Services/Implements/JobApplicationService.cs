@@ -87,9 +87,9 @@ namespace bolsafeucn_back.src.Application.Services.Implements
             var jobApplication = new JobApplication
             {
                 StudentId = studentId,
-                Student = student,
                 JobOfferId = offerId,
-                JobOffer = offer,
+                Student = null!,
+                JobOffer = null!,
                 Status = "Pendiente",
                 ApplicationDate = DateTime.UtcNow,
             };
@@ -126,6 +126,52 @@ namespace bolsafeucn_back.src.Application.Services.Implements
                 CurriculumVitae = app.Student.Student?.CurriculumVitae,
                 MotivationLetter = app.Student.Student?.MotivationLetter,
             });
+        }
+        public async Task<JobApplicationDetailDto?> GetApplicationDetailAsync(int applicationId)
+        {
+            // Obtener la postulación
+            var application = await _jobApplicationRepository.GetByIdAsync(applicationId);
+            
+            if (application == null)
+                return null;
+
+            
+            var offer = await _offerRepository.GetByIdAsync(application.JobOfferId);
+            
+            if (offer == null)
+                return null;
+
+           
+            var user = await _userRepository.GetByIdWithRelationsAsync(offer.UserId);
+
+            var authorName = user?.UserType == UserType.Empresa
+                ? (user.Company?.CompanyName ?? "Empresa desconocida")
+            : user?.UserType == UserType.Particular
+                ? $"{(user.Individual?.Name ?? "").Trim()} {(user.Individual?.LastName ?? "").Trim()}".Trim()
+            : (user?.UserName ?? "UCN");
+            var statusMessage = application.Status switch
+            {
+                "Pendiente" => "Su solicitud fue enviada con éxito; será contactado a la brevedad.",
+                "Seleccionado" => "¡Felicidades! Tu solicitud ha sido aceptada.",
+                "No seleccionado" => "Lamentablemente, tu solicitud ha sido rechazado.",
+                _ => ""
+            };
+
+            return new JobApplicationDetailDto
+            {
+                Id = application.Id,
+                OfferTitle = offer.Title,
+                CompanyName = authorName,
+                ApplicationDate = application.ApplicationDate,
+                PublicationDate = offer.PublicationDate,
+                EndDate = offer.EndDate,
+                Remuneration = offer.Remuneration,
+                Description = offer.Description,
+                Requirements = offer.Requirements,
+                ContactInfo = offer.ContactInfo,
+                Status = application.Status,
+                StatusMessage = statusMessage
+            };
         }
 
         public async Task<IEnumerable<JobApplicationResponseDto>> GetApplicationsByOfferIdAsync(
@@ -315,6 +361,8 @@ namespace bolsafeucn_back.src.Application.Services.Implements
             {
                 throw new KeyNotFoundException($"La oferta con id {offerId} no fue encontrada.");
             }
+        
+
 
             // Comprueba que el ID del usuario de la oferta (offer.UserId)
             // sea el mismo que el ID del usuario logueado (offererUserId).
