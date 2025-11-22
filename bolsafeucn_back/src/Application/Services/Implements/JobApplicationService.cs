@@ -282,14 +282,18 @@ namespace bolsafeucn_back.src.Application.Services.Implements
             return true;
         }
 
-        public async Task<IEnumerable<ViewApplicantsDto>> GetApplicantsForAdminManagement(int offerId)
+        public async Task<IEnumerable<ViewApplicantsDto>> GetApplicantsForAdminManagement(
+            int offerId
+        )
         {
             var applicant = await _jobApplicationRepository.GetByOfferIdAsync(offerId);
-            return applicant.Select(app => new ViewApplicantsDto
-            {
-                Applicant = $"{app.Student.Student?.Name} {app.Student.Student?.LastName}",
-                Status = app.Status
-            }).ToList();
+            return applicant
+                .Select(app => new ViewApplicantsDto
+                {
+                    Applicant = $"{app.Student.Student?.Name} {app.Student.Student?.LastName}",
+                    Status = app.Status,
+                })
+                .ToList();
         }
 
         public async Task<ViewApplicantDetailAdminDto> GetApplicantDetailForAdmin(int studentId)
@@ -297,59 +301,93 @@ namespace bolsafeucn_back.src.Application.Services.Implements
             var applicant = await _jobApplicationRepository.GetByIdAsync(studentId);
             return new ViewApplicantDetailAdminDto
             {
-                StudentName = $"{applicant.Student.Student?.Name} {applicant.Student.Student?.LastName}",
+                StudentName =
+                    $"{applicant.Student.Student?.Name} {applicant.Student.Student?.LastName}",
                 Email = applicant.Student.Email,
                 PhoneNumber = applicant.Student.PhoneNumber,
-                Status = applicant.Status
+                Status = applicant.Status,
                 // TODO: falta descripcion
             };
         }
 
-
-
-        public async Task<IEnumerable<OffererApplicantViewDto>> GetApplicantsForOffererAsync(int offerId, int offererUserId)
+        public async Task<IEnumerable<OffererApplicantViewDto>> GetApplicantsForOffererAsync(
+            int offerId,
+            int offererUserId
+        )
         {
-            
             var offer = await _offerRepository.GetByIdAsync(offerId);
             if (offer == null)
             {
                 throw new KeyNotFoundException($"La oferta con id {offerId} no fue encontrada.");
             }
 
-            
-            // Comprueba que el ID del usuario de la oferta (offer.UserId) 
+            // Comprueba que el ID del usuario de la oferta (offer.UserId)
             // sea el mismo que el ID del usuario logueado (offererUserId).
             if (offer.UserId != offererUserId)
             {
-                throw new UnauthorizedAccessException("No tienes permiso para ver los postulantes de esta oferta, ya que no eres el propietario.");
+                throw new UnauthorizedAccessException(
+                    "No tienes permiso para ver los postulantes de esta oferta, ya que no eres el propietario."
+                );
             }
 
-           
             // Tu repositorio GetByOfferIdAsync ya incluye Student y Student.Student (según tu código)
             var applications = await _jobApplicationRepository.GetByOfferIdAsync(offerId);
 
             // 4. Mapear al nuevo DTO que creamos
-            var applicantDtos = applications.Select(app => new OffererApplicantViewDto
-            {
-                ApplicationId = app.Id,
-                StudentId = app.StudentId,
-                ApplicantName = $"{app.Student.Student?.Name} {app.Student.Student?.LastName}",
-                Status = app.Status,
-                ApplicationDate = app.ApplicationDate,
-                // Enviamos el link del CV directamente
-                CurriculumVitaeUrl = app.Student.Student?.CurriculumVitae 
-            }).ToList();
+            var applicantDtos = applications
+                .Select(app => new OffererApplicantViewDto
+                {
+                    ApplicationId = app.Id,
+                    StudentId = app.StudentId,
+                    ApplicantName = $"{app.Student.Student?.Name} {app.Student.Student?.LastName}",
+                    Status = app.Status,
+                    ApplicationDate = app.ApplicationDate,
+                    // Enviamos el link del CV directamente
+                    CurriculumVitaeUrl = app.Student.Student?.CurriculumVitae,
+                })
+                .ToList();
 
             return applicantDtos;
         }
 
+        public async Task<ViewApplicantUserDetailDto> GetApplicantDetailForOfferer(
+            int studentId,
+            int offerId,
+            int offererUserId
+        )
+        {
+            var offer = await _offerRepository.GetByIdAsync(offerId);
+            if (offer == null)
+            {
+                throw new KeyNotFoundException($"La oferta con id {offerId} no fue encontrada.");
+            }
         
 
 
+            // Comprueba que el ID del usuario de la oferta (offer.UserId)
+            // sea el mismo que el ID del usuario logueado (offererUserId).
+            if (offer.UserId != offererUserId)
+            {
+                throw new UnauthorizedAccessException(
+                    "No tienes permiso para ver los postulantes de esta oferta, ya que no eres el propietario."
+                );
+            }
 
+            var applicant = await _jobApplicationRepository.GetByStudentIdAsync(studentId);
+            var applicantDto = new ViewApplicantUserDetailDto
+            {
+                Name =
+                    $"{applicant.First().Student.Student.Name} {applicant.First().Student.Student.LastName}",
+                Email = applicant.First().Student.Email,
+                Phone = applicant.First().Student.PhoneNumber,
+                Rut = applicant.First().Student.Rut,
+                Rating = applicant.First().Student.Student?.Rating,
+                MotivationLetter = applicant.First().Student.Student?.MotivationLetter,
+                Disability = applicant.First().Student.Student?.Disability.ToString(),
+                CurriculumVitae = applicant.First().Student.Student?.CurriculumVitae,
+            };
 
-
-
-
+            return applicantDto;
+        }
     }
 }

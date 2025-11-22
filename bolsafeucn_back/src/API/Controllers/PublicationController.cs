@@ -1018,6 +1018,39 @@ namespace bolsafeucn_back.src.API.Controllers
             }
         }
 
+        [HttpGet("offerent/my-offer/{offerId}/applicants/{studentId}")] // <-- 1. RUTA CORREGIDA (para no chocar con la del Admin)
+        [Authorize(Roles = "Offerent")]
+        public async Task<ActionResult<ViewApplicantUserDetailDto>> GetApplicantDetail(
+            int offerId,
+            int studentId
+        )
+        {
+            // 1. Obtener offererUserId del token (como se hace en otros métodos)
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (
+                string.IsNullOrEmpty(userIdClaim)
+                || !int.TryParse(userIdClaim, out int offererUserId)
+            )
+            {
+                return Unauthorized(new GenericResponse<object>("No autenticado o token inválido"));
+            }
+
+            // 2. Llamar al servicio que devuelve el DTO detallado
+            var applicantDetail = await _jobApplicationService.GetApplicantDetailForOfferer(
+                studentId,
+                offerId,
+                offererUserId
+            ); // Este método ya devuelve ViewApplicantUserDetailDto
+
+            // 3. Retornar con el DTO detallado
+            return Ok(
+                new GenericResponse<ViewApplicantUserDetailDto>( // <-- CORRECTO
+                    "Detalle del postulante obtenido exitosamente",
+                    applicantDetail
+                )
+            );
+        }
+
         #endregion
     }
 }
