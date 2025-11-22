@@ -1,31 +1,31 @@
-# Stage 1: Build the application
+# --- Etapa 1: Construcción (Build) ---
+# CAMBIO: Usamos el SDK de .NET 9.0 (Preview)
 FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
-# Establece el directorio de trabajo base para toda la solución
-WORKDIR /src
+WORKDIR /app
 
-# 1. Copia el archivo de solución (.sln) a /src
-# El contexto de build está en backend-PIS, por eso la ruta es bolsafeucn_back/
-COPY bolsafeucn_back/bolsafeucn_back.sln .
+# Copia los archivos de solución (.sln) y de proyecto (.csproj)
+COPY *.sln .
+COPY *.csproj .
 
-# 2. Crea la subcarpeta del proyecto y copia el .csproj dentro
-RUN mkdir -p bolsafeucn_back/
-COPY bolsafeucn_back/bolsafeucn_back.csproj bolsafeucn_back/
+# Restaura los paquetes NuGet
+RUN dotnet restore
 
-# 3. Restaura las dependencias (busca el .csproj en la subcarpeta que acabamos de crear)
-RUN dotnet restore bolsafeucn_back/bolsafeucn_back.csproj
+# Copia todo el resto del código (incluyendo la carpeta 'src')
+COPY . .
 
-# 4. Copia el resto del código fuente a la subcarpeta del proyecto
-COPY bolsafeucn_back/. bolsafeucn_back/
+# --- ARREGLO AQUÍ ---
+# 1. NO nos movemos a /app/src
+# 2. Le decimos a 'publish' DÓNDE está el proyecto
+RUN dotnet publish "bolsafeucn_back.csproj" -c Release -o /app/publish
 
-# 5. Publica la aplicación, usando la ruta del proyecto
-WORKDIR /src/bolsafeucn_back
-RUN dotnet publish -c Release -o /app/publish
-
-# Stage 2: Create the final runtime image
+# --- Etapa 2: Imagen Final (Runtime) ---
+# CAMBIO: Usamos el runtime de ASP.NET 9.0 (Preview)
 FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS final
 WORKDIR /app
 COPY --from=build /app/publish .
 
+# Expone el puerto 8080
 EXPOSE 8080
-ENTRYPOINT ["dotnet", "bolsafeucn_back.dll"]
 
+# Comando para iniciar tu app
+ENTRYPOINT ["dotnet", "bolsafeucn_back.dll"]
