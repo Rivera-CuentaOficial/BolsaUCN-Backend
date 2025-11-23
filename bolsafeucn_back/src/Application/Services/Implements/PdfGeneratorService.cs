@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using QuestPDF.Fluent;
 using QuestPDF.Helpers;
 using QuestPDF.Infrastructure;
+using System.Linq;
 
 namespace bolsafeucn_back.src.Application.Services.Implements
 {
@@ -268,6 +269,315 @@ namespace bolsafeucn_back.src.Application.Services.Implements
             if (rating >= 4.0) return Colors.Blue.Medium;
             if (rating >= 3.0) return Colors.Orange.Medium;
             return Colors.Red.Medium;
+        }
+
+        /// <summary>
+        /// Genera un PDF con todas las reviews del sistema
+        /// </summary>
+        public async Task<byte[]> GenerateSystemReviewsPdfAsync()
+        {
+            // 1. Obtener todas las reviews del sistema con includes
+            var reviews = await _context.Reviews
+                .Include(r => r.Publication)
+                .Include(r => r.Student)
+                .Include(r => r.Offeror)
+                .OrderByDescending(r => r.CreatedAt) // Más recientes primero
+                .ToListAsync();
+
+            // 2. Calcular estadísticas del sistema
+            var totalReviews = reviews.Count;
+
+            // Obtener todos los ratings (tanto de estudiantes como de oferentes)
+            var allRatings = reviews
+                .SelectMany(r => new[] { r.RatingForStudent, r.RatingForOfferor })
+                .Where(rating => rating.HasValue)
+                .Select(rating => rating!.Value)
+                .ToList();
+
+            var systemAverageRating = allRatings.Any() ? allRatings.Average() : 0.0;
+
+            // Contar usuarios únicos que tienen reviews
+            var usersWithReviews = reviews
+                .SelectMany(r => new[] { r.StudentId, r.OfferorId })
+                .Distinct()
+                .Count();
+
+            // 3. Construir DTO para el reporte
+            var reportData = new SystemReviewReportDTO
+            {
+                TotalReviews = totalReviews,
+                SystemAverageRating = systemAverageRating,
+                TotalUsersWithReviews = usersWithReviews,
+                GeneratedAt = DateTime.UtcNow,
+                Reviews = reviews.Select(r => new SystemReviewDetailDTO
+                {
+                    ReviewId = r.Id,
+                    PublicationTitle = r.Publication?.Title ?? "Publicación no disponible",
+                    StudentName = r.Student?.UserName ?? "Estudiante",
+                    OfferorName = r.Offeror?.UserName ?? "Oferente",
+                    RatingForStudent = r.RatingForStudent,
+                    CommentForStudent = r.CommentForStudent,
+                    RatingForOfferor = r.RatingForOfferor,
+                    CommentForOfferor = r.CommentForOfferor,
+                    ReviewDate = r.CreatedAt,
+                    AtTime = r.AtTime,
+                    GoodPresentation = r.GoodPresentation,
+                    IsCompleted = r.IsCompleted,
+                    IsClosed = r.IsClosed
+                }).ToList()
+            };
+
+            // 4. Generar PDF
+            return GenerateSystemPdfDocument(reportData);
+        }
+
+        /// <summary>
+        /// Genera el documento PDF del sistema con QuestPDF
+        /// </summary>
+        private byte[] GenerateSystemPdfDocument(SystemReviewReportDTO data)
+        {
+            var document = Document.Create(container =>
+            {
+                container.Page(page =>
+                {
+                    page.Size(PageSizes.A4);
+                    page.Margin(2, Unit.Centimetre);
+                    page.DefaultTextStyle(x => x.FontSize(11));
+
+                    // Header
+                    page.Header().Element(c => ComposeSystemHeader(c, data));
+
+                    // Content
+                    page.Content().Element(c => ComposeSystemContent(c, data));
+
+                    // Footer
+                    page.Footer().AlignCenter().Text($"Generado el: {data.GeneratedAt:dd/MM/yyyy HH:mm} | BolsaFEUCN - Reporte del Sistema")
+                        .FontSize(9)
+                        .FontColor(Colors.Grey.Medium);
+                });
+            });
+
+            return document.GeneratePdf();
+        }
+
+        /// <summary>
+        /// Compone el header del PDF del sistema
+        /// </summary>
+        private void ComposeSystemHeader(IContainer container, SystemReviewReportDTO data)
+        {
+            container.Column(column =>
+            {
+                column.Item().Text("Reporte General del Sistema")
+                    .FontSize(20)
+                    .Bold()
+                    .FontColor(Colors.Blue.Darken2);
+
+                column.Item().PaddingTop(5).Text("BolsaFE UCN - Todas las Calificaciones")
+                    .FontSize(14)
+                    .SemiBold();
+
+                column.Item().PaddingTop(10).BorderBottom(1).BorderColor(Colors.Grey.Lighten1);
+            });
+        }
+
+        /// <summary>
+        /// Compone el contenido principal del PDF del sistema
+        /// </summary>
+        private void ComposeSystemContent(IContainer container, SystemReviewReportDTO data)
+        {
+            container.PaddingVertical(20).Column(column =>
+            {
+                // Sección de resumen general
+                column.Item().Row(row =>
+                {
+                    row.RelativeItem().Column(col =>
+                    {
+                        col.Item().Text("Promedio General").FontSize(12).SemiBold();
+                        col.Item().Text($"{data.SystemAverageRating:F2}/6.0")
+                            .FontSize(24)
+                            .Bold()
+                            .FontColor(GetRatingColor(data.SystemAverageRating));
+                    });
+
+                    row.RelativeItem().Column(col =>
+                    {
+                        col.Item().Text("Total de Reviews").FontSize(12).SemiBold();
+                        col.Item().Text(data.TotalReviews.ToString())
+                            .FontSize(24)
+                            .Bold()
+                            .FontColor(Colors.Blue.Medium);
+                    });
+
+                    row.RelativeItem().Column(col =>
+                    {
+                        col.Item().Text("Usuarios con Reviews").FontSize(12).SemiBold();
+                        col.Item().Text(data.TotalUsersWithReviews.ToString())
+                            .FontSize(24)
+                            .Bold()
+                            .FontColor(Colors.Green.Medium);
+                    });
+                });
+
+                column.Item().PaddingTop(20).Text("Detalle de Todas las Calificaciones (Más Recientes Primero)")
+                    .FontSize(14)
+                    .SemiBold();
+
+                // Verificar si hay reviews
+                if (!data.Reviews.Any())
+                {
+                    column.Item().PaddingTop(20).Text("No hay calificaciones registradas en el sistema.")
+                        .FontSize(12)
+                        .Italic()
+                        .FontColor(Colors.Grey.Medium);
+                }
+                else
+                {
+                    // Lista de reviews
+                    foreach (var review in data.Reviews)
+                    {
+                        column.Item().PaddingTop(15).Element(c => ComposeSystemReviewCard(c, review));
+                    }
+                }
+            });
+        }
+
+        /// <summary>
+        /// Compone una tarjeta individual de review del sistema
+        /// </summary>
+        private void ComposeSystemReviewCard(IContainer container, SystemReviewDetailDTO review)
+        {
+            container.Border(1).BorderColor(Colors.Grey.Lighten2)
+                .Padding(15)
+                .Column(column =>
+                {
+                    // Header con título y estado
+                    column.Item().Row(row =>
+                    {
+                        row.RelativeItem().Text(review.PublicationTitle)
+                            .FontSize(12)
+                            .SemiBold();
+
+                        row.AutoItem().Text(review.IsCompleted ? "Completa" : "Incompleta")
+                            .FontSize(9)
+                            .FontColor(review.IsCompleted ? Colors.Green.Medium : Colors.Orange.Medium)
+                            .Italic();
+
+                        if (review.IsClosed)
+                        {
+                            row.AutoItem().PaddingLeft(5).Text("Cerrada")
+                                .FontSize(9)
+                                .FontColor(Colors.Red.Medium)
+                                .Italic();
+                        }
+                    });
+
+                    // Información de participantes
+                    column.Item().PaddingTop(5).Row(row =>
+                    {
+                        row.AutoItem().Text($"Estudiante: {review.StudentName}").FontSize(10).SemiBold();
+                        row.AutoItem().PaddingLeft(15).Text($"Oferente: {review.OfferorName}").FontSize(10).SemiBold();
+                    });
+
+                    // Calificación para el Estudiante
+                    column.Item().PaddingTop(8).Border(1).BorderColor(Colors.Blue.Lighten3)
+                        .Padding(8)
+                        .Column(col =>
+                        {
+                            col.Item().Text("Calificación para el Estudiante")
+                                .FontSize(10)
+                                .SemiBold()
+                                .FontColor(Colors.Blue.Darken1);
+
+                            if (review.RatingForStudent.HasValue)
+                            {
+                                col.Item().PaddingTop(3).Row(r =>
+                                {
+                                    r.AutoItem().Text("Rating: ");
+                                    r.AutoItem().Text($"{review.RatingForStudent.Value}/6")
+                                        .Bold()
+                                        .FontColor(GetRatingColor(review.RatingForStudent.Value));
+                                });
+                            }
+                            else
+                            {
+                                col.Item().PaddingTop(3).Text("Sin calificar")
+                                    .FontSize(9)
+                                    .Italic()
+                                    .FontColor(Colors.Grey.Medium);
+                            }
+
+                            if (!string.IsNullOrEmpty(review.CommentForStudent))
+                            {
+                                col.Item().PaddingTop(3).Text($"Comentario: {review.CommentForStudent}")
+                                    .FontSize(9)
+                                    .Italic();
+                            }
+
+                            // Campos específicos
+                            if (review.AtTime.HasValue || review.GoodPresentation.HasValue)
+                            {
+                                col.Item().PaddingTop(3).Row(r =>
+                                {
+                                    if (review.AtTime.HasValue)
+                                    {
+                                        r.AutoItem().Text("Puntualidad: ");
+                                        r.AutoItem().Text(review.AtTime.Value ? "Sí" : "No")
+                                            .FontColor(review.AtTime.Value ? Colors.Green.Medium : Colors.Red.Medium);
+                                        r.AutoItem().PaddingLeft(10);
+                                    }
+
+                                    if (review.GoodPresentation.HasValue)
+                                    {
+                                        r.AutoItem().Text("Presentación: ");
+                                        r.AutoItem().Text(review.GoodPresentation.Value ? "Buena" : "Regular")
+                                            .FontColor(review.GoodPresentation.Value ? Colors.Green.Medium : Colors.Orange.Medium);
+                                    }
+                                });
+                            }
+                        });
+
+                    // Calificación para el Oferente
+                    column.Item().PaddingTop(5).Border(1).BorderColor(Colors.Green.Lighten3)
+                        .Padding(8)
+                        .Column(col =>
+                        {
+                            col.Item().Text("Calificación para el Oferente")
+                                .FontSize(10)
+                                .SemiBold()
+                                .FontColor(Colors.Green.Darken1);
+
+                            if (review.RatingForOfferor.HasValue)
+                            {
+                                col.Item().PaddingTop(3).Row(r =>
+                                {
+                                    r.AutoItem().Text("Rating: ");
+                                    r.AutoItem().Text($"{review.RatingForOfferor.Value}/6")
+                                        .Bold()
+                                        .FontColor(GetRatingColor(review.RatingForOfferor.Value));
+                                });
+                            }
+                            else
+                            {
+                                col.Item().PaddingTop(3).Text("Sin calificar")
+                                    .FontSize(9)
+                                    .Italic()
+                                    .FontColor(Colors.Grey.Medium);
+                            }
+
+                            if (!string.IsNullOrEmpty(review.CommentForOfferor))
+                            {
+                                col.Item().PaddingTop(3).Text($"Comentario: {review.CommentForOfferor}")
+                                    .FontSize(9)
+                                    .Italic();
+                            }
+                        });
+
+                    // Fecha
+                    column.Item().PaddingTop(5)
+                        .Text($"Fecha: {review.ReviewDate:dd/MM/yyyy HH:mm}")
+                        .FontSize(9)
+                        .FontColor(Colors.Grey.Medium);
+                });
         }
     }
 }

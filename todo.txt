@@ -1,6 +1,9 @@
 TODO: 
-1. Realizar proceso en segundo plano que revise cuantos dais han pasado desde la Review, y que posterior a 14 dias se cierre automaticamente.
-2. Proceso de generar el reporte PDF.
-3. Arreglar archivos DTO para entregar solamente la informacion esencial desde el backend.
+1. avisar al admin cuando haya review baja
+2. cambiar dto reporte usuario (solo admin consigue pdf)
+3. reporte general del sistema
+3.3 cambiar dtos de review/publications
 4. Automatizar creacion de Review al finalizar una publicacion.
 5. mermaid
+6. lista de usuarios en modelo publication
+7. combinar info tabla review y publication en un mismo dto
