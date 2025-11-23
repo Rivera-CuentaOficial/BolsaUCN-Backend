@@ -15,6 +15,7 @@ namespace bolsafeucn_back.src.Infrastructure.Data
 
         // DbSets - Representan las tablas en la base de datos
         public DbSet<Image> Images { get; set; }
+        public DbSet<UserImage> UserImages { get; set; }
         public DbSet<Student> Students { get; set; }
         public DbSet<Company> Companies { get; set; }
         public DbSet<Individual> Individuals { get; set; }
@@ -122,6 +123,21 @@ namespace bolsafeucn_back.src.Infrastructure.Data
                 .WithMany()
                 .HasForeignKey(r => r.OfferorId)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            // Relaciones de UserImage (Imágenes de usuario)
+            // Relación uno a uno entre GeneralUser y sus imágenes de perfil y banner
+            builder
+                .Entity<GeneralUser>()
+                .HasOne(gu => gu.ProfilePhoto)
+                .WithOne()
+                .HasForeignKey<GeneralUser>(gu => gu.ProfilePhotoId)
+                .OnDelete(DeleteBehavior.SetNull);
+            builder
+                .Entity<GeneralUser>()
+                .HasOne(gu => gu.ProfileBanner)
+                .WithOne()
+                .HasForeignKey<GeneralUser>(gu => gu.ProfileBannerId)
+                .OnDelete(DeleteBehavior.SetNull);
         }
     }
     // todo: sobrecarga de SaveChangesAsync para manejar IsCompleted en Review.
