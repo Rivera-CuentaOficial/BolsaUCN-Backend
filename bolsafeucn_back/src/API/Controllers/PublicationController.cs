@@ -723,7 +723,6 @@ namespace bolsafeucn_back.src.API.Controllers
 
         #endregion
 
-
         #region Obtener Publicaciones por Status(Filtro para Empresa y Particular)
 
         // Importante para usar el enum
@@ -935,6 +934,8 @@ namespace bolsafeucn_back.src.API.Controllers
         #endregion
 
         #region Endpoints para Oferentes (Empresa/Particular)
+
+
 
         /// <summary>
         /// Obtiene la lista de postulantes para una oferta específica (Solo para el dueño de la oferta).
@@ -1195,6 +1196,211 @@ namespace bolsafeucn_back.src.API.Controllers
             }
         }
 
+        #endregion
+    
+        #region Filtros para Estudiante(publicaciones como Offers o BuyandSell)
+
+        /// <summary>
+        /// Obtiene todas las publicaciones PUBLICADAS del particular/empresa autenticado.
+        /// </summary>
+        [HttpGet("Students/my-published")]
+        [Authorize(Roles = "Student")]
+        public async Task<IActionResult> StudentGetMyPublishedPublications()
+        {
+            try
+            {
+                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+                if (userId == null)
+                {
+                    _logger.LogWarning("No cuenta con autorización");
+                    return Unauthorized(
+                        new GenericResponse<object>("No autenticado o token inválido")
+                    );
+                }
+
+                var publicationsDto = await _publicationService.GetMyPublishedPublicationsAsync(
+                    userId
+                );
+
+                return Ok(
+                    new GenericResponse<IEnumerable<PublicationsDTO>>(
+                        "Ofertas Publicadas obtenidas",
+                        publicationsDto
+                    )
+                );
+            }
+            catch (KeyNotFoundException ex)
+            {
+                _logger.LogWarning(ex, "Recurso no encontrado");
+                return NotFound(new GenericResponse<object>(ex.Message));
+            }
+            catch (InvalidOperationException ex)
+            {
+                _logger.LogWarning(ex, "Operación inválida");
+                return Conflict(new GenericResponse<object>(ex.Message));
+            }
+        }
+
+        /// <summary>
+        /// Obtiene todas las publicaciones PENDIENTE/ENPROCESO del particular/empresa autenticado.
+        /// </summary>
+        [HttpGet("Students/my-pending")]
+        [Authorize(Roles = "Student")]
+        public async Task<IActionResult> StudentGetMyPendingPublications()
+        {
+            try
+            {
+                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+                if (userId == null)
+                {
+                    _logger.LogWarning("No cuenta con autorización");
+                    return Unauthorized(
+                        new GenericResponse<object>("No autenticado o token inválido")
+                    );
+                }
+
+                var publicationsDto = await _publicationService.GetMyPendingPublicationsAsync(
+                    userId
+                );
+
+                return Ok(
+                    new GenericResponse<IEnumerable<PublicationsDTO>>(
+                        "Ofertas pendientes obtenidas",
+                        publicationsDto
+                    )
+                );
+            }
+            catch (KeyNotFoundException ex)
+            {
+                _logger.LogWarning(ex, "Recurso no encontrado");
+                return NotFound(new GenericResponse<object>(ex.Message));
+            }
+            catch (InvalidOperationException ex)
+            {
+                _logger.LogWarning(ex, "Operación inválida");
+                return Conflict(new GenericResponse<object>(ex.Message));
+            }
+        }
+
+        /// <summary>
+        /// Obtiene todas las publicaciones RECHAZADAS del particular/empresa autenticado.
+        /// </summary>
+        [HttpGet("Students/my-rejected")]
+        [Authorize(Roles = "Student")]
+        public async Task<IActionResult> StudentGetMyRejectedPublications()
+        {
+            try
+            {
+                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+                if (userId == null)
+                {
+                    _logger.LogWarning("No cuenta con autorización");
+                    return Unauthorized(
+                        new GenericResponse<object>("No autenticado o token inválido")
+                    );
+                }
+
+                var publicationsDto = await _publicationService.GetMyRejectedPublicationsAsync(
+                    userId
+                );
+
+                return Ok(
+                    new GenericResponse<IEnumerable<PublicationsDTO>>(
+                        "Ofertas Rechazadas obtenidas",
+                        publicationsDto
+                    )
+                );
+            }
+            catch (KeyNotFoundException ex)
+            {
+                _logger.LogWarning(ex, "Recurso no encontrado");
+                return NotFound(new GenericResponse<object>(ex.Message));
+            }
+            catch (InvalidOperationException ex)
+            {
+                _logger.LogWarning(ex, "Operación inválida");
+                return Conflict(new GenericResponse<object>(ex.Message));
+            }
+        }
+
+        [HttpGet("Students/offer/{id:int}")]
+        [Authorize(Roles = "Student")]
+        public async Task<IActionResult> StudentGetOfferDetail(int id)
+        {
+            try
+            {
+                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                if (userId == null)
+                {
+                    return Unauthorized(new GenericResponse<object>("No autenticado."));
+                }
+
+                // 1. Llama al servicio que implementamos en el paso anterior
+                var offerDetailDto = await _offerService.GetOfferDetailForOfferer(id, userId);
+
+                // 2. Devuelve el DTO en una respuesta exitosa
+                return Ok(
+                    new GenericResponse<OfferDetailDto>(
+                        "Detalle de la oferta obtenida",
+                        offerDetailDto
+                    )
+                );
+            }
+            catch (KeyNotFoundException ex)
+            {
+                _logger.LogWarning(ex, "Oferta no encontrada con ID: {Id}", id);
+                return NotFound(new GenericResponse<object>(ex.Message));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error al obtener detalle de la oferta ID: {Id}", id);
+                return StatusCode(500, new GenericResponse<object>("Error interno del servidor"));
+            }
+        }
+
+        /// <summary>
+        /// Obtiene el detalle de una publicación de Compra/Venta por su ID.
+        /// </summary>
+        [HttpGet("Students/buysell/{id:int}")]
+        [Authorize(Roles = "Student")]
+        public async Task<IActionResult> StudentGetBuySellDetail(int id)
+        {
+            try
+            {
+                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                if (userId == null)
+                {
+                    return Unauthorized(new GenericResponse<object>("No autenticado."));
+                }
+                // 1. Llama al servicio correspondiente
+                var buySellDetailDto = await _buySellService.GetBuySellDetailForOfferer(id, userId);
+
+                // 2. Devuelve el DTO
+                return Ok(
+                    new GenericResponse<BuySellDetailDto>(
+                        "Detalle de la compra y venta obtenida",
+                        buySellDetailDto
+                    )
+                );
+            }
+            catch (KeyNotFoundException ex)
+            {
+                _logger.LogWarning(ex, "Publicación Compra/Venta no encontrada con ID: {Id}", id);
+                return NotFound(new GenericResponse<object>(ex.Message));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(
+                    ex,
+                    "Error al obtener detalle de la publicación Compra/Venta ID: {Id}",
+                    id
+                );
+                return StatusCode(500, new GenericResponse<object>("Error interno del servidor"));
+            }
+        }
         #endregion
     }
 }
