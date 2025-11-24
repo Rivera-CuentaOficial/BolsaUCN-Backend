@@ -1,5 +1,6 @@
 using bolsafeucn_back.src.Application.DTOs.AuthDTOs;
 using bolsafeucn_back.src.Application.DTOs.AuthDTOs.ResetPasswordDTOs;
+using bolsafeucn_back.src.Application.DTOs.UserDTOs;
 using bolsafeucn_back.src.Application.DTOs.UserDTOs.UserProfileDTOs;
 using bolsafeucn_back.src.Domain.Models;
 
@@ -43,10 +44,11 @@ namespace bolsafeucn_back.src.Application.Services.Interfaces
             VerifyResetPasswordCodeDTO verifyResetPasswordCodeDTO,
             HttpContext httpContext
         );
+        Task<string> ChangeUserPasswordById(ChangeUserPasswordDTO changeUserPasswordDTO, int userId);
         #endregion
         #region Profile Management
         Task<IGetUserProfileDTO> GetUserProfileByIdAsync(int userId, UserType userType);
-        Task<string> UpdateUserProfile(IUpdateParamsDTO updateParamsDTO, int userId, UserType userType);
+        Task<string> UpdateUserProfileByIdAsync(IUpdateParamsDTO updateParamsDTO, int userId, UserType userType);
         #endregion 
     }
 }

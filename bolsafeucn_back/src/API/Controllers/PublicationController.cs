@@ -166,7 +166,7 @@ namespace bolsafeucn_back.src.API.Controllers
 
         #endregion
 
-        #region Obtiene publicaciones y mas (admin)
+        #region Administra buysells Admin
 
         /// <summary>
         /// Obtiene todas las ofertas pendientes de validación solo disponibles para admin
@@ -359,9 +359,141 @@ namespace bolsafeucn_back.src.API.Controllers
         }
 
         /// <summary>
+        /// Acepta una compra/venta especifica SOLO ADMIN
+        /// </summary>
+        [Authorize(Roles = "Admin")]
+        [HttpPatch("buysells/{id}/publish")]
+        public async Task<IActionResult> PublishBuySell(int id)
+        {
+            try
+            {
+                await _buySellService.GetBuySellForAdminToPublish(id);
+                return Ok(
+                    new GenericResponse<object>($"Compra/Venta {id} publicada con exito", id)
+                );
+            }
+            catch (KeyNotFoundException)
+            {
+                return NotFound(
+                    new GenericResponse<object>("No se encontro la Compra/Venta", null)
+                );
+            }
+            catch (InvalidOperationException ex)
+            {
+                return Conflict(new GenericResponse<object>(ex.Message));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error cerrando Compra/Venta ID: {Compra/Venta id}", id);
+                return StatusCode(
+                    500,
+                    new GenericResponse<object>("Error interno al cerrar la compra/venta.", null)
+                );
+            }
+        }
+
+        /// <summary>
+        /// Rechaza una compra/venta especifica SOLO ADMIN
+        /// </summary>
+        [Authorize(Roles = "Admin")]
+        [HttpPatch("buysells/{id}/reject")]
+        public async Task<IActionResult> RejectBuySell(int id)
+        {
+            try
+            {
+                await _offerService.GetOfferForAdminToReject(id);
+                return Ok(
+                    new GenericResponse<object>($"Compra/Venta {id} rechazada con exito", id)
+                );
+            }
+            catch (KeyNotFoundException)
+            {
+                return NotFound(
+                    new GenericResponse<object>("No se encontro la Compra/Venta", null)
+                );
+            }
+            catch (InvalidOperationException ex)
+            {
+                return Conflict(new GenericResponse<object>(ex.Message));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error cerrando Compra/Venta ID: {Compra/VentaId}", id);
+                return StatusCode(
+                    500,
+                    new GenericResponse<object>("Error interno al cerrar la Compra/Venta.", null)
+                );
+            }
+        }
+
+        /// <summary>
         /// Elimina la oferta de trabajo de parte del admin
         /// </summary>
-        /// TODO: agregar endpoint proximamente para siguiente iteracion
+        [Authorize(Roles = "Admin")]
+        [HttpPatch("offers/{offerId}")]
+        public async Task<IActionResult> ClosePublishedOffer(int offerId)
+        {
+            try
+            {
+                await _offerService.ClosePublishedOfferAsync(offerId);
+                return Ok(
+                    new GenericResponse<object>($"Oferta {offerId} cerrada con exito", offerId)
+                );
+            }
+            catch (KeyNotFoundException)
+            {
+                return NotFound(new GenericResponse<object>("No se encontro la oferta", null));
+            }
+            catch (InvalidOperationException ex)
+            {
+                return Conflict(new GenericResponse<object>(ex.Message));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error cerrando oferta ID: {OfferId}", offerId);
+                return StatusCode(
+                    500,
+                    new GenericResponse<object>("Error interno al cerrar la oferta.", null)
+                );
+            }
+        }
+
+        /// <summary>
+        /// Elimina la compra y venta de parte del admin
+        /// </summary>
+        [Authorize(Roles = "Admin")]
+        [HttpPatch("buysells/{buySellId}")]
+        public async Task<IActionResult> ClosePublishedBuySell(int buySellId)
+        {
+            try
+            {
+                await _buySellService.ClosePublishedBuySellAsync(buySellId);
+                return Ok(
+                    new GenericResponse<object>(
+                        $"Compra/Venta {buySellId} cerrada con exito",
+                        buySellId
+                    )
+                );
+            }
+            catch (KeyNotFoundException)
+            {
+                return NotFound(
+                    new GenericResponse<object>("No se encontro la Compra/Venta", null)
+                );
+            }
+            catch (InvalidOperationException ex)
+            {
+                return Conflict(new GenericResponse<object>(ex.Message));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error cerrando Compra/Venta ID: {BuySellId}", buySellId);
+                return StatusCode(
+                    500,
+                    new GenericResponse<object>("Error interno al cerrar la Compra/Venta.", null)
+                );
+            }
+        }
         #endregion
 
         #region Validar ofertas (admin)
@@ -1076,7 +1208,7 @@ namespace bolsafeucn_back.src.API.Controllers
         [Authorize(Roles = "Offerent")]
         public async Task<IActionResult> AcceptApplication(int applicationId)
         {
-            return await UpdateApplicationStatusInternal(applicationId, "Aceptada", "aceptada");
+            return await UpdateApplicationStatusInternal(applicationId, ApplicationStatus.Aceptada, "aceptada");
         }
 
         /// <summary>
@@ -1088,7 +1220,7 @@ namespace bolsafeucn_back.src.API.Controllers
         [Authorize(Roles = "Offerent")]
         public async Task<IActionResult> RejectApplication(int applicationId)
         {
-            return await UpdateApplicationStatusInternal(applicationId, "Rechazada", "rechazada");
+            return await UpdateApplicationStatusInternal(applicationId, ApplicationStatus.Rechazada, "rechazada");
         }
 
         /// <summary>
@@ -1097,7 +1229,7 @@ namespace bolsafeucn_back.src.API.Controllers
         /// </summary>
         private async Task<IActionResult> UpdateApplicationStatusInternal(
             int applicationId,
-            string newStatus,
+            ApplicationStatus newStatus,
             string actionText
         )
         {

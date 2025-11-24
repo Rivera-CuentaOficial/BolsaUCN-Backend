@@ -617,7 +617,7 @@ namespace bolsafeucn_back.src.Application.Infrastructure.Data
                     Student = studentUser,
                     JobOfferId = offers[4].Id,
                     JobOffer = offers[4],
-                    Status = "Pendiente",
+                    Status = ApplicationStatus.Pendiente,
                     ApplicationDate = DateTime.UtcNow.AddDays(-2),
                 },
 
@@ -627,7 +627,7 @@ namespace bolsafeucn_back.src.Application.Infrastructure.Data
                     Student = studentUser,
                     JobOfferId = offers[3].Id,
                     JobOffer = offers[3],
-                    Status = "Pendiente",
+                    Status = ApplicationStatus.Pendiente,
                     ApplicationDate = DateTime.UtcNow.AddDays(-7),
                 },
 
@@ -637,7 +637,7 @@ namespace bolsafeucn_back.src.Application.Infrastructure.Data
                     Student = studentUser,
                     JobOfferId = offers[0].Id,
                     JobOffer = offers[0],
-                    Status = "Pendiente",
+                    Status = ApplicationStatus.Pendiente,
                     ApplicationDate = DateTime.UtcNow.AddDays(-5),
                 },
                 new JobApplication
@@ -646,7 +646,7 @@ namespace bolsafeucn_back.src.Application.Infrastructure.Data
                     Student = studentUser,
                     JobOfferId = offers[1].Id,
                     JobOffer = offers[1],
-                    Status = "Aceptada",
+                    Status = ApplicationStatus.Aceptada,
                     ApplicationDate = DateTime.UtcNow.AddDays(-3),
                 },
                 new JobApplication
@@ -655,7 +655,7 @@ namespace bolsafeucn_back.src.Application.Infrastructure.Data
                     Student = studentUser,
                     JobOfferId = offers[2].Id,
                     JobOffer = offers[2],
-                    Status = "Rechazada",
+                    Status = ApplicationStatus.Rechazada,
                     ApplicationDate = DateTime.UtcNow.AddDays(-1),
                 },
             };

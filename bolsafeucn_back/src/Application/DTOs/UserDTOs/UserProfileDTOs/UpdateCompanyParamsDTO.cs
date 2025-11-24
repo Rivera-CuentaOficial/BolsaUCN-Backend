@@ -66,14 +66,24 @@ namespace bolsafeucn_back.src.Application.DTOs.UserDTOs.UserProfileDTOs
         [Compare("Password", ErrorMessage = "Las contraseñas no coinciden.")]
         public string? ConfirmPassword { get; set; } 
 
-        /*TODO
-        public string? ProfilePicture { get; set; }
-        public string? ProfileBanner { get; set; }
-        */
+        /// <summary>
+        /// Imagen de perfil del usuario.
+        /// </summary>
+        public IFormFile? ProfilePhoto { get; set; }
+
+        /// <summary>
+        /// Banner de perfil del usuario.
+        /// </summary>
+        public IFormFile? ProfileBanner { get; set; }
 
         public void ApplyTo(GeneralUser user)
         {
             this.Adapt(user);
+        }
+        public void ApplyTo(UserImagesDTO imagesDTO)
+        {
+            imagesDTO.ProfilePhoto = this.ProfilePhoto;
+            imagesDTO.ProfilePhoto = this.ProfileBanner;
         }
     }
 }

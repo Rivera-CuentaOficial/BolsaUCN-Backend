@@ -132,7 +132,15 @@ public class OfferService : IOfferService
     {
         var offer = await _offerRepository.GetAllPendingOffersAsync();
         return offer
-            .Select(o => new PendingOffersForAdminDto { Id = o.Id, Title = o.Title, Description = o.Description, Location = o.Location , PostDate = o.PublicationDate, Remuneration = o.Remuneration})
+            .Select(o => new PendingOffersForAdminDto
+            {
+                Id = o.Id,
+                Title = o.Title,
+                Description = o.Description,
+                Location = o.Location,
+                PostDate = o.PublicationDate,
+                Remuneration = o.Remuneration,
+            })
             .ToList();
     }
 
@@ -156,7 +164,7 @@ public class OfferService : IOfferService
                     PublicationDate = o.PublicationDate,
                     OfferType = o.OfferType,
                     Activa = o.IsActive,
-                    Remuneration = o.Remuneration
+                    Remuneration = o.Remuneration,
                 };
             })
             .ToList();
@@ -191,7 +199,7 @@ public class OfferService : IOfferService
             Type = offer.Type,
             Active = offer.IsActive,
             statusValidation = offer.statusValidation,
-            Remuneration = offer.Remuneration
+            Remuneration = offer.Remuneration,
         };
         _logger.LogInformation("Detalles de oferta ID: {OfferId} obtenidos exitosamente", offerId);
         return result;
@@ -239,8 +247,7 @@ public class OfferService : IOfferService
             PublicationDate = offer.PublicationDate,
             DeadlineDate = offer.DeadlineDate,
             EndDate = offer.EndDate,
-            Remuneration = offer.Remuneration
-
+            Remuneration = offer.Remuneration,
         };
     }
 
@@ -282,13 +289,10 @@ public class OfferService : IOfferService
 
     public async Task<OfferDetailDto> GetOfferDetailForOfferer(int id, string userId)
     {
-
         var offer = await _offerRepository.GetByIdAsync(id);
-
 
         if (offer == null)
         {
-
             throw new KeyNotFoundException($"La oferta con id {id} no fue encontrada.");
         }
 
@@ -300,10 +304,8 @@ public class OfferService : IOfferService
         if (offer.UserId != parsedUserId)
         {
             // Lanza 404 para no revelar que la oferta existe pero no es suya
-            throw new KeyNotFoundException(
-                $"La oferta con id {id} no fue encontrada."
-            );
-            
+            throw new KeyNotFoundException($"La oferta con id {id} no fue encontrada.");
+
             // throw new UnauthorizedAccessException("No tienes permiso para ver esta oferta.");
         }
         var offerDetailDto = offer.Adapt<OfferDetailDto>();
@@ -311,5 +313,18 @@ public class OfferService : IOfferService
         return offerDetailDto;
     }
 
-    
+    public async Task ClosePublishedOfferAsync(int offerId)
+    {
+        var offer = await _offerRepository.GetByIdAsync(offerId);
+        if (offer == null)
+        {
+            throw new KeyNotFoundException($"La oferta con id {offerId} no fue encontrada.");
+        }
+        if (!offer.IsActive)
+        {
+            throw new InvalidOperationException($"La oferta con id {offerId} ya ha sido cerrada.");
+        }
+        offer.IsActive = false;
+        await _offerRepository.UpdateOfferAsync(offer);
+    }
 }
