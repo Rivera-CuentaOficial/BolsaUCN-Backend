@@ -1068,7 +1068,6 @@ namespace bolsafeucn_back.src.API.Controllers
         #region Endpoints para Oferentes (Empresa/Particular)
 
 
-
         /// <summary>
         /// Obtiene la lista de postulantes para una oferta específica (Solo para el dueño de la oferta).
         /// </summary>
@@ -1329,8 +1328,9 @@ namespace bolsafeucn_back.src.API.Controllers
         }
 
         #endregion
-    
+
         #region Filtros para Estudiante(publicaciones como Offers o BuyandSell)
+
 
         /// <summary>
         /// Obtiene todas las publicaciones PUBLICADAS del particular/empresa autenticado.
@@ -1533,6 +1533,277 @@ namespace bolsafeucn_back.src.API.Controllers
                 return StatusCode(500, new GenericResponse<object>("Error interno del servidor"));
             }
         }
+        #endregion
+
+        #region Endpoints para Estudiantes
+
+        /// <summary>
+        /// Obtiene la lista de postulantes para una oferta específica (Solo para el dueño de la oferta).
+        /// </summary>
+        /// <param name="offerId">El ID de la oferta</param>
+        /// <returns>Una lista de los postulantes de la oferta</returns>
+        [HttpGet("Students/my-offer/{offerId}/applicants")] // <-- 1. RUTA CORREGIDA (para no chocar con la del Admin)
+        [Authorize(Roles = "Student")]
+        public async Task<IActionResult> GetOfferApplicantsForStudent(int offerId)
+        {
+            try
+            {
+                // 1. Obtener el ID del oferente logueado desde el Token JWT
+                var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+                if (
+                    string.IsNullOrEmpty(userIdString)
+                    || !int.TryParse(userIdString, out var offererUserId)
+                )
+                {
+                    _logger.LogWarning(
+                        "GetOfferApplicants: Token JWT inválido o sin claim de NameIdentifier."
+                    );
+                    return Unauthorized(
+                        new GenericResponse<object>("No autenticado o token inválido")
+                    );
+                }
+
+                _logger.LogInformation(
+                    "Usuario {OffererId} solicitando postulantes para la oferta {OfferId}",
+                    offererUserId,
+                    offerId
+                );
+
+                // 2. Llamar al servicio
+                var applicants = await _jobApplicationService.GetApplicantsForOffererAsync(
+                    offerId,
+                    offererUserId
+                );
+
+                return Ok(
+                    new GenericResponse<IEnumerable<OffererApplicantViewDto>>(
+                        "Postulantes obtenidos exitosamente",
+                        applicants
+                    )
+                );
+            }
+            catch (KeyNotFoundException ex)
+            {
+                _logger.LogWarning(
+                    ex,
+                    "GetOfferApplicants: Oferta no encontrada. OfferID: {OfferId}",
+                    offerId
+                );
+                return NotFound(new GenericResponse<object>(ex.Message));
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                _logger.LogWarning(
+                    ex,
+                    "GetOfferApplicants: Intento de acceso no autorizado. UserID: {UserId}, OfferID: {OfferId}",
+                    User.FindFirstValue(ClaimTypes.NameIdentifier),
+                    offerId
+                );
+
+                // 2. ARREGLO DEL ERROR (CS1503): Usamos StatusCode 403
+                return StatusCode(403, new GenericResponse<object>(ex.Message));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(
+                    ex,
+                    "GetOfferApplicants: Error interno al obtener postulantes. OfferID: {OfferId}",
+                    offerId
+                );
+                return StatusCode(
+                    500,
+                    new GenericResponse<object>("Error interno al procesar la solicitud.")
+                );
+            }
+        }
+
+        [HttpGet("Students/my-offer/{offerId}/applicants/{studentId}")] // <-- 1. RUTA CORREGIDA (para no chocar con la del Admin)
+        [Authorize(Roles = "Student")]
+        public async Task<ActionResult<ViewApplicantUserDetailDto>> StudentGetApplicantDetail(
+            int offerId,
+            int studentId
+        )
+        {
+            // 1. Obtener offererUserId del token (como se hace en otros métodos)
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (
+                string.IsNullOrEmpty(userIdClaim)
+                || !int.TryParse(userIdClaim, out int offererUserId)
+            )
+            {
+                return Unauthorized(new GenericResponse<object>("No autenticado o token inválido"));
+            }
+
+            // 2. Llamar al servicio que devuelve el DTO detallado
+            var applicantDetail = await _jobApplicationService.GetApplicantDetailForOfferer(
+                studentId,
+                offerId,
+                offererUserId
+            ); // Este método ya devuelve ViewApplicantUserDetailDto
+
+            // 3. Retornar con el DTO detallado
+            return Ok(
+                new GenericResponse<ViewApplicantUserDetailDto>( // <-- CORRECTO
+                    "Detalle del postulante obtenido exitosamente",
+                    applicantDetail
+                )
+            );
+        }
+
+        [HttpPatch("Students/my-offer/applicants/{status}")] // <-- 1. RUTA CORREGIDA (para no chocar con la del Admin)
+        [Authorize(Roles = "Student")]
+        public async Task<IActionResult> StudentAcceptApplication(String status)
+        {
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (
+                string.IsNullOrEmpty(userIdClaim)
+                || !int.TryParse(userIdClaim, out int offererUserId)
+            )
+            {
+                return Unauthorized(new GenericResponse<object>("No autenticado o token inválido"));
+            }
+
+            return Ok();
+        }
+
+        /// <summary>
+        /// Acepta una postulación específica (solo para el dueño de la oferta).
+        /// Utiliza la lógica interna de UpdateApplicationStatusAsync.
+        /// </summary>
+        /// <param name="applicationId">El ID de la postulación a aceptar.</param>
+        [HttpPatch("Students/applications/{applicationId}/accept")]
+        [Authorize(Roles = "Student")]
+        public async Task<IActionResult> StudentAcceptApplication(int applicationId)
+        {
+            return await StudentUpdateApplicationStatusInternal(
+                applicationId,
+                ApplicationStatus.Aceptada,
+                "aceptada"
+            );
+        }
+
+        /// <summary>
+        /// Rechaza una postulación específica (solo para el dueño de la oferta).
+        /// Utiliza la lógica interna de UpdateApplicationStatusAsync.
+        /// </summary>
+        /// <param name="applicationId">El ID de la postulación a rechazar.</param>
+        [HttpPatch("Student/applications/{applicationId}/reject")]
+        [Authorize(Roles = "Students")]
+        public async Task<IActionResult> StudentRejectApplication(int applicationId)
+        {
+            return await StudentUpdateApplicationStatusInternal(
+                applicationId,
+                ApplicationStatus.Rechazada,
+                "rechazada"
+            );
+        }
+
+        /// <summary>
+        /// Lógica interna para actualizar el estado de una postulación.
+        /// Llama al JobApplicationService.UpdateApplicationStatusAsync.
+        /// </summary>
+        private async Task<IActionResult> StudentUpdateApplicationStatusInternal(
+            int applicationId,
+            ApplicationStatus newStatus,
+            string actionText
+        )
+        {
+            try
+            {
+                // 1. Obtener el ID del oferente logueado desde el Token JWT
+                var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+                if (
+                    string.IsNullOrEmpty(userIdString)
+                    || !int.TryParse(userIdString, out var StudentUserId)
+                )
+                {
+                    _logger.LogWarning(
+                        "UpdateApplicationStatusInternal: Token JWT inválido o sin claim de NameIdentifier."
+                    );
+                    return Unauthorized(
+                        new GenericResponse<object>("No autenticado o token inválido")
+                    );
+                }
+
+                _logger.LogInformation(
+                    "Usuario {OffererId} intentando actualizar postulación {ApplicationId} a {NewStatus}",
+                    StudentUserId,
+                    applicationId,
+                    newStatus
+                );
+
+                // 2. Llamar al servicio para actualizar el estado.
+                // Esta llamada está protegida en el servicio para que solo el dueño de la oferta pueda modificarla.
+                var result = await _jobApplicationService.UpdateApplicationStatusAsync(
+                    applicationId,
+                    newStatus,
+                    StudentUserId
+                );
+
+                if (result)
+                {
+                    return Ok(
+                        new GenericResponse<object>(
+                            $"Postulación {applicationId} {actionText} exitosamente.",
+                            applicationId
+                        )
+                    );
+                }
+
+                _logger.LogWarning(
+                    "Fallo al actualizar postulación {ApplicationId} a {NewStatus} (Servicio retornó false)",
+                    applicationId,
+                    newStatus
+                );
+                return BadRequest(
+                    new GenericResponse<object>(
+                        $"No se pudo actualizar la postulación a '{newStatus}'"
+                    )
+                );
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                _logger.LogWarning(
+                    ex,
+                    "UpdateApplicationStatusInternal: Intento de acceso no autorizado. {Message}",
+                    ex.Message
+                );
+                return StatusCode(403, new GenericResponse<object>(ex.Message));
+            }
+            catch (KeyNotFoundException ex)
+            {
+                _logger.LogWarning(
+                    ex,
+                    "UpdateApplicationStatusInternal: Recurso no encontrado. {Message}",
+                    ex.Message
+                );
+                return NotFound(new GenericResponse<object>(ex.Message));
+            }
+            catch (ArgumentException ex)
+            {
+                _logger.LogWarning(
+                    ex,
+                    "UpdateApplicationStatusInternal: Argumento inválido. {Message}",
+                    ex.Message
+                );
+                return BadRequest(new GenericResponse<object>(ex.Message));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(
+                    ex,
+                    "UpdateApplicationStatusInternal: Error interno al actualizar postulación {ApplicationId}",
+                    applicationId
+                );
+                return StatusCode(
+                    500,
+                    new GenericResponse<object>("Error interno al procesar la solicitud.")
+                );
+            }
+        }
+
         #endregion
     }
 }
