@@ -12,6 +12,11 @@ public class NotificationsController : ControllerBase
         _notificationService = notificationService;
     }
 
+    /// <summary>
+    /// Test endpoint that simulates a postulation status change and triggers notification handling.
+    /// </summary>
+    /// <param name="evt">Event payload describing the status change.</param>
+    /// <returns>HTTP 200 OK when processing completes.</returns>
     [HttpPost("test-status-change")]
     public async Task<IActionResult> TestStatusChange([FromBody] PostulationStatusChangedEvent evt)
     {
