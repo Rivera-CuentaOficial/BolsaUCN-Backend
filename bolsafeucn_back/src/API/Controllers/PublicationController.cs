@@ -738,7 +738,7 @@ namespace bolsafeucn_back.src.API.Controllers
         /// SEGURIDAD: Solo estudiantes pueden postular. El studentId se obtiene del token JWT
         /// </summary>
         [HttpPost("offers/{id}/apply")]
-        [Authorize(Roles = " Student")]
+        [Authorize(Roles = "Applicant")]
         public async Task<ActionResult<JobApplicationResponseDto>> ApplyToOffer(int id)
         {
             try
@@ -809,7 +809,7 @@ namespace bolsafeucn_back.src.API.Controllers
         /// SEGURIDAD: Solo estudiantes pueden ver sus postulaciones. El studentId se obtiene del token JWT
         /// </summary>
         [HttpGet("offers/my-applications")]
-        [Authorize(Roles = "Student")]
+        [Authorize(Roles = "Applicant")]
         public async Task<ActionResult<IEnumerable<JobApplicationResponseDto>>> GetMyApplications()
         {
             try
@@ -1340,7 +1340,7 @@ namespace bolsafeucn_back.src.API.Controllers
         /// Obtiene todas las publicaciones PUBLICADAS del particular/empresa autenticado.
         /// </summary>
         [HttpGet("Students/my-published")]
-        [Authorize(Roles = "Student")]
+        [Authorize(Roles = "Applicant")]
         public async Task<IActionResult> StudentGetMyPublishedPublications()
         {
             try
@@ -1382,7 +1382,7 @@ namespace bolsafeucn_back.src.API.Controllers
         /// Obtiene todas las publicaciones PENDIENTE/ENPROCESO del particular/empresa autenticado.
         /// </summary>
         [HttpGet("Students/my-pending")]
-        [Authorize(Roles = "Student")]
+        [Authorize(Roles = "Applicant")]
         public async Task<IActionResult> StudentGetMyPendingPublications()
         {
             try
@@ -1424,7 +1424,7 @@ namespace bolsafeucn_back.src.API.Controllers
         /// Obtiene todas las publicaciones RECHAZADAS del particular/empresa autenticado.
         /// </summary>
         [HttpGet("Students/my-rejected")]
-        [Authorize(Roles = "Student")]
+        [Authorize(Roles = "Applicant")]
         public async Task<IActionResult> StudentGetMyRejectedPublications()
         {
             try
@@ -1463,7 +1463,7 @@ namespace bolsafeucn_back.src.API.Controllers
         }
 
         [HttpGet("Students/offer/{id:int}")]
-        [Authorize(Roles = "Student")]
+        [Authorize(Roles = "Applicant")]
         public async Task<IActionResult> StudentGetOfferDetail(int id)
         {
             try
@@ -1501,7 +1501,7 @@ namespace bolsafeucn_back.src.API.Controllers
         /// Obtiene el detalle de una publicación de Compra/Venta por su ID.
         /// </summary>
         [HttpGet("Students/buysell/{id:int}")]
-        [Authorize(Roles = "Student")]
+        [Authorize(Roles = "Applicant")]
         public async Task<IActionResult> StudentGetBuySellDetail(int id)
         {
             try
@@ -1547,7 +1547,7 @@ namespace bolsafeucn_back.src.API.Controllers
         /// <param name="offerId">El ID de la oferta</param>
         /// <returns>Una lista de los postulantes de la oferta</returns>
         [HttpGet("Students/my-offer/{offerId}/applicants")] // <-- 1. RUTA CORREGIDA (para no chocar con la del Admin)
-        [Authorize(Roles = "Student")]
+        [Authorize(Roles = "Applicant")]
         public async Task<IActionResult> GetOfferApplicantsForStudent(int offerId)
         {
             try
@@ -1623,7 +1623,7 @@ namespace bolsafeucn_back.src.API.Controllers
         }
 
         [HttpGet("Students/my-offer/{offerId}/applicants/{studentId}")] // <-- 1. RUTA CORREGIDA (para no chocar con la del Admin)
-        [Authorize(Roles = "Student")]
+        [Authorize(Roles = "Applicant")]
         public async Task<ActionResult<ViewApplicantUserDetailDto>> StudentGetApplicantDetail(
             int offerId,
             int studentId
@@ -1656,7 +1656,7 @@ namespace bolsafeucn_back.src.API.Controllers
         }
 
         [HttpPatch("Students/my-offer/applicants/{status}")] // <-- 1. RUTA CORREGIDA (para no chocar con la del Admin)
-        [Authorize(Roles = "Student")]
+        [Authorize(Roles = "Applicant")]
         public async Task<IActionResult> StudentAcceptApplication(String status)
         {
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
@@ -1677,7 +1677,7 @@ namespace bolsafeucn_back.src.API.Controllers
         /// </summary>
         /// <param name="applicationId">El ID de la postulación a aceptar.</param>
         [HttpPatch("Students/applications/{applicationId}/accept")]
-        [Authorize(Roles = "Student")]
+        [Authorize(Roles = "Applicant")]
         public async Task<IActionResult> StudentAcceptApplication(int applicationId)
         {
             return await StudentUpdateApplicationStatusInternal(
@@ -1693,7 +1693,7 @@ namespace bolsafeucn_back.src.API.Controllers
         /// </summary>
         /// <param name="applicationId">El ID de la postulación a rechazar.</param>
         [HttpPatch("Student/applications/{applicationId}/reject")]
-        [Authorize(Roles = "Student")]
+        [Authorize(Roles = "Applicant")]
         public async Task<IActionResult> StudentRejectApplication(int applicationId)
         {
             return await StudentUpdateApplicationStatusInternal(
