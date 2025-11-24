@@ -183,6 +183,8 @@ try
     builder.Services.AddScoped<IReviewService, ReviewService>();
     builder.Services.AddScoped<IPdfGeneratorService, PdfGeneratorService>();
     builder.Services.AddScoped<IFileService, FileService>();
+    builder.Services.AddScoped<IAdminNotificationRepository, AdminNotificationRepository>();
+
 
     builder.Services.AddMapster();
 

@@ -17,16 +17,22 @@ namespace bolsafeucn_back.src.Application.Services.Implements
     {
         private readonly IReviewRepository _repository;
         private readonly IUserRepository _userRepository;
+        private readonly IAdminNotificationRepository _adminNotificationRepository;
+
 
         /// <summary>
         /// Inicializa una nueva instancia del servicio de reseñas.
         /// </summary>
         /// <param name="repository">El repositorio de reseñas para acceso a datos.</param>
         /// <param name="userRepository">El repositorio de usuarios para validación.</param>
-        public ReviewService(IReviewRepository repository, IUserRepository userRepository)
-        {
+       public ReviewService(
+            IReviewRepository repository,
+            IUserRepository userRepository,
+            IAdminNotificationRepository adminNotificationRepository)
+            {
             _repository = repository;
             _userRepository = userRepository;
+            _adminNotificationRepository = adminNotificationRepository;
         }
 
         #region Obtener Reviews y Ratings
@@ -126,6 +132,16 @@ namespace bolsafeucn_back.src.Application.Services.Implements
             if (review.IsCompleted) await BothReviewsCompletedAsync(review);
             await _repository.UpdateAsync(review);
             Log.Information("Offeror {OfferorId} added review for student in publication {PublicationId}", currentUserId, dto.PublicationId);
+        
+            if (review.RatingForStudent == 3)
+            {
+                await _adminNotificationRepository.AddAsync(new AdminNotification
+                {
+                    Message = $"Review de 3 estrellas hacia el estudiante en la publicación {dto.PublicationId}.",
+                    CreatedAt = DateTime.UtcNow,
+                    IsRead = false
+                });
+            }
         }
 
         /// <summary>
@@ -164,6 +180,16 @@ namespace bolsafeucn_back.src.Application.Services.Implements
             if (review.IsCompleted) await BothReviewsCompletedAsync(review);
             await _repository.UpdateAsync(review);
             Log.Information("Student {StudentId} added review for offeror in publication {PublicationId}", currentUserId, dto.PublicationId);
+
+            if (review.RatingForOfferor == 3)
+            {
+                await _adminNotificationRepository.AddAsync(new AdminNotification
+                {
+                    Message = $"Review de 3 estrellas hacia el oferente en la publicación {dto.PublicationId}.",
+                    CreatedAt = DateTime.UtcNow,
+                    IsRead = false
+                });
+            }
         }
 
         /// <summary>
