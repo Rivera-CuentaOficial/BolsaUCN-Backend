@@ -29,7 +29,7 @@ namespace bolsafeucn_back.src.Application.DTOs.UserDTOs.UserProfileDTOs
             @"^\d{7,8}-[0-9kK]$",
             ErrorMessage = "El Rut debe tener formato XXXXXXXX-X"
         )]
-        [RutValidation(ErrorMessage = "El RUT no es válido.")]      
+        [RutValidation(ErrorMessage = "El RUT no es válido.")]
         public string? Rut { get; set; }
 
         /// <summary>
@@ -41,7 +41,7 @@ namespace bolsafeucn_back.src.Application.DTOs.UserDTOs.UserProfileDTOs
         /// <summary>
         /// Número de teléfono del usuario.
         /// </summary>
-        public string? PhoneNumber { get; set; } 
+        public string? PhoneNumber { get; set; }
 
         /// <summary>
         /// Información sobre el usuario.

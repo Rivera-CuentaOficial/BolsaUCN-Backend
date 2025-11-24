@@ -668,74 +668,167 @@ namespace bolsafeucn_back.src.Application.Infrastructure.Data
             );
         }
 
+        #region Reviews
+
         private static async Task SeedReviews(AppDbContext context)
         {
-            var studentUser = await context.Users.FirstOrDefaultAsync(u => u.Email == "estudiante@alumnos.ucn.cl");
-            var offerentUser = await context.Users.FirstOrDefaultAsync(u => u.Email == "empresa@techcorp.cl");
-            var publication = await context.Offers.FirstOrDefaultAsync();
-            if (studentUser == null || offerentUser == null || publication == null)
+            // Obtener estudiantes y oferentes (empresas e individuales)
+            var students = await context.Users
+                .Where(u => u.UserType == UserType.Estudiante)
+                .ToListAsync();
+
+            var offerents = await context.Users
+                .Where(u => u.UserType == UserType.Empresa || u.UserType == UserType.Particular)
+                .ToListAsync();
+
+            var publications = await context.Offers.ToListAsync();
+
+            if (students.Count == 0 || offerents.Count == 0 || publications.Count == 0)
             {
                 Log.Warning("DataSeeder: No se pueden crear reviews - faltan usuarios o publicaciones");
                 return;
             }
+
             var now = DateTime.UtcNow;
-            var review1 = new Review
+            var reviews = new List<Review>();
+            var faker = new Faker("es");
+
+            // Crear 12 reviews (6 completas + 6 incompletas)
+            for (int i = 0; i < 12; i++)
             {
-                StudentId = studentUser.Id,
-                Student = studentUser,
-                OfferorId = offerentUser.Id,
-                Offeror = offerentUser,
-                PublicationId = publication.Id,
-                Publication = publication,
-                // Evaluación del oferente hacia el estudiante
-                RatingForStudent = 5,
-                CommentForStudent = "Excelente estudiante, muy responsable y puntual. Cumplió con todas las tareas asignadas de manera profesional.",
-                AtTime = true,
-                GoodPresentation = true,
-                StudentReviewCompleted = true,
-                // Evaluación del estudiante hacia el oferente
-                RatingForOfferor = 5,
-                CommentForOfferor = "Muy buena experiencia laboral. El ambiente de trabajo fue excelente y aprendí mucho durante el proceso.",
-                OfferorReviewCompleted = true,
-                
-                IsCompleted = true,
-                ReviewWindowEndDate = now.AddDays(30),
-                HasReviewForStudentBeenDeleted = false,
-                HasReviewForOfferorBeenDeleted = false,
-            };
-            var publication2 = await context.Offers.Skip(1).FirstOrDefaultAsync();
-            if (publication2 != null)
-            {
-                var review2 = new Review
+                var student = students[i % students.Count];
+                var offerent = offerents[i % offerents.Count];
+                var publication = publications[i % publications.Count];
+
+                // Las primeras 6 reviews están completas (más de 14 días desde creación)
+                bool isCompleted = i < 6;
+
+                var review = new Review
                 {
-                    StudentId = studentUser.Id,
-                    Student = studentUser,
-                    OfferorId = offerentUser.Id,
-                    Offeror = offerentUser,
-                    PublicationId = publication2.Id,
-                    Publication = publication2,
-                    
-                    // Solo el oferente ha evaluado
-                    RatingForStudent = 4,
-                    CommentForStudent = "Buen desempeño general, aunque tuvo algunos retrasos menores. Muestra potencial y ganas de aprender.",
-                    AtTime = false,
-                    GoodPresentation = true,
-                    StudentReviewCompleted = true,
-                    
-                    // El estudiante aún no ha evaluado
-                    RatingForOfferor = null,
-                    CommentForOfferor = null,
-                    OfferorReviewCompleted = false,
-                    
-                    IsCompleted = false,
-                    ReviewWindowEndDate = now.AddDays(15),
+                    StudentId = student.Id,
+                    Student = student,
+                    OfferorId = offerent.Id,
+                    Offeror = offerent,
+                    PublicationId = publication.Id,
+                    Publication = publication,
+
+                    // Evaluación del oferente hacia el estudiante
+                    RatingForStudent = faker.Random.Int(1, 6),
+                    CommentForStudent = GenerateOfferentComment(faker, i),
+                    AtTime = faker.Random.Bool(0.7f),
+                    GoodPresentation = faker.Random.Bool(0.8f),
+                    IsReviewForStudentCompleted = true,
+
+                    // Evaluación del estudiante hacia el oferente (completa solo si isCompleted)
+                    RatingForOfferor = isCompleted ? faker.Random.Int(1, 6) : (int?)null,
+                    CommentForOfferor = isCompleted ? GenerateStudentComment(faker, i) : null,
+                    IsReviewForOfferorCompleted = isCompleted,
+
+                    IsCompleted = isCompleted,
+                    ReviewWindowEndDate = isCompleted ? now.AddDays(-15) : now.AddDays(10),
                     HasReviewForStudentBeenDeleted = false,
                     HasReviewForOfferorBeenDeleted = false,
                 };
-                context.Reviews.Add(review2);
+
+                reviews.Add(review);
             }
-            context.Reviews.Add(review1);
+
+            await context.Reviews.AddRangeAsync(reviews);
             await context.SaveChangesAsync();
+
+            Log.Information("DataSeeder: {Count} reviews creadas exitosamente (6 completas, 6 incompletas)", reviews.Count);
+            // Lo genere casi todo con IA. Esto es innecesario ya que en el Service cada vez que se completa una Review se
+            // actualiza el rating del usuario correspondiente. Pero aca como se generan las Rewiews manual sin pasar por
+            // el service, se actualiza manualmente con el codigo de abajo.
+            // Actualizar ratings de todos los usuarios involucrados
+            Log.Information("DataSeeder: Actualizando ratings de estudiantes y oferentes...");
+
+            var allUserIds = new HashSet<int>();
+            foreach (var review in reviews)
+            {
+                allUserIds.Add(review.StudentId);
+                allUserIds.Add(review.OfferorId);
+            }
+
+            foreach (var userId in allUserIds)
+            {
+                var user = await context.Users.FindAsync(userId);
+                if (user == null) continue;
+
+                double? averageRating = null;
+
+                if (user.UserType == UserType.Estudiante)
+                {
+                    // Calcular promedio de ratings para estudiante
+                    var studentReviews = await context.Reviews
+                        .Where(r => r.StudentId == userId && r.RatingForStudent.HasValue)
+                        .ToListAsync();
+
+                    if (studentReviews.Any())
+                    {
+                        averageRating = studentReviews.Average(r => r.RatingForStudent!.Value);
+                    }
+                }
+                else if (user.UserType == UserType.Empresa || user.UserType == UserType.Particular)
+                {
+                    // Calcular promedio de ratings para oferente
+                    var offerorReviews = await context.Reviews
+                        .Where(r => r.OfferorId == userId && r.RatingForOfferor.HasValue)
+                        .ToListAsync();
+
+                    if (offerorReviews.Any())
+                    {
+                        averageRating = offerorReviews.Average(r => r.RatingForOfferor!.Value);
+                    }
+                }
+
+                user.Rating = averageRating ?? 0.0;
+                context.Users.Update(user);
+            }
+
+            await context.SaveChangesAsync();
+            Log.Information("DataSeeder: Ratings actualizados exitosamente para {Count} usuarios", allUserIds.Count);
+        }
+
+        private static string GenerateOfferentComment(Faker faker, int index)
+        {
+            var comments = new[]
+            {
+                "Excelente estudiante, muy responsable y puntual. Cumplió con todas las tareas asignadas de manera profesional.",
+                "Buen desempeño general, aunque tuvo algunos retrasos menores. Muestra potencial y ganas de aprender.",
+                "Estudiante proactivo y con gran iniciativa. Se adaptó rápidamente al equipo de trabajo.",
+                "Cumplió con las expectativas. Mostró buena disposición y capacidad de trabajo en equipo.",
+                "Destacable compromiso y dedicación. Entregó trabajos de calidad consistentemente.",
+                "Muy buen desempeño técnico. Resolvió problemas de forma eficiente y creativa.",
+                "Estudiante responsable, aunque podría mejorar en comunicación con el equipo.",
+                "Excelente actitud y profesionalismo. Superó las expectativas en varios aspectos.",
+                "Buen trabajo en general. Cumplió con los plazos establecidos y mostró interés genuino.",
+                "Demostró habilidades técnicas sólidas y capacidad de aprendizaje rápido.",
+                "Estudiante confiable y organizado. Muy buena experiencia trabajando con él/ella.",
+                "Buen nivel de compromiso. Aportó ideas valiosas al proyecto y trabajó de manera independiente."
+            };
+            return comments[index % comments.Length];
+        }
+
+        private static string GenerateStudentComment(Faker faker, int index)
+        {
+            var comments = new[]
+            {
+                "Muy buena experiencia laboral. El ambiente de trabajo fue excelente y aprendí mucho durante el proceso.",
+                "Excelente oportunidad de aprendizaje. El equipo fue muy acogedor y el proyecto interesante.",
+                "Buena experiencia en general. Me permitió aplicar conocimientos de la universidad en un contexto real.",
+                "Ambiente laboral positivo y enriquecedor. Recomendaría esta oportunidad a otros estudiantes.",
+                "Gran oportunidad para desarrollar habilidades profesionales. Supervisión y apoyo constante.",
+                "Experiencia muy formativa. Aprendí nuevas tecnologías y metodologías de trabajo.",
+                "Buen ambiente de trabajo, aunque a veces faltó claridad en las instrucciones.",
+                "Excelente organización y claridad en las expectativas. Muy profesional en todo momento.",
+                "Oportunidad valiosa que me permitió crecer profesionalmente. Muy agradecido/a por la experiencia.",
+                "Buena experiencia laboral. El proyecto fue desafiante y motivador.",
+                "Ambiente colaborativo y respetuoso. Aprendí mucho sobre trabajo en equipo.",
+                "Experiencia positiva que superó mis expectativas. Excelente mentoría y guía durante el proceso."
+            };
+            return comments[index % comments.Length];
         }
     }
 }
+#endregion

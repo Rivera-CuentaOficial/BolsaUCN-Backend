@@ -2278,7 +2278,7 @@ Content-Type: application/json
 **Efecto:**
 - ❌ Elimina: `RatingForOfferor`, `CommentForOfferor`, `AtTime`, `GoodPresentation`
 - ✅ Mantiene: `RatingForStudent`, `CommentForStudent`
-- Marca `StudentReviewCompleted = false`
+- Marca `IsReviewForStudentCompleted = false`
 - No afecta las métricas del oferente
 
 **Ejemplo 2: Eliminar solo la review del oferente**
@@ -2292,7 +2292,7 @@ Content-Type: application/json
 **Efecto:**
 - ❌ Elimina: `RatingForStudent`, `CommentForStudent`
 - ✅ Mantiene: `RatingForOfferor`, `CommentForOfferor`, `AtTime`, `GoodPresentation`
-- Marca `OfferorReviewCompleted = false`
+- Marca `IsReviewForOfferorCompleted = false`
 
 **Ejemplo 3: Eliminar toda la review (ambas partes)**
 ```json

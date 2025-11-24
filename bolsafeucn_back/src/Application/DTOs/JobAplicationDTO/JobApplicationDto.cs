@@ -22,12 +22,12 @@ namespace bolsafeucn_back.src.Application.DTOs.JobAplicationDTO
     {
         // Encabezado
         public string OfferTitle { get; set; } = string.Empty;
-    
+
         public string CompanyName { get; set; } = string.Empty;
 
         // Información de fechas y remuneración
         public DateTime ApplicationDate { get; set; }              // Postulada hasta: 20/09/2025
-        
+
         public DateTime PublicationDate { get; set; }            // Fecha de publicación: 01/09/2025
         public DateTime? EndDate { get; set; }                    // Duración fin
         public int Remuneration { get; set; }                     // Remuneración: $5.000 CLP
@@ -43,7 +43,7 @@ namespace bolsafeucn_back.src.Application.DTOs.JobAplicationDTO
         public int Id { get; set; }                               // ID de la postulación
         public string Status { get; set; } = string.Empty;        // Pendiente/Aceptado/Rechazado
         public string? StatusMessage { get; set; }                // Mensaje según estado
-    
-    
+
+
     }
 }

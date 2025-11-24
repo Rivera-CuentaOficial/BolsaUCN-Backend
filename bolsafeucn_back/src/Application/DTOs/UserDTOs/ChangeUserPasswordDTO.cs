@@ -10,7 +10,7 @@ namespace bolsafeucn_back.src.Application.DTOs.UserDTOs
         [Required(ErrorMessage = "La contraseña es obligatoria.")]
 
         public required string CurrentPassword { get; set; }
-       
+
         /// <summary>
         /// Nueva contraseña del usuario.
         /// </summary>

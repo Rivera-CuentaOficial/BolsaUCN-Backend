@@ -28,11 +28,11 @@ namespace bolsafeucn_back.src.API.Controllers
         public async Task<IActionResult> GetStudentProfile()
         {
             (int parsedUserId, UserType parsedUserType) = GetIdAndTypeFromToken();
-        
+
             var result = await _userService.GetUserProfileByIdAsync(parsedUserId, parsedUserType);
             return Ok(new GenericResponse<GetStudentProfileDTO>("Datos de perfil obtenidos.", (GetStudentProfileDTO)result));
         }
-        
+
         /// <summary>
         /// Obtiene el perfil del usuario particular autenticado.
         /// </summary>
@@ -42,7 +42,7 @@ namespace bolsafeucn_back.src.API.Controllers
         public async Task<IActionResult> GetIndividualProfile()
         {
             (int parsedUserId, UserType parsedUserType) = GetIdAndTypeFromToken();
-        
+
             var result = await _userService.GetUserProfileByIdAsync(parsedUserId, parsedUserType);
             return Ok(new GenericResponse<GetIndividualProfileDTO>("Datos de perfil obtenidos.", (GetIndividualProfileDTO)result));
         }
@@ -56,7 +56,7 @@ namespace bolsafeucn_back.src.API.Controllers
         public async Task<IActionResult> GetCompanyProfile()
         {
             (int parsedUserId, UserType parsedUserType) = GetIdAndTypeFromToken();
-        
+
             var result = await _userService.GetUserProfileByIdAsync(parsedUserId, parsedUserType);
             return Ok(new GenericResponse<GetCompanyProfileDTO>("Datos de perfil obtenidos.", (GetCompanyProfileDTO)result));
         }
@@ -70,7 +70,7 @@ namespace bolsafeucn_back.src.API.Controllers
         public async Task<IActionResult> GetAdminProfile()
         {
             (int parsedUserId, UserType parsedUserType) = GetIdAndTypeFromToken();
-        
+
             var result = await _userService.GetUserProfileByIdAsync(parsedUserId, parsedUserType);
             return Ok(new GenericResponse<GetAdminProfileDTO>("Datos de perfil obtenidos.", (GetAdminProfileDTO)result));
         }
@@ -179,8 +179,8 @@ namespace bolsafeucn_back.src.API.Controllers
         /// <exception cref="ArgumentException"></exception>
         private (int, UserType) GetIdAndTypeFromToken()
         {
-             Log.Information("Verificando token de autenticacion");
-            if (User.Identity?.IsAuthenticated != true) 
+            Log.Information("Verificando token de autenticacion");
+            if (User.Identity?.IsAuthenticated != true)
                 throw new UnauthorizedAccessException("Usuario no autenticado.");
             var userId = User.Claims
                 .FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?
@@ -191,7 +191,7 @@ namespace bolsafeucn_back.src.API.Controllers
                 .Value
                 ?? null;
             int.TryParse(userId, out int parsedUserId);
-            if (!Enum.TryParse<UserType>(userType, ignoreCase: true, out var parsedUserType)) 
+            if (!Enum.TryParse<UserType>(userType, ignoreCase: true, out var parsedUserType))
                 throw new ArgumentException("Tipo de usuario no existe");
             return (parsedUserId, parsedUserType);
         }
@@ -203,7 +203,7 @@ namespace bolsafeucn_back.src.API.Controllers
         /// <exception cref="UnauthorizedAccessException"></exception>
         private int GetUserIdFromToken()
         {
-            if (User.Identity?.IsAuthenticated != true) 
+            if (User.Identity?.IsAuthenticated != true)
                 throw new UnauthorizedAccessException("Usuario no autenticado.");
             var userId = User.Claims
                 .FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?
@@ -221,13 +221,13 @@ namespace bolsafeucn_back.src.API.Controllers
         /// <exception cref="ArgumentException"></exception>
         private UserType GetTypeFromToken()
         {
-            if (User.Identity?.IsAuthenticated != true) 
+            if (User.Identity?.IsAuthenticated != true)
                 throw new UnauthorizedAccessException("Usuario no autenticado.");
             var userType = User.Claims
                 .FirstOrDefault(c => c.Type == "userType")?
                 .Value
                 ?? null;
-            if (!Enum.TryParse<UserType>(userType, ignoreCase: true, out var parsedUserType)) 
+            if (!Enum.TryParse<UserType>(userType, ignoreCase: true, out var parsedUserType))
                 throw new ArgumentException("Tipo de usuario no existe");
             return parsedUserType;
         }

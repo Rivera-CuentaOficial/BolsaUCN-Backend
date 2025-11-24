@@ -31,6 +31,6 @@ namespace bolsafeucn_back.src.Application.Services.Interfaces
         /// <param name="publicId">El ID público del archivo a eliminar.</param>
         /// <returns>True si la eliminación fue exitosa, de lo contrario false.</returns>
         Task<bool> DeleteAsync(string publicId);
-    }  
-    
+    }
+
 }

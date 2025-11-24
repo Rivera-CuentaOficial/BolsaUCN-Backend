@@ -131,17 +131,17 @@ namespace bolsafeucn_back.src.Application.Services.Implements
         {
             // Obtener la postulación
             var application = await _jobApplicationRepository.GetByIdAsync(applicationId);
-            
+
             if (application == null)
                 return null;
 
-            
+
             var offer = await _offerRepository.GetByIdAsync(application.JobOfferId);
-            
+
             if (offer == null)
                 return null;
 
-           
+
             var user = await _userRepository.GetByIdWithRelationsAsync(offer.UserId);
 
             var authorName = user?.UserType == UserType.Empresa
@@ -216,7 +216,7 @@ namespace bolsafeucn_back.src.Application.Services.Implements
         public async Task<bool> UpdateApplicationStatusAsync(
             int applicationId,
             ApplicationStatus newStatus,
-            int companyId
+            int OwnnerUserId
         )
         {
             // La validación del enum se hace automáticamente al recibir el parámetro
@@ -236,7 +236,7 @@ namespace bolsafeucn_back.src.Application.Services.Implements
 
             // Verificar que la oferta pertenece a la empresa
             var offer = await _offerRepository.GetByIdAsync(application.JobOfferId);
-            if (offer == null || offer.UserId != companyId)
+            if (offer == null || offer.UserId != OwnnerUserId)
             {
                 throw new UnauthorizedAccessException(
                     "No tienes permiso para modificar esta postulación"
@@ -349,7 +349,7 @@ namespace bolsafeucn_back.src.Application.Services.Implements
             return applicantDtos;
         }
 
-        
+
 
         public async Task<ViewApplicantUserDetailDto> GetApplicantDetailForOfferer(
             int studentId,
@@ -362,7 +362,7 @@ namespace bolsafeucn_back.src.Application.Services.Implements
             {
                 throw new KeyNotFoundException($"La oferta con id {offerId} no fue encontrada.");
             }
-        
+
 
 
             // Comprueba que el ID del usuario de la oferta (offer.UserId)
@@ -382,7 +382,7 @@ namespace bolsafeucn_back.src.Application.Services.Implements
                 Email = applicant.First().Student.Email,
                 Phone = applicant.First().Student.PhoneNumber,
                 Rut = applicant.First().Student.Rut,
-                Rating = applicant.First().Student.Student?.Rating,
+                Rating = (float?)applicant.First().Student.Rating, // hola soy matias cambie el rating a generaluser
                 MotivationLetter = applicant.First().Student.Student?.MotivationLetter,
                 Disability = applicant.First().Student.Student?.Disability.ToString(),
                 CurriculumVitae = applicant.First().Student.Student?.CurriculumVitae,

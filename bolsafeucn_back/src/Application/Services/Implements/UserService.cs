@@ -91,7 +91,7 @@ namespace bolsafeucn_back.src.Application.Services.Implements
             await _fileRepository.CreateUserImageAsync(profile);
             await _fileRepository.CreateUserImageAsync(banner);
             user.ProfilePhoto = profile;
-            user.ProfilePhotoId = profile.Id;       
+            user.ProfilePhotoId = profile.Id;
             user.ProfileBanner = banner;
             user.ProfileBannerId = banner.Id;
 
@@ -109,7 +109,7 @@ namespace bolsafeucn_back.src.Application.Services.Implements
                 throw new Exception("Error al crear el usuario.");
             }
 
-            
+
             var student = registerStudentDTO.Adapt<Student>();
             student.GeneralUserId = user.Id;
             result = await _userRepository.CreateStudentAsync(student);
@@ -202,7 +202,7 @@ namespace bolsafeucn_back.src.Application.Services.Implements
             await _fileRepository.CreateUserImageAsync(profile);
             await _fileRepository.CreateUserImageAsync(banner);
             user.ProfilePhoto = profile;
-            user.ProfilePhotoId = profile.Id;       
+            user.ProfilePhotoId = profile.Id;
             user.ProfileBanner = banner;
             user.ProfileBannerId = banner.Id;
             var result = await _userRepository.CreateUserAsync(
@@ -249,7 +249,8 @@ namespace bolsafeucn_back.src.Application.Services.Implements
             Log.Information("Enviando email de verificación a: {Email}", user.Email);
             var emailResult = await _emailService.SendVerificationEmailAsync(user.Email!, newCode.Code);
             if (emailResult)
-            {   Log.Information(
+            {
+                Log.Information(
                     "Particular registrado exitosamente con ID: {UserId}, Email: {Email}",
                     user.Id,
                     user.Email
@@ -310,7 +311,7 @@ namespace bolsafeucn_back.src.Application.Services.Implements
             await _fileRepository.CreateUserImageAsync(profile);
             await _fileRepository.CreateUserImageAsync(banner);
             user.ProfilePhoto = profile;
-            user.ProfilePhotoId = profile.Id;       
+            user.ProfilePhotoId = profile.Id;
             user.ProfileBanner = banner;
             user.ProfileBannerId = banner.Id;
             var result = await _userRepository.CreateUserAsync(
@@ -419,7 +420,7 @@ namespace bolsafeucn_back.src.Application.Services.Implements
             await _fileRepository.CreateUserImageAsync(profile);
             await _fileRepository.CreateUserImageAsync(banner);
             user.ProfilePhoto = profile;
-            user.ProfilePhotoId = profile.Id;       
+            user.ProfilePhotoId = profile.Id;
             user.ProfileBanner = banner;
             user.ProfileBannerId = banner.Id;
 
@@ -800,8 +801,8 @@ namespace bolsafeucn_back.src.Application.Services.Implements
 
             VerificationCode verificationCode = new VerificationCode
             {
-                Code = testing 
-                    ? _configuration.GetValue<string>("Testing:FixedVerificationCode")! 
+                Code = testing
+                    ? _configuration.GetValue<string>("Testing:FixedVerificationCode")!
                     : code,
                 CodeType = CodeType.PasswordReset,
                 GeneralUserId = user.Id,
@@ -954,16 +955,17 @@ namespace bolsafeucn_back.src.Application.Services.Implements
         {
             Log.Information($"Buscando usuario con la ID: {userId}");
             GeneralUser? user = await _userRepository.
-                GetUntrackedWithTypeAsync(userId,userType)
+                GetUntrackedWithTypeAsync(userId, userType)
                 ?? throw new KeyNotFoundException("No existe usuario con ese ID");
 
             Log.Information("Buscando detalles relevantes");
-            return userType switch {
+            return userType switch
+            {
                 UserType.Estudiante => user.Adapt<GetStudentProfileDTO>(),
                 UserType.Particular => user.Adapt<GetIndividualProfileDTO>(),
                 UserType.Empresa => user.Adapt<GetCompanyProfileDTO>(),
                 _ => user.Adapt<GetAdminProfileDTO>(), //UserType.Administrador
-                };
+            };
         }
 
         /// <summary>
@@ -979,7 +981,7 @@ namespace bolsafeucn_back.src.Application.Services.Implements
         {
             Log.Information("Buscando usuario con la ID: {UserId}", userId);
             GeneralUser? user = await _userRepository.
-                GetTrackedWithTypeAsync(userId,userType)
+                GetTrackedWithTypeAsync(userId, userType)
                 ?? throw new KeyNotFoundException("No existe usuario con ese ID");
             updateParamsDTO.ApplyTo(user);
 

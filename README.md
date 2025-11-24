@@ -122,6 +122,44 @@ El servidor estará disponible en:
 dotnet watch run
 ```
 
+## 🔧 Comandos útiles de Makefile
+
+El proyecto incluye un `Makefile` con atajos para tareas comunes de desarrollo:
+
+### Comandos de desarrollo
+
+```bash
+# Reiniciar la base de datos (drop, update) y ejecutar watch
+make db-restart
+
+# Ejecutar el proyecto en modo normal
+make run
+
+# Ejecutar el proyecto con recarga automática (sin hot-reload)
+make watch
+
+# Mostrar ayuda con todos los comandos disponibles
+make help
+```
+
+### Comandos de Docker (PostgreSQL)
+
+```bash
+# Crear y ejecutar un nuevo contenedor PostgreSQL
+make docker-create
+
+# Detener y eliminar el contenedor PostgreSQL
+make docker-rm
+
+# Iniciar contenedor PostgreSQL existente
+make docker-start
+
+# Detener contenedor PostgreSQL
+make docker-stop
+```
+
+> **Nota:** Los comandos `make docker-*` usan las credenciales configuradas en `appsettings.json` automáticamente. Para utilizar otras credenciales, puedes forzar sus valores en el archivo Makefile, o bien reemplazando la direccion del appsettings definido en el Makefile por el appsettings utilizado en el ambiente de desarollo.
+
 ## 🐳 Comandos útiles de Docker
 
 ### Detener la base de datos
