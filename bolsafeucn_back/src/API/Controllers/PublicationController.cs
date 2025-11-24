@@ -1693,7 +1693,7 @@ namespace bolsafeucn_back.src.API.Controllers
         /// </summary>
         /// <param name="applicationId">El ID de la postulación a rechazar.</param>
         [HttpPatch("Student/applications/{applicationId}/reject")]
-        [Authorize(Roles = "Students")]
+        [Authorize(Roles = "Student")]
         public async Task<IActionResult> StudentRejectApplication(int applicationId)
         {
             return await StudentUpdateApplicationStatusInternal(
