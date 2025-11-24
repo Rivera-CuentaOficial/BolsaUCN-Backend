@@ -1,4 +1,5 @@
 using bolsafeucn_back.src.Application.DTOs.JobAplicationDTO;
+using bolsafeucn_back.src.Domain.Models;
 
 namespace bolsafeucn_back.src.Application.Services.Interfaces
 {
@@ -30,9 +31,9 @@ namespace bolsafeucn_back.src.Application.Services.Interfaces
         Task<IEnumerable<JobApplicationResponseDto>> GetApplicationsByCompanyIdAsync(int companyId);
 
         /// <summary>
-        /// Actualiza el estado de una postulación (Pendiente, Aceptado, Rechazado)
+        /// Actualiza el estado de una postulación (Pendiente, Aceptada, Rechazada)
         /// </summary>
-        Task<bool> UpdateApplicationStatusAsync(int applicationId, string newStatus, int companyId);
+        Task<bool> UpdateApplicationStatusAsync(int applicationId, ApplicationStatus newStatus, int companyId);
 
         /// <summary>
         /// Valida si un estudiante es elegible para postular

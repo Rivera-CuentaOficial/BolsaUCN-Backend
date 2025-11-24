@@ -1207,7 +1207,7 @@ namespace bolsafeucn_back.src.API.Controllers
         [Authorize(Roles = "Offerent")]
         public async Task<IActionResult> AcceptApplication(int applicationId)
         {
-            return await UpdateApplicationStatusInternal(applicationId, "Aceptada", "aceptada");
+            return await UpdateApplicationStatusInternal(applicationId, ApplicationStatus.Aceptada, "aceptada");
         }
 
         /// <summary>
@@ -1219,7 +1219,7 @@ namespace bolsafeucn_back.src.API.Controllers
         [Authorize(Roles = "Offerent")]
         public async Task<IActionResult> RejectApplication(int applicationId)
         {
-            return await UpdateApplicationStatusInternal(applicationId, "Rechazada", "rechazada");
+            return await UpdateApplicationStatusInternal(applicationId, ApplicationStatus.Rechazada, "rechazada");
         }
 
         /// <summary>
@@ -1228,7 +1228,7 @@ namespace bolsafeucn_back.src.API.Controllers
         /// </summary>
         private async Task<IActionResult> UpdateApplicationStatusInternal(
             int applicationId,
-            string newStatus,
+            ApplicationStatus newStatus,
             string actionText
         )
         {
