@@ -383,7 +383,7 @@ namespace bolsafeucn_back.src.Application.Services.Implements
                 Email = applicant.First().Student.Email,
                 Phone = applicant.First().Student.PhoneNumber,
                 Rut = applicant.First().Student.Rut,
-                Rating = applicant.First().Student.Student?.Rating,
+                Rating = (float?)applicant.First().Student.Rating, // hola soy matias cambie el rating a generaluser
                 MotivationLetter = applicant.First().Student.Student?.MotivationLetter,
                 Disability = applicant.First().Student.Student?.Disability.ToString(),
                 CurriculumVitae = applicant.First().Student.Student?.CurriculumVitae,
