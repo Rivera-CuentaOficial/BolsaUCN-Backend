@@ -109,7 +109,7 @@ namespace bolsafeucn_back.src.Application.Services.Implements
                 throw new UnauthorizedAccessException("Solo el oferente de esta publicación puede dejar una review hacia el estudiante.");
             }
             // Validar que el oferente no haya completado ya su review hacia el estudiante
-            if (review.StudentReviewCompleted)
+            if (review.IsReviewForStudentCompleted)
             {
                 throw new InvalidOperationException("Ya has completado tu review para este estudiante.");
             }
@@ -122,7 +122,7 @@ namespace bolsafeucn_back.src.Application.Services.Implements
             {
                 throw new InvalidOperationException("No se puede agregar la Review hacia el estudiante, ya que esta ya ha sido eliminada.");
             }
-            ReviewMapper.studentUpdateReview(dto, review);
+            ReviewMapper.StudentUpdateReview(dto, review);
             if (review.IsCompleted) await BothReviewsCompletedAsync(review);
             await _repository.UpdateAsync(review);
             Log.Information("Offeror {OfferorId} added review for student in publication {PublicationId}", currentUserId, dto.PublicationId);
@@ -147,7 +147,7 @@ namespace bolsafeucn_back.src.Application.Services.Implements
                 throw new UnauthorizedAccessException("Solo el estudiante de esta publicación puede dejar una review hacia el oferente.");
             }
             // Validar que el estudiante no haya completado ya su review hacia el oferente
-            if (review.OfferorReviewCompleted)
+            if (review.IsReviewForOfferorCompleted)
             {
                 throw new InvalidOperationException("Ya has completado tu review para este oferente.");
             }
@@ -160,7 +160,7 @@ namespace bolsafeucn_back.src.Application.Services.Implements
             {
                 throw new InvalidOperationException("No se puede agregar la Review hacia el oferente, ya que esta ya ha sido eliminada.");
             }
-            ReviewMapper.offerorUpdateReview(dto, review);
+            ReviewMapper.OfferorUpdateReview(dto, review);
             if (review.IsCompleted) await BothReviewsCompletedAsync(review);
             await _repository.UpdateAsync(review);
             Log.Information("Student {StudentId} added review for offeror in publication {PublicationId}", currentUserId, dto.PublicationId);
@@ -265,7 +265,7 @@ namespace bolsafeucn_back.src.Application.Services.Implements
                 {
                     foreach (var publication in publications)
                     {
-                        result.Add(ReviewMapper.MapToPublicationAndReviewInfoDTO(review, publication));
+                        result.Add(ReviewMapper.MapToPublicationAndReviewInfoDTO(review, publication, user.UserType));
                     }
                 }
             }

@@ -696,12 +696,12 @@ namespace bolsafeucn_back.src.Application.Infrastructure.Data
                     CommentForStudent = GenerateOfferentComment(faker, i),
                     AtTime = faker.Random.Bool(0.7f),
                     GoodPresentation = faker.Random.Bool(0.8f),
-                    StudentReviewCompleted = true,
+                    IsReviewForStudentCompleted = true,
 
                     // Evaluación del estudiante hacia el oferente (completa solo si isCompleted)
                     RatingForOfferor = isCompleted ? faker.Random.Int(1, 6) : (int?)null,
                     CommentForOfferor = isCompleted ? GenerateStudentComment(faker, i) : null,
-                    OfferorReviewCompleted = isCompleted,
+                    IsReviewForOfferorCompleted = isCompleted,
 
                     IsCompleted = isCompleted,
                     ReviewWindowEndDate = isCompleted ? now.AddDays(-15) : now.AddDays(10),

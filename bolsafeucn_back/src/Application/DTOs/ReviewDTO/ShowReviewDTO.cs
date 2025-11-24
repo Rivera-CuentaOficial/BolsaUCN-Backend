@@ -11,9 +11,9 @@ namespace bolsafeucn_back.src.Application.DTOs.ReviewDTO
         public required string CommentForOfferor { get; set; }
         public required bool AtTime { get; set; }
         public required bool GoodPresentation { get; set; }
-        public required bool IsComplete { get; set; }
-        public required bool StudentReviewCompleted { get; set; }
-        public required bool OfferorReviewCompleted { get; set; }
+        public required bool IsCompleted { get; set; }
+        public required bool IsReviewForStudentCompleted { get; set; }
+        public required bool IsReviewForOfferorCompleted { get; set; }
         public required bool IsClosed { get; set; }
     }
 }

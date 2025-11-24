@@ -1,5 +1,6 @@
 using bolsafeucn_back.src.Application.DTOs.ReviewDTO;
 using bolsafeucn_back.src.Domain.Models;
+using bolsafeucn_back.src.Infrastructure.Repositories.Implements;
 using Serilog;
 
 namespace bolsafeucn_back.src.Application.Mappers
@@ -17,14 +18,14 @@ namespace bolsafeucn_back.src.Application.Mappers
         /// <param name="dto">DTO con la calificación y comentarios del oferente para el estudiante.</param>
         /// <param name="review">La entidad de reseña a actualizar.</param>
         /// <returns>La reseña actualizada con los datos del oferente.</returns>
-        public static Review studentUpdateReview(ReviewForStudentDTO dto, Review review)
+        public static Review StudentUpdateReview(ReviewForStudentDTO dto, Review review)
         {
             review.RatingForStudent = dto.RatingForStudent;
             review.CommentForStudent = dto.CommentForStudent;
             review.AtTime = dto.atTime;
             review.GoodPresentation = dto.goodPresentation;
-            review.StudentReviewCompleted = true;
-            review.IsCompleted = review.StudentReviewCompleted && review.OfferorReviewCompleted;
+            review.IsReviewForStudentCompleted = true;
+            review.IsCompleted = review.IsReviewForStudentCompleted && review.IsReviewForOfferorCompleted;
             return review;
         }
 
@@ -35,12 +36,12 @@ namespace bolsafeucn_back.src.Application.Mappers
         /// <param name="dto">DTO con la calificación y comentarios del estudiante para el oferente.</param>
         /// <param name="review">La entidad de reseña a actualizar.</param>
         /// <returns>La reseña actualizada con los datos del estudiante.</returns>
-        public static Review offerorUpdateReview(ReviewForOfferorDTO dto, Review review)
+        public static Review OfferorUpdateReview(ReviewForOfferorDTO dto, Review review)
         {
             review.RatingForOfferor = dto.RatingForOfferor;
             review.CommentForOfferor = dto.CommentForOfferor;
-            review.OfferorReviewCompleted = true;
-            review.IsCompleted = review.StudentReviewCompleted && review.OfferorReviewCompleted;
+            review.IsReviewForOfferorCompleted = true;
+            review.IsCompleted = review.IsReviewForStudentCompleted && review.IsReviewForOfferorCompleted;
             return review;
         }
 
@@ -112,16 +113,35 @@ namespace bolsafeucn_back.src.Application.Mappers
                 CommentForOfferor = entity.CommentForOfferor ?? string.Empty,
                 AtTime = entity.AtTime,
                 GoodPresentation = entity.GoodPresentation,
-                IsComplete = entity.IsCompleted,
-                StudentReviewCompleted = entity.StudentReviewCompleted,
-                OfferorReviewCompleted = entity.OfferorReviewCompleted,
+                IsCompleted = entity.IsCompleted,
+                IsReviewForStudentCompleted = entity.IsReviewForStudentCompleted,
+                IsReviewForOfferorCompleted = entity.IsReviewForOfferorCompleted,
                 IsClosed = DateTime.UtcNow > entity.ReviewWindowEndDate
             };
         }
-        public static PublicationAndReviewInfoDTO MapToPublicationAndReviewInfoDTO(Review review, Publication publication)
+        public static PublicationAndReviewInfoDTO MapToPublicationAndReviewInfoDTO(Review review, Publication publication, UserType userType)
         {
             var reviewDto = ShowReviewDTO(review);
             var publicationDto = PublicationMapper.ToDTO(publication);
+            // Ocultar datos según el tipo de usuario y el estado de la review
+            if (!reviewDto.IsCompleted && userType != UserType.Administrador)
+            {
+                // Si es oferente, no ha completado su review pero el estudiante si
+                if ((userType == UserType.Empresa || userType == UserType.Particular) && reviewDto.IsReviewForOfferorCompleted)
+                {
+                    reviewDto.RatingForOfferor = 0;
+                    reviewDto.CommentForOfferor = "Review no completada. Ocultado datos.";
+                }
+                // Si es estudiante y no ha completado su review pero el oferente si
+                else if (userType == UserType.Estudiante && reviewDto.IsReviewForStudentCompleted)
+                {
+                    // Si la Review no esta completada,
+                    reviewDto.RatingForStudent = 0;
+                    reviewDto.CommentForStudent = "Review no completada. Ocultado datos.";
+                    reviewDto.AtTime = false;
+                    reviewDto.GoodPresentation = false;
+                }
+            }
             return new PublicationAndReviewInfoDTO
             {
                 Review = reviewDto,
@@ -132,7 +152,7 @@ namespace bolsafeucn_back.src.Application.Mappers
         {
             review.RatingForOfferor = null;
             review.CommentForOfferor = null;
-            review.OfferorReviewCompleted = false;
+            review.IsReviewForOfferorCompleted = false;
             review.IsCompleted = false;
             review.HasReviewForOfferorBeenDeleted = true;
             Log.Information("Deleted offeror part of review ID {ReviewId}", review.Id);
@@ -144,7 +164,7 @@ namespace bolsafeucn_back.src.Application.Mappers
             review.CommentForStudent = null;
             review.AtTime = false;
             review.GoodPresentation = false;
-            review.StudentReviewCompleted = false;
+            review.IsReviewForStudentCompleted = false;
             review.IsCompleted = false;
             review.HasReviewForStudentBeenDeleted = true;
             Log.Information("Deleted student part of review ID {ReviewId}", review.Id);

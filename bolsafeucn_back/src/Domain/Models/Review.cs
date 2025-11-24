@@ -4,7 +4,7 @@ namespace bolsafeucn_back.src.Domain.Models
     /// Representa una reseña bidireccional entre un oferente y un estudiante.
     /// Permite que ambas partes evalúen mutuamente su experiencia laboral.
     /// </summary>
-    public class Review : ModelBase // TODO: Probar si funciona bien la herencia.
+    public class Review : ModelBase
     {
         /// <summary>
         /// Calificación otorgada por el oferente al estudiante (1-6).
@@ -66,13 +66,13 @@ namespace bolsafeucn_back.src.Domain.Models
         /// <summary>
         /// Indica si las evaluaciones hacia el estudiante han sido completadas.
         /// </summary>
-        public bool StudentReviewCompleted { get; set; } = false;
+        public bool IsReviewForStudentCompleted { get; set; } = false;
         //todo: valor calculado 
 
         /// <summary>
         /// Indica si las evaluaciones hacia el oferente han sido completadas.
         /// </summary>
-        public bool OfferorReviewCompleted { get; set; } = false;
+        public bool IsReviewForOfferorCompleted { get; set; } = false;
 
         /// <summary>
         /// Indica si ambas partes han completado sus respectivas evaluaciones.
