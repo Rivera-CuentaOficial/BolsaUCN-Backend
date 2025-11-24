@@ -82,10 +82,10 @@ namespace bolsafeucn_back.src.Application.Services.Implements
                 throw new KeyNotFoundException($"No se encontraron reseñas para el estudiante con ID {studentId}.");
             return reviews.Select(ReviewMapper.ShowReviewDTO);
         }
-        public async Task<IEnumerable<ReviewDTO>> GetAllReviewsAsync()
+        public async Task<IEnumerable<ShowReviewDTO>> GetAllReviewsAsync()
         {
             var reviews = await _repository.GetAllAsync();
-            return reviews.Select(ReviewMapper.ToDTO);
+            return reviews.Select(ReviewMapper.ShowReviewDTO);
         }
         #endregion
         #region Agregar Reviews
