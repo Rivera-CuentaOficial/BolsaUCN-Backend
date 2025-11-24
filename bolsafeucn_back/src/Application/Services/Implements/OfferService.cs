@@ -218,6 +218,8 @@ public class OfferService : IOfferService
         }
         offer.IsActive = false;
         await _offerRepository.UpdateOfferAsync(offer);
+
+        _logger.LogInformation("Oferta ID: {OfferId} cerrada. Reviews se crearán automáticamente.", offerId);
     }
 
     public async Task<OfferDetailValidationDto> GetOfferDetailForOfferValidationAsync(int id)
@@ -326,5 +328,7 @@ public class OfferService : IOfferService
         }
         offer.IsActive = false;
         await _offerRepository.UpdateOfferAsync(offer);
+
+        _logger.LogInformation("Oferta ID: {OfferId} cerrada por el oferente. Reviews se crearán automáticamente.", offerId);
     }
 }
