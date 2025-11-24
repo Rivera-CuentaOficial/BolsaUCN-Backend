@@ -990,19 +990,6 @@ namespace bolsafeucn_back.src.Application.Services.Implements
                 throw new Exception("El usuario actualizado no tiene todos los campos requeridos.");
             }
 
-            var images = new UserImagesDTO();
-            updateParamsDTO.ApplyTo(images);
-            
-            if (images.ProfilePhoto != null) 
-                await _fileService.UploadUserImageAsync(
-                    images.ProfilePhoto, 
-                    user,
-                    UserImageType.Perfil);
-            if (images.ProfileBanner != null) 
-                await _fileService.UploadUserImageAsync(
-                    images.ProfileBanner, 
-                    user, 
-                    UserImageType.Banner);
             var result = await _userRepository.UpdateAsync(user);
             if (!result)
             {
@@ -1012,6 +999,59 @@ namespace bolsafeucn_back.src.Application.Services.Implements
             return "Datos del usuario actualizados correctamente";
         }
 
+        public async Task<GetPhotoDTO> GetUserProfilePhotoByIdAsync(int userId)
+        {
+            Log.Information("Buscando usuario con la ID: {UserId}", userId);
+            GeneralUser? user = await _userRepository.
+                GetUntrackedWithTypeAsync(userId, null) // El tipo de usuario no importa aquí
+                ?? throw new KeyNotFoundException("No existe usuario con ese ID");
+
+            var photoDto = new GetPhotoDTO
+            {
+                PhotoUrl = user.ProfilePhoto?.Url ?? string.Empty,
+            };
+
+            return photoDto;
+        }
+
+        /// <summary>
+        /// Actualiza la foto de perfil de un usuario por su ID.
+        /// </summary>
+        /// <param name="updatePhotoDTO">Parámetros para actualizar la foto de perfil del usuario.</param>
+        /// <param name="userId">ID del usuario</param>
+        /// <returns>Mensaje de éxito</returns>
+        /// <exception cref="KeyNotFoundException"></exception>
+        /// <exception cref="Exception"></exception>
+        public async Task<string> UpdateUserProfilePhotoByIdAsync(UpdatePhotoDTO updatePhotoDTO, int userId)
+        {
+            Log.Information("Buscando usuario con la ID: {UserId}", userId);
+            GeneralUser? user = await _userRepository.
+                GetTrackedWithTypeAsync(userId, null) // El tipo de usuario no importa aquí
+                ?? throw new KeyNotFoundException("No existe usuario con ese ID");
+
+            await _fileService.UploadUserImageAsync(
+                updatePhotoDTO.Photo,
+                user,
+                UserImageType.Perfil);
+
+            var result = await _userRepository.UpdateAsync(user);
+            if (!result)
+            {
+                Log.Error("Error al actualizar la foto de perfil del usuario con ID: {UserId}", userId);
+                throw new Exception("Error al actualizar la foto de perfil del usuario");
+            }
+            return "Foto de perfil del usuario actualizada correctamente";
+        }
+
+        /// <summary>
+        /// Cambia la contraseña de un usuario por su ID.
+        /// </summary>
+        /// <param name="changeUserPasswordDTO">Parámetros para cambiar la contraseña del usuario.</param>
+        /// <param name="userId">ID del usuario</param>
+        /// <returns>Mensaje de éxito</returns>
+        /// <exception cref="KeyNotFoundException"></exception>
+        /// <exception cref="UnauthorizedAccessException"></exception>
+        /// <exception cref="Exception"></exception>
         public async Task<string> ChangeUserPasswordById(ChangeUserPasswordDTO changeUserPasswordDTO, int userId)
         {
             Log.Information("Buscando usuario con la Id: {UserId}", userId.ToString());

@@ -15,7 +15,7 @@ namespace bolsafeucn_back.src.Application.Mappers
         {
             TypeAdapterConfig<RegisterIndividualDTO, GeneralUser>
                 .NewConfig()
-                .Map(dest => dest.UserName, src => src.Email)
+                .Map(dest => dest.UserName, src => src.Email != null && src.Email.Contains("@") ? src.Email.Substring(0, src.Email.IndexOf("@")) : src.Email)
                 .Map(dest => dest.Email, src => src.Email)
                 .Map(dest => dest.PhoneNumber, src => src.PhoneNumber)
                 .Map(dest => dest.Rut, src => src.Rut)

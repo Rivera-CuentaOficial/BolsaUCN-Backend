@@ -122,6 +122,7 @@ namespace bolsafeucn_back.src.Application.Infrastructure.Data
                     LastName = "Pérez Estudiante",
                     Disability = Disability.Ninguna,
                     GeneralUser = testStudentUser,
+                    Rating = 3.3f,
                     CurriculumVitae = "https://ejemplo.com/cv/juan_perez.pdf", // CV de prueba
                     MotivationLetter = "Soy un estudiante motivado y con ganas de aprender", // Carta opcional
                 };
