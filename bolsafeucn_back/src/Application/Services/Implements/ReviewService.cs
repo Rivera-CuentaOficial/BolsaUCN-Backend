@@ -88,10 +88,22 @@ namespace bolsafeucn_back.src.Application.Services.Implements
                 throw new KeyNotFoundException($"No se encontraron reseñas para el estudiante con ID {studentId}.");
             return reviews.Select(ReviewMapper.ShowReviewDTO);
         }
-        public async Task<IEnumerable<ShowReviewDTO>> GetAllReviewsAsync()
+        public async Task<IEnumerable<PublicationAndReviewInfoDTO>> GetAllReviewsAsync()
         {
             var reviews = await _repository.GetAllAsync();
-            return reviews.Select(ReviewMapper.ShowReviewDTO);
+            var result = new List<PublicationAndReviewInfoDTO>();
+            foreach (var review in reviews)
+            {
+                var publications = await _repository.GetPublicationInformationAsync(review.Id);
+                if (publications != null)
+                {
+                    foreach (var publication in publications)
+                    {
+                        result.Add(ReviewMapper.MapToPublicationAndReviewInfoDTO(review, publication, UserType.Administrador));
+                    }
+                }
+            }
+            return result;
         }
         #endregion
         #region Agregar Reviews
