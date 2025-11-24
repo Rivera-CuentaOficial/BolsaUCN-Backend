@@ -46,7 +46,7 @@ namespace bolsafeucn_back.src.Application.DTOs.UserDTOs.UserProfileDTOs
         /// <summary>
         /// Información sobre el usuario.
         /// </summary>
-        [MaxLength(500, ErrorMessage = "La información sobre el usuario debe tener como máximo 200 caracteres")]
+        [MaxLength(500, ErrorMessage = "La información sobre el usuario debe tener como máximo 500 caracteres")]
         public string? AboutMe { get; set; }
 
         public void ApplyTo(GeneralUser user)
