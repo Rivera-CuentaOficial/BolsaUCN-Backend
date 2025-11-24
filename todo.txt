@@ -1,9 +1,8 @@
 TODO: 
 1. avisar al admin cuando haya review baja
-2. cambiar dto reporte usuario (solo admin consigue pdf)
-3. reporte general del sistema
 3.3 cambiar dtos de review/publications
 4. Automatizar creacion de Review al finalizar una publicacion.
 5. mermaid
 6. lista de usuarios en modelo publication
 7. combinar info tabla review y publication en un mismo dto
+8. CriticalReview

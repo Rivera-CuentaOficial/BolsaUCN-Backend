@@ -45,7 +45,7 @@ namespace bolsafeucn_back.src.Application.Services.Implements
                 : await _reviewService.GetReviewsByOfferorAsync(userId);
 
             // 4. Obtener datos detallados de reviews desde la BD
-            var reviewIds = reviewsDto.Select(r => r.idReview).ToList();
+            var reviewIds = reviewsDto.Select(r => r.IdReview).ToList();
             var reviews = await _context.Reviews
                 .Include(r => r.Publication)
                 .Include(r => r.Student)
@@ -262,7 +262,7 @@ namespace bolsafeucn_back.src.Application.Services.Implements
         /// <summary>
         /// Obtiene el color según el rating
         /// </summary>
-        private string GetRatingColor(double rating)
+        private static string GetRatingColor(double rating)
         {
             if (rating >= 5.5) return Colors.Green.Darken2;
             if (rating >= 4.5) return Colors.Green.Medium;
@@ -287,15 +287,6 @@ namespace bolsafeucn_back.src.Application.Services.Implements
             // 2. Calcular estadísticas del sistema
             var totalReviews = reviews.Count;
 
-            // Obtener todos los ratings (tanto de estudiantes como de oferentes)
-            var allRatings = reviews
-                .SelectMany(r => new[] { r.RatingForStudent, r.RatingForOfferor })
-                .Where(rating => rating.HasValue)
-                .Select(rating => rating!.Value)
-                .ToList();
-
-            var systemAverageRating = allRatings.Any() ? allRatings.Average() : 0.0;
-
             // Contar usuarios únicos que tienen reviews
             var usersWithReviews = reviews
                 .SelectMany(r => new[] { r.StudentId, r.OfferorId })
@@ -306,7 +297,6 @@ namespace bolsafeucn_back.src.Application.Services.Implements
             var reportData = new SystemReviewReportDTO
             {
                 TotalReviews = totalReviews,
-                SystemAverageRating = systemAverageRating,
                 TotalUsersWithReviews = usersWithReviews,
                 GeneratedAt = DateTime.UtcNow,
                 Reviews = reviews.Select(r => new SystemReviewDetailDTO
@@ -372,7 +362,7 @@ namespace bolsafeucn_back.src.Application.Services.Implements
                     .Bold()
                     .FontColor(Colors.Blue.Darken2);
 
-                column.Item().PaddingTop(5).Text("BolsaFE UCN - Todas las Calificaciones")
+                column.Item().PaddingTop(5).Text("BolsaFEUCN - Todas las Calificaciones")
                     .FontSize(14)
                     .SemiBold();
 
@@ -390,15 +380,6 @@ namespace bolsafeucn_back.src.Application.Services.Implements
                 // Sección de resumen general
                 column.Item().Row(row =>
                 {
-                    row.RelativeItem().Column(col =>
-                    {
-                        col.Item().Text("Promedio General").FontSize(12).SemiBold();
-                        col.Item().Text($"{data.SystemAverageRating:F2}/6.0")
-                            .FontSize(24)
-                            .Bold()
-                            .FontColor(GetRatingColor(data.SystemAverageRating));
-                    });
-
                     row.RelativeItem().Column(col =>
                     {
                         col.Item().Text("Total de Reviews").FontSize(12).SemiBold();

@@ -237,11 +237,9 @@ namespace bolsafeucn_back.src.Application.Services.Implements
         #endregion
         #region Otras operaciones
 
-        public async Task<IEnumerable<PublicationsDTO>> GetPublicationInformationAsync(int userId)
+        public async Task<IEnumerable<PublicationAndReviewInfoDTO>> GetPublicationInformationAsync(int userId)
         {
-            var user = await _userRepository.GetByIdAsync(userId);
-            if (user == null)
-                throw new KeyNotFoundException($"No se encontró el usuario con ID {userId}.");
+            var user = await _userRepository.GetByIdAsync(userId) ?? throw new KeyNotFoundException($"No se encontró el usuario con ID {userId}.");
             IEnumerable<Review> reviews;
             if (user.UserType == UserType.Estudiante)
             {
@@ -259,18 +257,21 @@ namespace bolsafeucn_back.src.Application.Services.Implements
             {
                 throw new InvalidOperationException($"El tipo de usuario {user.UserType} no puede tener reseñas.");
             }
-            var publicationsList = new List<Publication>();
+            var result = new List<PublicationAndReviewInfoDTO>();
             foreach (var review in reviews)
             {
                 var publications = await _repository.GetPublicationInformationAsync(review.Id);
                 if (publications != null)
                 {
-                    publicationsList.AddRange(publications);
+                    foreach (var publication in publications)
+                    {
+                        result.Add(ReviewMapper.MapToPublicationAndReviewInfoDTO(review, publication));
+                    }
                 }
             }
-            if (!publicationsList.Any())
+            if (result.Count == 0)
                 throw new KeyNotFoundException($"No se encontró información de publicación para el usuario con ID {userId}.");
-            return publicationsList.Select(PublicationMapper.ToDTO);
+            return result;
         }
         public async Task UpdateUserRatingAsync(int userId)
         {

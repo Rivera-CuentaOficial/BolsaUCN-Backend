@@ -11,11 +11,6 @@ namespace bolsafeucn_back.src.Application.DTOs.ReviewDTO.ReviewReport
         public int TotalReviews { get; set; }
 
         /// <summary>
-        /// Promedio general de todas las calificaciones
-        /// </summary>
-        public double SystemAverageRating { get; set; }
-
-        /// <summary>
         /// Total de usuarios con reviews
         /// </summary>
         public int TotalUsersWithReviews { get; set; }

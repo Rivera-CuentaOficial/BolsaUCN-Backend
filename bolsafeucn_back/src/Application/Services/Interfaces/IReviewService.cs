@@ -106,10 +106,10 @@ namespace bolsafeucn_back.src.Application.Services.Interfaces
         /// Identifica automáticamente si el usuario es estudiante u oferente y devuelve las publicaciones correspondientes.
         /// </summary>
         /// <param name="userId">El identificador del usuario (estudiante u oferente).</param>
-        /// <returns>Una colección de DTOs de publicaciones asociadas a las reseñas del usuario.</returns>
+        /// <returns>Una colección de DTOs de publicaciones y reseñas asociadas al usuario.</returns>
         /// <exception cref="KeyNotFoundException">Lanzada si no se encuentra el usuario o no hay publicaciones.</exception>
         /// <exception cref="InvalidOperationException">Lanzada si el tipo de usuario no puede tener reseñas.</exception>
-        Task<IEnumerable<PublicationsDTO>> GetPublicationInformationAsync(int userId);
+        Task<IEnumerable<PublicationAndReviewInfoDTO>> GetPublicationInformationAsync(int userId);
         Task UpdateUserRatingAsync(int userId);
         Task<Double?> GetUserAverageRatingAsync(int userId);
         /// <summary>

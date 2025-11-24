@@ -93,6 +93,8 @@ namespace bolsafeucn_back.src.Infrastructure.Repositories.Implements
         public async Task<Review?> GetByPublicationIdAsync(int publicationId)
         {
             return await _context.Reviews
+                .Include(r => r.Student)
+                .Include(r => r.Offeror)
                 .Where(r => r.PublicationId == publicationId)
                 .FirstOrDefaultAsync();
         }
@@ -105,6 +107,8 @@ namespace bolsafeucn_back.src.Infrastructure.Repositories.Implements
         public async Task<Review?> GetByIdAsync(int reviewId)
         {
             return await _context.Reviews
+                .Include(r => r.Student)
+                .Include(r => r.Offeror)
                 .Where(r => r.Id == reviewId)
                 .FirstOrDefaultAsync();
         }

@@ -103,14 +103,29 @@ namespace bolsafeucn_back.src.Application.Mappers
         {
             return new ShowReviewDTO
             {
-                idReview = entity.Id,
+                IdReview = entity.Id,
+                StudentName = entity.Student?.UserName ?? "Estudiante desconocido",
+                OfferorName = entity.Offeror?.UserName ?? "Oferente desconocido",
                 RatingForStudent = entity.RatingForStudent ?? 0,
                 CommentForStudent = entity.CommentForStudent ?? string.Empty,
                 RatingForOfferor = entity.RatingForOfferor ?? 0,
                 CommentForOfferor = entity.CommentForOfferor ?? string.Empty,
                 AtTime = entity.AtTime,
                 GoodPresentation = entity.GoodPresentation,
-                IsComplete = entity.IsCompleted
+                IsComplete = entity.IsCompleted,
+                StudentReviewCompleted = entity.StudentReviewCompleted,
+                OfferorReviewCompleted = entity.OfferorReviewCompleted,
+                IsClosed = DateTime.UtcNow > entity.ReviewWindowEndDate
+            };
+        }
+        public static PublicationAndReviewInfoDTO MapToPublicationAndReviewInfoDTO(Review review, Publication publication)
+        {
+            var reviewDto = ShowReviewDTO(review);
+            var publicationDto = PublicationMapper.ToDTO(publication);
+            return new PublicationAndReviewInfoDTO
+            {
+                Review = reviewDto,
+                Publication = publicationDto
             };
         }
         public static Review DeleteReviewForOfferor(Review review)

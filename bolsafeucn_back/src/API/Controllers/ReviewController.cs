@@ -227,7 +227,7 @@ namespace bolsafeucn_back.src.API.Controllers
         /// Solo accesible para administradores.
         /// </summary>
         /// <returns>Lista completa de reseñas</returns>
-        [HttpGet("Admin/GetAllReviews")]
+        [HttpGet("Admin/system-reviews")]
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> GetAllReviews()
         {
@@ -242,7 +242,7 @@ namespace bolsafeucn_back.src.API.Controllers
         /// </summary>
         /// <param name="userId">ID del usuario para generar el reporte</param>
         /// <returns>Archivo PDF con el reporte del usuario</returns>
-        [HttpGet("admin/publications/pdf")]
+        [HttpGet("admin/user-reviews/pdf")]
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> GetUserReviewsPdf(int userId)
         {
