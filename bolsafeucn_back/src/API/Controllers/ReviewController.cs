@@ -7,6 +7,8 @@ using System.Security.Claims;
 
 namespace bolsafeucn_back.src.API.Controllers
 {
+    [ApiController]
+    [Route("api/review")]
     /// <summary>
     /// Controlador para gestionar las reseñas entre oferentes y estudiantes.
     /// </summary>

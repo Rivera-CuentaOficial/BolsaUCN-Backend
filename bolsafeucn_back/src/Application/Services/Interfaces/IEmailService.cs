@@ -1,3 +1,4 @@
+using bolsafeucn_back.src.Application.DTOs.ReviewDTO;
 namespace bolsafeucn_back.src.Application.Services.Interfaces
 {
     /// <summary>
@@ -5,6 +6,11 @@ namespace bolsafeucn_back.src.Application.Services.Interfaces
     /// </summary>
     public interface IEmailService
     {
+        /// <summary>
+        /// Envia un correo electrónico cuando la review es menor a tres estrellas.
+        /// </summary>
+        Task<bool> SendLowRatingReviewAlertAsync(ReviewDTO review);
+
         /// <summary>
         /// Envia un correo electrónico para verificar la dirección de correo del usuario.
         /// </summary>

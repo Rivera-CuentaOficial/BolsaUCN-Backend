@@ -18,6 +18,8 @@ namespace bolsafeucn_back.src.Application.Services.Implements
         private readonly IReviewRepository _repository;
         private readonly IUserRepository _userRepository;
         private readonly IAdminNotificationRepository _adminNotificationRepository;
+        private readonly IEmailService _emailService;
+
 
 
         /// <summary>
@@ -28,11 +30,14 @@ namespace bolsafeucn_back.src.Application.Services.Implements
        public ReviewService(
             IReviewRepository repository,
             IUserRepository userRepository,
-            IAdminNotificationRepository adminNotificationRepository)
+            IAdminNotificationRepository adminNotificationRepository,
+            IEmailService emailService)
+            
             {
             _repository = repository;
             _userRepository = userRepository;
             _adminNotificationRepository = adminNotificationRepository;
+            _emailService = emailService;
         }
 
         #region Obtener Reviews y Ratings
@@ -133,13 +138,19 @@ namespace bolsafeucn_back.src.Application.Services.Implements
             await _repository.UpdateAsync(review);
             Log.Information("Offeror {OfferorId} added review for student in publication {PublicationId}", currentUserId, dto.PublicationId);
         
-            if (review.RatingForStudent == 3)
+            if (review.RatingForStudent.HasValue && review.RatingForStudent <= 3)
             {
-                await _adminNotificationRepository.AddAsync(new AdminNotification
+                await _emailService.SendLowRatingReviewAlertAsync(new ReviewDTO
                 {
-                    Message = $"Review de 3 estrellas hacia el estudiante en la publicación {dto.PublicationId}.",
-                    CreatedAt = DateTime.UtcNow,
-                    IsRead = false
+                    idReview = review.Id,
+                    RatingForStudent = review.RatingForStudent,
+                    CommentForStudent = review.CommentForStudent,
+                    IdStudent = review.StudentId,
+                    IdOfferor = review.OfferorId,
+                    IdPublication = review.PublicationId,
+                    AtTime = review.AtTime,
+                    GoodPresentation = review.GoodPresentation,
+                    ReviewWindowEndDate = review.ReviewWindowEndDate
                 });
             }
         }
@@ -181,13 +192,19 @@ namespace bolsafeucn_back.src.Application.Services.Implements
             await _repository.UpdateAsync(review);
             Log.Information("Student {StudentId} added review for offeror in publication {PublicationId}", currentUserId, dto.PublicationId);
 
-            if (review.RatingForOfferor == 3)
+            if (review.RatingForOfferor.HasValue && review.RatingForOfferor <= 3)
             {
-                await _adminNotificationRepository.AddAsync(new AdminNotification
+                await _emailService.SendLowRatingReviewAlertAsync(new ReviewDTO
                 {
-                    Message = $"Review de 3 estrellas hacia el oferente en la publicación {dto.PublicationId}.",
-                    CreatedAt = DateTime.UtcNow,
-                    IsRead = false
+                    idReview = review.Id,
+                    RatingForOfferor = review.RatingForOfferor,
+                    CommentForOfferor = review.CommentForOfferor,
+                    IdStudent = review.StudentId,
+                    IdOfferor = review.OfferorId,
+                    IdPublication = review.PublicationId,
+                    AtTime = review.AtTime,
+                    GoodPresentation = review.GoodPresentation,
+                    ReviewWindowEndDate = review.ReviewWindowEndDate
                 });
             }
         }
