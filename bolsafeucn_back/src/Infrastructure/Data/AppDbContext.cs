@@ -27,6 +27,8 @@ namespace bolsafeucn_back.src.Infrastructure.Data
         public DbSet<NotificationDTO> Notifications { get; set; }
         public DbSet<JobApplication> JobApplications { get; set; }
         public DbSet<Review> Reviews { get; set; }
+        public DbSet<AdminNotification> AdminNotifications { get; set; }
+
 
         // public DbSet<Review> Reviews { get; set; } // Desactivado temporalmente
 
