@@ -13,11 +13,12 @@ public class NotificationService : INotificationService
 
     public async Task SendPostulationStatusChangeAsync(PostulationStatusChangedEvent evt)
     {
+        var statusText = evt.NewStatus.ToString();
     
         var notification = new NotificationDTO
         {
             UserEmail = evt.StudentEmail,
-            Message = $"Tu postulación a '{evt.OfferName}' en '{evt.CompanyName}' ha cambiado a '{evt.NewStatus}'.",
+            Message = $"Tu postulación a '{evt.OfferName}' en '{evt.CompanyName}' ha cambiado a '{statusText}'.",
             CreatedAt = DateTime.UtcNow
         };
 
@@ -26,7 +27,7 @@ public class NotificationService : INotificationService
             evt.StudentEmail,
             evt.OfferName,
             evt.CompanyName,
-            evt.NewStatus
+            statusText
         );
     }
 }
