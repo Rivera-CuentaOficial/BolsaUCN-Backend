@@ -216,7 +216,7 @@ namespace bolsafeucn_back.src.Application.Services.Implements
         public async Task<bool> UpdateApplicationStatusAsync(
             int applicationId,
             ApplicationStatus newStatus,
-            int companyId
+            int OwnnerUserId
         )
         {
             // La validación del enum se hace automáticamente al recibir el parámetro
@@ -236,7 +236,7 @@ namespace bolsafeucn_back.src.Application.Services.Implements
 
             // Verificar que la oferta pertenece a la empresa
             var offer = await _offerRepository.GetByIdAsync(application.JobOfferId);
-            if (offer == null || offer.UserId != companyId)
+            if (offer == null || offer.UserId != OwnnerUserId)
             {
                 throw new UnauthorizedAccessException(
                     "No tienes permiso para modificar esta postulación"
