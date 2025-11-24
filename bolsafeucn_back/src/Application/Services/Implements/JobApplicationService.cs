@@ -90,7 +90,7 @@ namespace bolsafeucn_back.src.Application.Services.Implements
                 JobOfferId = offerId,
                 Student = null!,
                 JobOffer = null!,
-                Status = "Pendiente",
+                Status = ApplicationStatus.Pendiente,
                 ApplicationDate = DateTime.UtcNow,
             };
 
@@ -102,7 +102,7 @@ namespace bolsafeucn_back.src.Application.Services.Implements
                 StudentName = $"{student.Student.Name} {student.Student.LastName}",
                 StudentEmail = student.Email!,
                 OfferTitle = offer.Title,
-                Status = createdApplication.Status,
+                Status = createdApplication.Status.ToString(),
                 ApplicationDate = createdApplication.ApplicationDate,
                 CurriculumVitae = student.Student.CurriculumVitae,
                 MotivationLetter = student.Student.MotivationLetter, // Carta opcional del perfil
@@ -121,7 +121,7 @@ namespace bolsafeucn_back.src.Application.Services.Implements
                 StudentName = $"{app.Student.Student?.Name} {app.Student.Student?.LastName}",
                 StudentEmail = app.Student.Email!,
                 OfferTitle = app.JobOffer.Title,
-                Status = app.Status,
+                Status = app.Status.ToString(),
                 ApplicationDate = app.ApplicationDate,
                 CurriculumVitae = app.Student.Student?.CurriculumVitae,
                 MotivationLetter = app.Student.Student?.MotivationLetter,
@@ -151,9 +151,9 @@ namespace bolsafeucn_back.src.Application.Services.Implements
             : (user?.UserName ?? "UCN");
             var statusMessage = application.Status switch
             {
-                "Pendiente" => "Su solicitud fue enviada con éxito; será contactado a la brevedad.",
-                "Seleccionado" => "¡Felicidades! Tu solicitud ha sido aceptada.",
-                "No seleccionado" => "Lamentablemente, tu solicitud ha sido rechazado.",
+                ApplicationStatus.Pendiente => "Su solicitud fue enviada con éxito; será contactado a la brevedad.",
+                ApplicationStatus.Aceptada => "¡Felicidades! Tu solicitud ha sido aceptada.",
+                ApplicationStatus.Rechazada => "Lamentablemente, tu solicitud ha sido rechazada.",
                 _ => ""
             };
 
@@ -169,7 +169,7 @@ namespace bolsafeucn_back.src.Application.Services.Implements
                 Description = offer.Description,
                 Requirements = offer.Requirements,
                 ContactInfo = offer.ContactInfo,
-                Status = application.Status,
+                Status = application.Status.ToString(),
                 StatusMessage = statusMessage
             };
         }
@@ -186,7 +186,7 @@ namespace bolsafeucn_back.src.Application.Services.Implements
                 StudentName = $"{app.Student.Student?.Name} {app.Student.Student?.LastName}",
                 StudentEmail = app.Student.Email!,
                 OfferTitle = app.JobOffer.Title,
-                Status = app.Status,
+                Status = app.Status.ToString(),
                 ApplicationDate = app.ApplicationDate,
                 CurriculumVitae = app.Student.Student?.CurriculumVitae,
                 MotivationLetter = app.Student.Student?.MotivationLetter,
@@ -215,16 +215,15 @@ namespace bolsafeucn_back.src.Application.Services.Implements
 
         public async Task<bool> UpdateApplicationStatusAsync(
             int applicationId,
-            string newStatus,
-            int companyId
+            ApplicationStatus newStatus,
+            int OwnnerUserId
         )
         {
-            // Validar que el estado sea válido
-            var validStatuses = new[] { "Pendiente", "Aceptada", "Rechazada" };
-            if (!validStatuses.Contains(newStatus))
+            // La validación del enum se hace automáticamente al recibir el parámetro
+            if (!Enum.IsDefined(typeof(ApplicationStatus), newStatus))
             {
                 throw new ArgumentException(
-                    $"Estado inválido. Debe ser uno de: {string.Join(", ", validStatuses)}"
+                    $"Estado inválido. Debe ser uno de: {string.Join(", ", Enum.GetNames(typeof(ApplicationStatus)))}"
                 );
             }
 
@@ -237,7 +236,7 @@ namespace bolsafeucn_back.src.Application.Services.Implements
 
             // Verificar que la oferta pertenece a la empresa
             var offer = await _offerRepository.GetByIdAsync(application.JobOfferId);
-            if (offer == null || offer.UserId != companyId)
+            if (offer == null || offer.UserId != OwnnerUserId)
             {
                 throw new UnauthorizedAccessException(
                     "No tienes permiso para modificar esta postulación"
@@ -291,7 +290,7 @@ namespace bolsafeucn_back.src.Application.Services.Implements
                 .Select(app => new ViewApplicantsDto
                 {
                     Applicant = $"{app.Student.Student?.Name} {app.Student.Student?.LastName}",
-                    Status = app.Status,
+                    Status = app.Status.ToString(),
                 })
                 .ToList();
         }
@@ -305,7 +304,7 @@ namespace bolsafeucn_back.src.Application.Services.Implements
                     $"{applicant.Student.Student?.Name} {applicant.Student.Student?.LastName}",
                 Email = applicant.Student.Email,
                 PhoneNumber = applicant.Student.PhoneNumber,
-                Status = applicant.Status,
+                Status = applicant.Status.ToString(),
                 // TODO: falta descripcion
             };
         }
@@ -340,7 +339,7 @@ namespace bolsafeucn_back.src.Application.Services.Implements
                     ApplicationId = app.Id,
                     StudentId = app.StudentId,
                     ApplicantName = $"{app.Student.Student?.Name} {app.Student.Student?.LastName}",
-                    Status = app.Status,
+                    Status = app.Status.ToString(),
                     ApplicationDate = app.ApplicationDate,
                     // Enviamos el link del CV directamente
                     CurriculumVitaeUrl = app.Student.Student?.CurriculumVitae,
