@@ -3,12 +3,12 @@
 ## Architecture Overview
 
 **Clean Architecture + ASP.NET Core 9.0** with strict layer separation:
-- **Domain** (`src/Domain/Models/`): Entity models, enums. No dependencies on other layers.
-- **Infrastructure** (`src/Infrastructure/`): `AppDbContext`, Repository implementations, `DataSeeder`.
-- **Application** (`src/Application/`): Services (business logic), DTOs, Mappers (Mapster), Validators.
-- **API** (`src/API/`): Controllers, Middlewares. Thin layer - delegates to Services.
+- **Domain** (`src/Domain/Models/`): Entity models, enums. Zero external dependencies.
+- **Infrastructure** (`src/Infrastructure/`): `AppDbContext`, Repository implementations, `DataSeeder`. Only layer that talks to PostgreSQL.
+- **Application** (`src/Application/`): Services (business logic), DTOs, Mappers (Mapster), Validators, Templates.
+- **API** (`src/API/`): Controllers, Middlewares. Thin routing layer - NO business logic.
 
-**Key Pattern**: Repository → Service → Controller. Services contain ALL business logic, Controllers are routing only.
+**Key Pattern**: Repository → Service → Controller. Services contain ALL business logic. Controllers only handle HTTP concerns (auth extraction, status codes).
 
 ## Identity & Authentication
 
@@ -37,9 +37,13 @@ dotnet ef database drop --force  # Drop DB completely
 
 **Makefile shortcuts** (run from project root):
 ```bash
-make db-restart    # Drop DB, migrate, run with watch
+make db-restart    # Drop DB, migrate, run with watch (most common during dev)
 make watch         # dotnet watch --no-hot-reload
-make docker-create # Start PostgreSQL container
+make run           # dotnet run (without watch)
+make docker-create # Create and start PostgreSQL container
+make docker-start  # Start existing container
+make docker-stop   # Stop container
+make docker-rm     # Stop and remove container
 ```
 
 **Data Seeding**: `DataSeeder.Initialize()` runs on startup (see `Program.cs`). Creates test users with password `Test123!`:
@@ -65,6 +69,9 @@ Seed includes fake offers, job applications, and reviews using **Bogus** library
 ```csharp
 builder.Services.AddScoped<IReviewService, ReviewService>();
 builder.Services.AddScoped<IPdfGeneratorService, PdfGeneratorService>();
+builder.Services.AddScoped<IEmailService, EmailService>();
+builder.Services.AddScoped<IFileService, FileService>();
+// ... plus repositories and mappers
 ```
 
 **Common Service Responsibilities**:
@@ -72,6 +79,22 @@ builder.Services.AddScoped<IPdfGeneratorService, PdfGeneratorService>();
 - **Repository calls**: Always async (`await`)
 - **Rating updates**: `GeneralUser.Rating` is auto-calculated. Access directly, don't recalculate in services.
 - **Transactions**: EF Core tracks changes automatically. Call `context.SaveChanges()` in repositories.
+
+## External Service Integrations
+
+**Resend (Email)**: For email verification and notifications
+- Configured in `Program.cs` with API key from `appsettings.json`
+- Service: `IEmailService` / `EmailService` in `src/Application/Services/`
+- Templates in `src/Application/Templates/`
+
+**Cloudinary (Images)**: For image upload/storage
+- Credentials in `appsettings.json`
+- Service: `IFileService` / `FileService`
+
+**Hangfire (Background Jobs)**: For scheduled tasks
+- Uses MemoryStorage (not persisted to DB)
+- Recurring job: `CloseExpiredReviewsAsync()` runs hourly
+- Dashboard: `http://localhost:5185/hangfire` (dev only)
 
 ## Review System (Bidirectional)
 
@@ -135,24 +158,45 @@ Both support:
 
 ## Error Handling
 
-Global middleware: `ErrorHandlingMiddleware` catches exceptions and returns structured JSON:
+Global middleware: `ErrorHandlingMiddleware` (in `src/API/Middlewares/ErrorHandlingMiddlewares.cs`) catches exceptions and returns structured JSON:
 ```json
 {
-  "statusCode": 500,
-  "message": "Error description",
-  "details": "Stack trace in dev mode"
+  "title": "Error title",
+  "message": "Error description"
 }
 ```
 
-**Service Layer**: Throw specific exceptions (`KeyNotFoundException`, `UnauthorizedAccessException`, `InvalidOperationException`). Middleware handles HTTP status codes.
+**Exception Mapping**:
+- `UnauthorizedAccessException` → 401 Unauthorized
+- `KeyNotFoundException` → 404 Not Found  
+- `InvalidOperationException` → 400 Bad Request
+- `SecurityException` → 403 Forbidden
+- All others → 500 Internal Server Error
+
+**Service Layer**: Throw specific exceptions with descriptive messages. Middleware automatically handles HTTP status codes and logging (with trace IDs).
 
 ## Logging
 
 **Serilog** configured in `appsettings.json`. Logs to:
 - Console (colored output)
-- File: `logs/log-{Date}.txt` and `logs/log-{Date}.json`
+- File: `logs/log-{Date}.txt` (structured text with timestamps)
 
-**Usage**: Inject `ILogger<T>` or use static `Log.Information()`, `Log.Error()`, etc.
+**Usage**: Inject `ILogger<T>` or use static `Log.Information()`, `Log.Error()`, `Log.Warning()`, `Log.Fatal()`.
+
+**Pattern**: Log important operations (user creation, data seeding, migrations) and all exceptions. Error middleware adds trace IDs automatically.
+
+## Startup Sequence
+
+On application start (in `Program.cs`):
+1. Serilog configuration (before building the app)
+2. Service registration (Identity, JWT, CORS, Resend, PostgreSQL, Hangfire, DI)
+3. Middleware pipeline setup (Error handling → CORS → Auth → Authorization → Controllers)
+4. **Database migration**: `context.Database.MigrateAsync()` (automatic)
+5. **Data seeding**: `DataSeeder.Initialize()` creates roles, test users, sample data
+6. **Mapster configuration**: `MapperExtensions.ConfigureMapster()` registers all mappings
+7. Hangfire recurring jobs registration (dev only)
+
+**Critical**: Seed runs on every startup but checks `if (!await context.Users.AnyAsync())` to avoid duplicates.
 
 ## Development Workflow
 
@@ -167,9 +211,11 @@ dotnet watch --no-hot-reload  # Auto-recompile on file changes
 make db-restart  # Drops DB, applies migrations, starts watch
 ```
 
-**Swagger**: Available at `https://localhost:5001/swagger` in Development mode.
+**Swagger**: Available at `https://localhost:5001/swagger` in Development mode (only).
 
-**Hangfire Dashboard**: `http://localhost:5185/hangfire` (background jobs monitoring).
+**Hangfire Dashboard**: `http://localhost:5185/hangfire` (background jobs monitoring, Development only).
+
+**CORS**: Configured to allow `http://localhost:3000` (Next.js frontend). Add more origins in `Program.cs` if needed.
 
 ## Common Patterns to Follow
 
