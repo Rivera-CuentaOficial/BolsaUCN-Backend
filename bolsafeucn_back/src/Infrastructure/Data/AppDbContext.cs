@@ -140,8 +140,16 @@ namespace bolsafeucn_back.src.Infrastructure.Data
                 .WithOne()
                 .HasForeignKey<GeneralUser>(gu => gu.ProfileBannerId)
                 .OnDelete(DeleteBehavior.SetNull);
+
+            // --- Fix: almacenar ApplicationStatus como string en la base de datos ---
+            builder
+                .Entity<JobApplication>()
+                .Property(j => j.Status)
+                .HasConversion<string>();
         }
     }
+    
     // todo: sobrecarga de SaveChangesAsync para manejar IsCompleted en Review.
 
+    
 }

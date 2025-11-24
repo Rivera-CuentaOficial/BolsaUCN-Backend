@@ -239,6 +239,11 @@ try
     app.MapControllers();
 
     Log.Information("Aplicación iniciada correctamente");
+    app.Lifetime.ApplicationStarted.Register(() =>
+    {
+        Console.WriteLine("🔥 SERVIDOR ASP.NET ARRANCÓ CORRECTAMENTE 🔥");
+    });
+
     app.Run();
 }
 catch (Exception ex)
