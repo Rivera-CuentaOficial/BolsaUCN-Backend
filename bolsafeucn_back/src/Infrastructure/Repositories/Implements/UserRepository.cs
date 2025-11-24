@@ -298,6 +298,33 @@ namespace bolsafeucn_back.src.Infrastructure.Repositories.Implements
             return await _context.Users.FindAsync(id);
         }
 
+        // TODO: Revisar si combiana implementar estas funciones genéricas.
+        // public async Task<GeneralUser?> GetBy(int id, // ReadOne, ReadAll
+        //     bool includeStudent = false,
+        //     bool includeCompany = false,
+        //     bool includeIndividual = false,
+        //     bool includeAdmin = false,
+        //     bool AsNoTracking = false,
+        //     Func<GeneralUser, bool>? filter = null // u.Id == id, u.Name == "test", etc
+        // )
+        // {
+        //     var query = _context.Users.AsQueryable();
+        //     if (includeStudent)
+        //         query = query.Include(u => u.Student);
+        //     if (includeCompany)
+        //         query = query.Include(u => u.Company);
+        //     if (includeIndividual)  
+        //         query = query.Include(u => u.Individual);
+        //     if (includeAdmin)
+        //         query = query.Include(u => u.Admin);
+        //     if (AsNoTracking)
+        //         query = query.AsNoTracking();
+
+        //     return await query.FirstOrDefaultAsync(filter != null
+        //         ? u => u.Id == id && filter(u)
+        //         : u => u.Id == id);
+        // }
+
         public async Task<GeneralUser?> GetByIdWithRelationsAsync(int userId)
         {
             return await _context
@@ -324,7 +351,8 @@ namespace bolsafeucn_back.src.Infrastructure.Repositories.Implements
                 case UserType.Empresa: query = query.Include(u => u.Company); break;
                 case UserType.Administrador: query = query.Include(u => u.Admin); break;
                 default: return null;
-            };
+            }
+            ;
             return await query
                             .Include(u => u.ProfilePhoto)
                             .Include(u => u.ProfileBanner)
@@ -347,7 +375,8 @@ namespace bolsafeucn_back.src.Infrastructure.Repositories.Implements
                 case UserType.Empresa: query = query.Include(u => u.Company); break;
                 case UserType.Administrador: query = query.Include(u => u.Admin); break;
                 default: return null;
-            };
+            }
+            ;
             return await query
                             .Include(u => u.ProfilePhoto)
                             .Include(u => u.ProfileBanner)

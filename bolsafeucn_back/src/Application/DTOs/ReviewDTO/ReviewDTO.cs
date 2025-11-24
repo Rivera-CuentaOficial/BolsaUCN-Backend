@@ -11,7 +11,7 @@ namespace bolsafeucn_back.src.Application.DTOs.ReviewDTO
         /// Identificador único de la reseña.
         /// </summary>
         /// <value></value>
-        public int idReview { get; set; }   
+        public int idReview { get; set; }
         /// <summary>
         /// Calificacion otorgada al estudiante.
         /// </summary>
@@ -72,5 +72,6 @@ namespace bolsafeucn_back.src.Application.DTOs.ReviewDTO
         /// </summary>
         /// <value></value>
         public bool HasReviewForStudentBeenDeleted { get; set; } = false;
+        public bool IsComplete { get; set; } = false;
     }
 }

@@ -62,7 +62,7 @@ namespace bolsafeucn_back.src.Application.Services.Interfaces
         Task<ViewApplicantUserDetailDto> GetApplicantDetailForOfferer(int studentId, int offerId, int offererUserId);
 
 
-            
+
 
 
 

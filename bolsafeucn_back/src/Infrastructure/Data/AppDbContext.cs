@@ -96,15 +96,15 @@ namespace bolsafeucn_back.src.Infrastructure.Data
                 .OnDelete(DeleteBehavior.Cascade);
 
             // Relaciones de Review
-            
+            // TODO: Implementar eliminacion de filas despues de probar que funciona todo.
             // Review - Publication (1:1)
             // Una publicación puede tener una review
             builder
                 .Entity<Review>()
                 .HasOne(r => r.Publication)
                 .WithOne()
-                .HasForeignKey<Review>(r => r.PublicationId)
-                .OnDelete(DeleteBehavior.Cascade);
+                .HasForeignKey<Review>(r => r.PublicationId);
+            // .OnDelete(DeleteBehavior.Cascade);
 
             // Review - Student (Many:1)
             // Un estudiante puede tener muchas reviews (como estudiante evaluado)
@@ -112,8 +112,8 @@ namespace bolsafeucn_back.src.Infrastructure.Data
                 .Entity<Review>()
                 .HasOne(r => r.Student)
                 .WithMany()
-                .HasForeignKey(r => r.StudentId)
-                .OnDelete(DeleteBehavior.Restrict);
+                .HasForeignKey(r => r.StudentId);
+            // .OnDelete(DeleteBehavior.Restrict);
 
             // Review - Offeror (Many:1)
             // Un proveedor puede tener muchas reviews (como oferente evaluado)
@@ -122,7 +122,7 @@ namespace bolsafeucn_back.src.Infrastructure.Data
                 .HasOne(r => r.Offeror)
                 .WithMany()
                 .HasForeignKey(r => r.OfferorId)
-                .OnDelete(DeleteBehavior.Restrict);
+                .OnDelete(DeleteBehavior.Restrict); // TODO: Revisar luego logica de Delete
 
             // Relaciones de UserImage (Imágenes de usuario)
             // Relación uno a uno entre GeneralUser y sus imágenes de perfil y banner
@@ -141,5 +141,5 @@ namespace bolsafeucn_back.src.Infrastructure.Data
         }
     }
     // todo: sobrecarga de SaveChangesAsync para manejar IsCompleted en Review.
-    
+
 }

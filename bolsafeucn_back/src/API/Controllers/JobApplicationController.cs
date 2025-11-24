@@ -136,7 +136,7 @@ namespace bolsafeucn_back.src.API.Controllers
                 );
             }
 
-        
+
         }
 
         [HttpGet("{applicationId}/details")]
@@ -146,7 +146,7 @@ namespace bolsafeucn_back.src.API.Controllers
             var application = await _jobApplicationService.GetApplicationDetailAsync(applicationId);
             if (application == null)
                 return NotFound("Postulación no encontrada");
-            
+
             return Ok(application);
         }
 

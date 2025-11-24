@@ -29,7 +29,7 @@ namespace bolsafeucn_back.src.Application.DTOs.UserDTOs.UserProfileDTOs
             @"^\d{7,8}-[0-9kK]$",
             ErrorMessage = "El Rut debe tener formato XXXXXXXX-X"
         )]
-        [RutValidation(ErrorMessage = "El RUT no es válido.")]      
+        [RutValidation(ErrorMessage = "El RUT no es válido.")]
         public string? Rut { get; set; }
 
         /// <summary>
@@ -41,7 +41,7 @@ namespace bolsafeucn_back.src.Application.DTOs.UserDTOs.UserProfileDTOs
         /// <summary>
         /// Número de teléfono del usuario.
         /// </summary>
-        public string? PhoneNumber { get; set; } 
+        public string? PhoneNumber { get; set; }
 
         /// <summary>
         /// Información sobre el usuario.
@@ -64,7 +64,7 @@ namespace bolsafeucn_back.src.Application.DTOs.UserDTOs.UserProfileDTOs
         /// Confirmación de la contraseña del usuario.
         /// </summary>
         [Compare("Password", ErrorMessage = "Las contraseñas no coinciden.")]
-        public string? ConfirmPassword { get; set; } 
+        public string? ConfirmPassword { get; set; }
 
         public bool IsSuperAdmin { get; set; }
 

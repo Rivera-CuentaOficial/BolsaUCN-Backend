@@ -15,7 +15,7 @@ namespace bolsafeucn_back.src.Application.DTOs.UserDTOs
         [MinLength(8, ErrorMessage = "La contraseña debe tener al menos 8 caracteres")]
         [MaxLength(20, ErrorMessage = "La contraseña debe tener como máximo 20 caracteres")]
         public required string CurrentPassword { get; set; }
-       
+
         /// <summary>
         /// Nueva contraseña del usuario.
         /// </summary>
