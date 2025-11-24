@@ -162,16 +162,60 @@ namespace bolsafeucn_back.src.Infrastructure.Data
                 .HasConversion<string>();
         }
 
+        #region Override de SaveChangesAsync
         /// <summary>
-        /// Override de SaveChangesAsync para detectar cambios en IsActive de publicaciones
-        /// y crear automáticamente reviews iniciales cuando una publicación se cierra.
+        /// Override de SaveChangesAsync para:
+        /// 1. Actualizar automáticamente UpdatedAt en entidades modificadas
+        /// 2. Detectar publicaciones cerradas y crear reviews iniciales
         /// </summary>
         public override async Task<int> SaveChangesAsync(
             CancellationToken cancellationToken = default
         )
         {
-            // Detectar publicaciones que están siendo cerradas (IsActive: true -> false)
-            var closedPublications = ChangeTracker
+            // Actualizar UpdatedAt automáticamente
+            UpdateTimestamps();
+
+            // Logica de creación de reviews al cerrar publicaciones
+
+            // Detectar publicaciones cerradas antes de guardar
+            var closedPublications = DetectClosedPublications();
+            // Guardar cambios
+            var result = await base.SaveChangesAsync(cancellationToken);
+            // Procesar publicaciones cerradas (crear reviews)
+            await ProcessClosedPublicationsAsync(closedPublications, cancellationToken);
+            return result;
+        }
+
+        #endregion
+        #region Metodos auxiliares SaveChangesAsync
+        /// <summary>
+        /// Actualiza automáticamente el campo UpdatedAt de todas las entidades
+        /// modificadas o agregadas que tengan esta propiedad.
+        /// </summary>
+        private void UpdateTimestamps()
+        {
+            var now = DateTime.UtcNow;
+            // Obtener todas las entidades modificadas o agregadas que tengan la propiedad UpdatedAt
+            var modifiedEntries = ChangeTracker
+                .Entries()
+                .Where(e => e.State == EntityState.Modified || e.State == EntityState.Added);
+            foreach (var entry in modifiedEntries)
+            {
+                var updatedAtProperty = entry.Entity.GetType().GetProperty("UpdatedAt");
+                if (updatedAtProperty != null && updatedAtProperty.CanWrite)
+                {
+                    updatedAtProperty.SetValue(entry.Entity, now);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Detecta publicaciones que están siendo cerradas (IsActive: true -> false).
+        /// </summary>
+        /// <returns>Lista de publicaciones cerradas</returns>
+        private List<Publication> DetectClosedPublications()
+        {
+            return [.. ChangeTracker
                 .Entries<Publication>()
                 .Where(e =>
                     e.State == EntityState.Modified
@@ -179,20 +223,28 @@ namespace bolsafeucn_back.src.Infrastructure.Data
                     && e.Property(p => p.IsActive).CurrentValue == false
                     && e.Property(p => p.IsActive).OriginalValue == true
                 )
-                .Select(e => e.Entity)
-                .ToList();
-            // Guardar cambios
-            var result = await base.SaveChangesAsync(cancellationToken);
-            if (closedPublications.Count != 0) // Si hay publicaciones cerradas
-            {
-                await CreateReviewsForClosedPublicationsAsync(
-                    closedPublications,
-                    cancellationToken
-                );
-            }
-            return result;
+                .Select(e => e.Entity)];
         }
 
+        /// <summary>
+        /// Procesa las publicaciones cerradas, creando reviews iniciales
+        /// para todas las postulaciones aceptadas.
+        /// </summary>
+        private async Task ProcessClosedPublicationsAsync(
+            List<Publication> closedPublications,
+            CancellationToken cancellationToken
+        )
+        {
+            if (closedPublications.Count == 0)
+                return;
+            await CreateReviewsForClosedPublicationsAsync(
+                closedPublications,
+                cancellationToken
+            );
+        }
+        #endregion
+
+        #region Creación de Reviews
         /// <summary>
         /// Crea reviews iniciales para todas las postulaciones aceptadas
         /// de las publicaciones que acaban de cerrarse.
@@ -302,5 +354,6 @@ namespace bolsafeucn_back.src.Infrastructure.Data
                 }
             }
         }
+        #endregion
     }
 }
