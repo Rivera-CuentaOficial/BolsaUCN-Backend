@@ -166,7 +166,7 @@ namespace bolsafeucn_back.src.API.Controllers
 
         #endregion
 
-        #region Obtiene publicaciones y mas (admin)
+        #region Administra buysells Admin
 
         /// <summary>
         /// Obtiene todas las ofertas pendientes de validación solo disponibles para admin
@@ -359,9 +359,141 @@ namespace bolsafeucn_back.src.API.Controllers
         }
 
         /// <summary>
+        /// Acepta una compra/venta especifica SOLO ADMIN
+        /// </summary>
+        [Authorize(Roles = "Admin")]
+        [HttpPatch("buysells/{id}/publish")]
+        public async Task<IActionResult> PublishBuySell(int id)
+        {
+            try
+            {
+                await _buySellService.GetBuySellForAdminToPublish(id);
+                return Ok(
+                    new GenericResponse<object>($"Compra/Venta {id} publicada con exito", id)
+                );
+            }
+            catch (KeyNotFoundException)
+            {
+                return NotFound(
+                    new GenericResponse<object>("No se encontro la Compra/Venta", null)
+                );
+            }
+            catch (InvalidOperationException ex)
+            {
+                return Conflict(new GenericResponse<object>(ex.Message));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error cerrando Compra/Venta ID: {Compra/Venta id}", id);
+                return StatusCode(
+                    500,
+                    new GenericResponse<object>("Error interno al cerrar la compra/venta.", null)
+                );
+            }
+        }
+
+        /// <summary>
+        /// Rechaza una compra/venta especifica SOLO ADMIN
+        /// </summary>
+        [Authorize(Roles = "Admin")]
+        [HttpPatch("buysells/{id}/reject")]
+        public async Task<IActionResult> RejectBuySell(int id)
+        {
+            try
+            {
+                await _offerService.GetOfferForAdminToReject(id);
+                return Ok(
+                    new GenericResponse<object>($"Compra/Venta {id} rechazada con exito", id)
+                );
+            }
+            catch (KeyNotFoundException)
+            {
+                return NotFound(
+                    new GenericResponse<object>("No se encontro la Compra/Venta", null)
+                );
+            }
+            catch (InvalidOperationException ex)
+            {
+                return Conflict(new GenericResponse<object>(ex.Message));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error cerrando Compra/Venta ID: {Compra/VentaId}", id);
+                return StatusCode(
+                    500,
+                    new GenericResponse<object>("Error interno al cerrar la Compra/Venta.", null)
+                );
+            }
+        }
+
+        /// <summary>
         /// Elimina la oferta de trabajo de parte del admin
         /// </summary>
-        /// TODO: agregar endpoint proximamente para siguiente iteracion
+        [Authorize(Roles = "Admin")]
+        [HttpPatch("offers/{offerId}")]
+        public async Task<IActionResult> ClosePublishedOffer(int offerId)
+        {
+            try
+            {
+                await _offerService.ClosePublishedOfferAsync(offerId);
+                return Ok(
+                    new GenericResponse<object>($"Oferta {offerId} cerrada con exito", offerId)
+                );
+            }
+            catch (KeyNotFoundException)
+            {
+                return NotFound(new GenericResponse<object>("No se encontro la oferta", null));
+            }
+            catch (InvalidOperationException ex)
+            {
+                return Conflict(new GenericResponse<object>(ex.Message));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error cerrando oferta ID: {OfferId}", offerId);
+                return StatusCode(
+                    500,
+                    new GenericResponse<object>("Error interno al cerrar la oferta.", null)
+                );
+            }
+        }
+
+        /// <summary>
+        /// Elimina la compra y venta de parte del admin
+        /// </summary>
+        [Authorize(Roles = "Admin")]
+        [HttpPatch("buysells/{buySellId}")]
+        public async Task<IActionResult> ClosePublishedBuySell(int buySellId)
+        {
+            try
+            {
+                await _buySellService.ClosePublishedBuySellAsync(buySellId);
+                return Ok(
+                    new GenericResponse<object>(
+                        $"Compra/Venta {buySellId} cerrada con exito",
+                        buySellId
+                    )
+                );
+            }
+            catch (KeyNotFoundException)
+            {
+                return NotFound(
+                    new GenericResponse<object>("No se encontro la Compra/Venta", null)
+                );
+            }
+            catch (InvalidOperationException ex)
+            {
+                return Conflict(new GenericResponse<object>(ex.Message));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error cerrando Compra/Venta ID: {BuySellId}", buySellId);
+                return StatusCode(
+                    500,
+                    new GenericResponse<object>("Error interno al cerrar la Compra/Venta.", null)
+                );
+            }
+        }
         #endregion
 
         #region Validar ofertas (admin)
@@ -382,7 +514,6 @@ namespace bolsafeucn_back.src.API.Controllers
                 )
             );
         }
-
 
         /// <summary>
         /// Acepta una oferta laboral específica (solo admin)
@@ -1010,6 +1141,184 @@ namespace bolsafeucn_back.src.API.Controllers
                     ex,
                     "GetOfferApplicants: Error interno al obtener postulantes. OfferID: {OfferId}",
                     offerId
+                );
+                return StatusCode(
+                    500,
+                    new GenericResponse<object>("Error interno al procesar la solicitud.")
+                );
+            }
+        }
+
+        [HttpGet("offerent/my-offer/{offerId}/applicants/{studentId}")] // <-- 1. RUTA CORREGIDA (para no chocar con la del Admin)
+        [Authorize(Roles = "Offerent")]
+        public async Task<ActionResult<ViewApplicantUserDetailDto>> GetApplicantDetail(
+            int offerId,
+            int studentId
+        )
+        {
+            // 1. Obtener offererUserId del token (como se hace en otros métodos)
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (
+                string.IsNullOrEmpty(userIdClaim)
+                || !int.TryParse(userIdClaim, out int offererUserId)
+            )
+            {
+                return Unauthorized(new GenericResponse<object>("No autenticado o token inválido"));
+            }
+
+            // 2. Llamar al servicio que devuelve el DTO detallado
+            var applicantDetail = await _jobApplicationService.GetApplicantDetailForOfferer(
+                studentId,
+                offerId,
+                offererUserId
+            ); // Este método ya devuelve ViewApplicantUserDetailDto
+
+            // 3. Retornar con el DTO detallado
+            return Ok(
+                new GenericResponse<ViewApplicantUserDetailDto>( // <-- CORRECTO
+                    "Detalle del postulante obtenido exitosamente",
+                    applicantDetail
+                )
+            );
+        }
+
+        [HttpPatch("offerent/my-offer/applicants/{status}")] // <-- 1. RUTA CORREGIDA (para no chocar con la del Admin)
+        [Authorize(Roles = "Offerent")]
+        public async Task<IActionResult> AcceptApplicationOfferent(String status)
+        {
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (
+                string.IsNullOrEmpty(userIdClaim)
+                || !int.TryParse(userIdClaim, out int offererUserId)
+            )
+            {
+                return Unauthorized(new GenericResponse<object>("No autenticado o token inválido"));
+            }
+
+            return Ok();
+        }
+
+        /// <summary>
+        /// Acepta una postulación específica (solo para el dueño de la oferta).
+        /// Utiliza la lógica interna de UpdateApplicationStatusAsync.
+        /// </summary>
+        /// <param name="applicationId">El ID de la postulación a aceptar.</param>
+        [HttpPatch("offerent/applications/{applicationId}/accept")]
+        [Authorize(Roles = "Offerent")]
+        public async Task<IActionResult> AcceptApplication(int applicationId)
+        {
+            return await UpdateApplicationStatusInternal(applicationId, "Aceptada", "aceptada");
+        }
+
+        /// <summary>
+        /// Rechaza una postulación específica (solo para el dueño de la oferta).
+        /// Utiliza la lógica interna de UpdateApplicationStatusAsync.
+        /// </summary>
+        /// <param name="applicationId">El ID de la postulación a rechazar.</param>
+        [HttpPatch("offerent/applications/{applicationId}/reject")]
+        [Authorize(Roles = "Offerent")]
+        public async Task<IActionResult> RejectApplication(int applicationId)
+        {
+            return await UpdateApplicationStatusInternal(applicationId, "Rechazada", "rechazada");
+        }
+
+        /// <summary>
+        /// Lógica interna para actualizar el estado de una postulación.
+        /// Llama al JobApplicationService.UpdateApplicationStatusAsync.
+        /// </summary>
+        private async Task<IActionResult> UpdateApplicationStatusInternal(
+            int applicationId,
+            string newStatus,
+            string actionText
+        )
+        {
+            try
+            {
+                // 1. Obtener el ID del oferente logueado desde el Token JWT
+                var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+                if (
+                    string.IsNullOrEmpty(userIdString)
+                    || !int.TryParse(userIdString, out var offererUserId)
+                )
+                {
+                    _logger.LogWarning(
+                        "UpdateApplicationStatusInternal: Token JWT inválido o sin claim de NameIdentifier."
+                    );
+                    return Unauthorized(
+                        new GenericResponse<object>("No autenticado o token inválido")
+                    );
+                }
+
+                _logger.LogInformation(
+                    "Usuario {OffererId} intentando actualizar postulación {ApplicationId} a {NewStatus}",
+                    offererUserId,
+                    applicationId,
+                    newStatus
+                );
+
+                // 2. Llamar al servicio para actualizar el estado.
+                // Esta llamada está protegida en el servicio para que solo el dueño de la oferta pueda modificarla.
+                var result = await _jobApplicationService.UpdateApplicationStatusAsync(
+                    applicationId,
+                    newStatus,
+                    offererUserId
+                );
+
+                if (result)
+                {
+                    return Ok(
+                        new GenericResponse<object>(
+                            $"Postulación {applicationId} {actionText} exitosamente.",
+                            applicationId
+                        )
+                    );
+                }
+
+                _logger.LogWarning(
+                    "Fallo al actualizar postulación {ApplicationId} a {NewStatus} (Servicio retornó false)",
+                    applicationId,
+                    newStatus
+                );
+                return BadRequest(
+                    new GenericResponse<object>(
+                        $"No se pudo actualizar la postulación a '{newStatus}'"
+                    )
+                );
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                _logger.LogWarning(
+                    ex,
+                    "UpdateApplicationStatusInternal: Intento de acceso no autorizado. {Message}",
+                    ex.Message
+                );
+                return StatusCode(403, new GenericResponse<object>(ex.Message));
+            }
+            catch (KeyNotFoundException ex)
+            {
+                _logger.LogWarning(
+                    ex,
+                    "UpdateApplicationStatusInternal: Recurso no encontrado. {Message}",
+                    ex.Message
+                );
+                return NotFound(new GenericResponse<object>(ex.Message));
+            }
+            catch (ArgumentException ex)
+            {
+                _logger.LogWarning(
+                    ex,
+                    "UpdateApplicationStatusInternal: Argumento inválido. {Message}",
+                    ex.Message
+                );
+                return BadRequest(new GenericResponse<object>(ex.Message));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(
+                    ex,
+                    "UpdateApplicationStatusInternal: Error interno al actualizar postulación {ApplicationId}",
+                    applicationId
                 );
                 return StatusCode(
                     500,

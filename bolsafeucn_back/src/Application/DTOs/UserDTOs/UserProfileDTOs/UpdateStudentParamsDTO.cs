@@ -1,6 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using bolsafeucn_back.src.Application.Validators;
 using bolsafeucn_back.src.Domain.Models;
+using bolsafeucn_back.src.Application.DTOs.UserDTOs;
 using Mapster;
 
 namespace bolsafeucn_back.src.Application.DTOs.UserDTOs.UserProfileDTOs
@@ -30,7 +31,7 @@ namespace bolsafeucn_back.src.Application.DTOs.UserDTOs.UserProfileDTOs
             @"^\d{7,8}-[0-9kK]$",
             ErrorMessage = "El Rut debe tener formato XXXXXXXX-X"
         )]
-        [RutValidation(ErrorMessage = "El RUT no es válido.")]      
+        [RutValidation(ErrorMessage = "El RUT no es válido.")]
         public string? Rut { get; set; }
 
         /// <summary>
@@ -42,7 +43,7 @@ namespace bolsafeucn_back.src.Application.DTOs.UserDTOs.UserProfileDTOs
         /// <summary>
         /// Número de teléfono del usuario.
         /// </summary>
-        public string? PhoneNumber { get; set; } 
+        public string? PhoneNumber { get; set; }
 
         /// <summary>
         /// Información sobre el usuario.
@@ -65,16 +66,30 @@ namespace bolsafeucn_back.src.Application.DTOs.UserDTOs.UserProfileDTOs
         /// Confirmación de la contraseña del usuario.
         /// </summary>
         [Compare("Password", ErrorMessage = "Las contraseñas no coinciden.")]
-        public string? ConfirmPassword { get; set; } 
+        public string? ConfirmPassword { get; set; }
 
-        /*TODO
-        public string? ProfilePicture { get; set; }
-        public string? ProfileBanner { get; set; }
-        */
+        /// <summary>
+        /// Imagen de perfil del usuario.
+        /// </summary>
+        public IFormFile? ProfilePhoto { get; set; }
 
+        /// <summary>
+        /// Banner de perfil del usuario.
+        /// </summary>
+        public IFormFile? ProfileBanner { get; set; }
+
+        /// <summary>
+        /// Aplica los cambios del DTO al usuario dado.
+        /// </summary>
+        /// <param name="user">Usuario al que se le aplicarán los cambios.</param>
         public void ApplyTo(GeneralUser user)
         {
             this.Adapt(user);
+        }
+        public void ApplyTo(UserImagesDTO imagesDTO)
+        {
+            imagesDTO.ProfilePhoto = this.ProfilePhoto;
+            imagesDTO.ProfileBanner = this.ProfileBanner;
         }
     }
 }

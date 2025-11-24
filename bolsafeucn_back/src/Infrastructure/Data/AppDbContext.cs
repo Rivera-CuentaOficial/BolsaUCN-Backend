@@ -15,6 +15,7 @@ namespace bolsafeucn_back.src.Infrastructure.Data
 
         // DbSets - Representan las tablas en la base de datos
         public DbSet<Image> Images { get; set; }
+        public DbSet<UserImage> UserImages { get; set; }
         public DbSet<Student> Students { get; set; }
         public DbSet<Company> Companies { get; set; }
         public DbSet<Individual> Individuals { get; set; }
@@ -103,7 +104,7 @@ namespace bolsafeucn_back.src.Infrastructure.Data
                 .HasOne(r => r.Publication)
                 .WithOne()
                 .HasForeignKey<Review>(r => r.PublicationId);
-                // .OnDelete(DeleteBehavior.Cascade);
+            // .OnDelete(DeleteBehavior.Cascade);
 
             // Review - Student (Many:1)
             // Un estudiante puede tener muchas reviews (como estudiante evaluado)
@@ -112,7 +113,7 @@ namespace bolsafeucn_back.src.Infrastructure.Data
                 .HasOne(r => r.Student)
                 .WithMany()
                 .HasForeignKey(r => r.StudentId);
-                // .OnDelete(DeleteBehavior.Restrict);
+            // .OnDelete(DeleteBehavior.Restrict);
 
             // Review - Offeror (Many:1)
             // Un proveedor puede tener muchas reviews (como oferente evaluado)
@@ -120,9 +121,25 @@ namespace bolsafeucn_back.src.Infrastructure.Data
                 .Entity<Review>()
                 .HasOne(r => r.Offeror)
                 .WithMany()
-                .HasForeignKey(r => r.OfferorId);
+                .HasForeignKey(r => r.OfferorId)
+                .OnDelete(DeleteBehavior.Restrict); // TODO: Revisar luego logica de Delete
+
+            // Relaciones de UserImage (Imágenes de usuario)
+            // Relación uno a uno entre GeneralUser y sus imágenes de perfil y banner
+            builder
+                .Entity<GeneralUser>()
+                .HasOne(gu => gu.ProfilePhoto)
+                .WithOne()
+                .HasForeignKey<GeneralUser>(gu => gu.ProfilePhotoId)
+                .OnDelete(DeleteBehavior.SetNull);
+            builder
+                .Entity<GeneralUser>()
+                .HasOne(gu => gu.ProfileBanner)
+                .WithOne()
+                .HasForeignKey<GeneralUser>(gu => gu.ProfileBannerId)
+                .OnDelete(DeleteBehavior.SetNull);
         }
     }
     // todo: sobrecarga de SaveChangesAsync para manejar IsCompleted en Review.
-    
+
 }
