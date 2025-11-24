@@ -1,7 +1,5 @@
 TODO: 
-1. avisar al admin cuando haya review baja
-3.3 cambiar dtos de review/publications
+1. avisar al admin cuando haya review baja | CritialReview
 4. Automatizar creacion de Review al finalizar una publicacion.
-5. mermaid
+5. mermaid explicando flujos
 6. lista de usuarios en modelo publication
-8. CriticalReview
