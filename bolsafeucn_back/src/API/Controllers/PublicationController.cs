@@ -738,7 +738,7 @@ namespace bolsafeucn_back.src.API.Controllers
         /// SEGURIDAD: Solo estudiantes pueden postular. El studentId se obtiene del token JWT
         /// </summary>
         [HttpPost("offers/{id}/apply")]
-        [Authorize(Roles = " Student")]
+        [Authorize(Roles = "Applicant")]
         public async Task<ActionResult<JobApplicationResponseDto>> ApplyToOffer(int id)
         {
             try
@@ -809,7 +809,7 @@ namespace bolsafeucn_back.src.API.Controllers
         /// SEGURIDAD: Solo estudiantes pueden ver sus postulaciones. El studentId se obtiene del token JWT
         /// </summary>
         [HttpGet("offers/my-applications")]
-        [Authorize(Roles = "Student")]
+        [Authorize(Roles = "Applicant")]
         public async Task<ActionResult<IEnumerable<JobApplicationResponseDto>>> GetMyApplications()
         {
             try

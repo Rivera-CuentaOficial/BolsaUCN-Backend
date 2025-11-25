@@ -1,7 +1,7 @@
 TODO: 
 hola soy matias estos son mis todos que se me olvido agregar al gitignore a si que ignorenlo
-1. avisar al admin cuando haya review baja | CritialReview
-4. Automatizar creacion de Review al finalizar una publicacion.
+1. avisar al admin cuando haya review baja | CritialReview xd
 5. mermaid explicando flujos
-6. lista de usuarios en modelo publication
+6. lista de usuarios en modelo publication // a lo mejor no es necesario
 7. discriminar buy & sell de offer para los atributos solicitados.
+8. seeder de una publicacion con multiples reviews para multiples usuarios

@@ -4,6 +4,7 @@ using bolsafeucn_back.src.Domain.Models;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Serilog;
 
 namespace bolsafeucn_back.src.Infrastructure.Data
 {
@@ -113,13 +114,13 @@ namespace bolsafeucn_back.src.Infrastructure.Data
 
             // Relaciones de Review
             // TODO: Implementar eliminacion de filas despues de probar que funciona todo.
-            // Review - Publication (1:1)
-            // Una publicación puede tener una review
+            // Review - Publication (1:N)
+            // Una publicación puede tener múltiples reviews (una por cada estudiante aceptado)
             builder
                 .Entity<Review>()
                 .HasOne(r => r.Publication)
-                .WithOne()
-                .HasForeignKey<Review>(r => r.PublicationId);
+                .WithMany()
+                .HasForeignKey(r => r.PublicationId);
             // .OnDelete(DeleteBehavior.Cascade);
 
             // Review - Student (Many:1)
@@ -172,11 +173,11 @@ namespace bolsafeucn_back.src.Infrastructure.Data
             CancellationToken cancellationToken = default
         )
         {
+            Log.Information("Iniciando SaveChangesAsync con lógica extendida");
             // Actualizar UpdatedAt automáticamente
             UpdateTimestamps();
 
             // Logica de creación de reviews al cerrar publicaciones
-
             // Detectar publicaciones cerradas antes de guardar
             var closedPublications = DetectClosedPublications();
             // Guardar cambios
@@ -254,6 +255,9 @@ namespace bolsafeucn_back.src.Infrastructure.Data
             CancellationToken cancellationToken
         )
         {
+            Log.Information(closedPublications.Count == 0
+                ? "No hay publicaciones cerradas para procesar reviews"
+                : $"Procesando {closedPublications.Count} publicaciones cerradas para crear reviews");
             foreach (var publication in closedPublications)
             {
                 try

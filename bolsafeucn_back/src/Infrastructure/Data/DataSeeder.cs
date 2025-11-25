@@ -693,14 +693,14 @@ namespace bolsafeucn_back.src.Application.Infrastructure.Data
             var faker = new Faker("es");
 
             // Crear 12 reviews (6 completas + 6 incompletas)
-            for (int i = 0; i < 12; i++)
+            for (int i = 0; i < 6; i++)
             {
                 var student = students[i % students.Count];
                 var offerent = offerents[i % offerents.Count];
                 var publication = publications[i % publications.Count];
 
                 // Las primeras 6 reviews están completas (más de 14 días desde creación)
-                bool isCompleted = i < 6;
+                bool isCompleted = i < 3;
 
                 var review = new Review
                 {
@@ -731,6 +731,8 @@ namespace bolsafeucn_back.src.Application.Infrastructure.Data
 
                 reviews.Add(review);
             }
+
+            reviews.Remove(reviews[0]);
 
             await context.Reviews.AddRangeAsync(reviews);
             await context.SaveChangesAsync();
