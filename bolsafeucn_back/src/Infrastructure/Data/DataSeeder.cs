@@ -668,18 +668,21 @@ namespace bolsafeucn_back.src.Application.Infrastructure.Data
         }
 
         #region Reviews
-
+        /// <summary>
+        /// Crea 10 reviews manuales de prueba en la base de datos.
+        /// - 6 reviews completadas (ambas partes evaluadas, ventana cerrada)
+        /// - 4 reviews incompletas (solo oferente evaluó al estudiante, ventana aún abierta)
+        /// 
+        /// NOTA IMPORTANTE - IDs de usuarios en la base de datos:
+        /// ESTUDIANTES (Applicant): ID 1 (estudiante@alumnos.ucn.cl), ID 5,6,7 (aleatorios Faker)
+        /// OFERENTES (Offerent): ID 2 (empresa@techcorp.cl), ID 3 (particular@ucn.cl), ID 8,9 (aleatorios)
+        /// ADMIN: ID 4 (admin@ucn.cl - NO usar en reviews)
+        /// PUBLICACIONES: Offers con IDs secuenciales desde 1
+        /// </summary>
         private static async Task SeedReviews(AppDbContext context)
         {
-            // Obtener estudiantes y oferentes (empresas e individuales)
-            var students = await context.Users
-                .Where(u => u.UserType == UserType.Estudiante)
-                .ToListAsync();
-
-            var offerents = await context.Users
-                .Where(u => u.UserType == UserType.Empresa || u.UserType == UserType.Particular)
-                .ToListAsync();
-
+            var students = await context.Users.Where(u => u.UserType == UserType.Estudiante).ToListAsync();
+            var offerents = await context.Users.Where(u => u.UserType == UserType.Empresa || u.UserType == UserType.Particular).ToListAsync();
             var publications = await context.Offers.ToListAsync();
 
             if (students.Count == 0 || offerents.Count == 0 || publications.Count == 0)
@@ -690,60 +693,307 @@ namespace bolsafeucn_back.src.Application.Infrastructure.Data
 
             var now = DateTime.UtcNow;
             var reviews = new List<Review>();
-            var faker = new Faker("es");
 
-            // Crear 12 reviews (6 completas + 6 incompletas)
-            for (int i = 0; i < 6; i++)
+            Log.Information("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+            Log.Information("📋 USUARIOS DISPONIBLES PARA REVIEWS:");
+            Log.Information("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+            Log.Information("👨‍🎓 ESTUDIANTES (Applicant):");
+            foreach (var s in students) { Log.Information($"   ID {s.Id}: {s.Email}"); }
+            Log.Information("🏢 OFERENTES (Offerent):");
+            foreach (var o in offerents)
             {
-                var student = students[i % students.Count];
-                var offerent = offerents[i % offerents.Count];
-                var publication = publications[i % publications.Count];
-
-                // Las primeras 6 reviews están completas (más de 14 días desde creación)
-                bool isCompleted = i < 3;
-
-                var review = new Review
-                {
-                    StudentId = student.Id,
-                    Student = student,
-                    OfferorId = offerent.Id,
-                    Offeror = offerent,
-                    PublicationId = publication.Id,
-                    Publication = publication,
-
-                    // Evaluación del oferente hacia el estudiante
-                    RatingForStudent = faker.Random.Int(1, 6),
-                    CommentForStudent = GenerateOfferentComment(faker, i),
-                    AtTime = faker.Random.Bool(0.7f),
-                    GoodPresentation = faker.Random.Bool(0.8f),
-                    IsReviewForStudentCompleted = true,
-
-                    // Evaluación del estudiante hacia el oferente (completa solo si isCompleted)
-                    RatingForOfferor = isCompleted ? faker.Random.Int(1, 6) : (int?)null,
-                    CommentForOfferor = isCompleted ? GenerateStudentComment(faker, i) : null,
-                    IsReviewForOfferorCompleted = isCompleted,
-
-                    IsCompleted = isCompleted,
-                    ReviewWindowEndDate = isCompleted ? now.AddDays(-15) : now.AddDays(10),
-                    HasReviewForStudentBeenDeleted = false,
-                    HasReviewForOfferorBeenDeleted = false,
-                };
-
-                reviews.Add(review);
+                var type = o.UserType == UserType.Empresa ? "Empresa" : "Particular";
+                Log.Information($"   ID {o.Id}: {o.Email} ({type})");
             }
+            Log.Information("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
 
-            reviews.Remove(reviews[0]);
+            // REVIEWS COMPLETADAS (6 en total) - Ambas partes evaluadas
+            // Esta review esta comentada para que se utilize en el flujo de Postman.
+            // reviews.Add(new Review
+            // {
+            //     StudentId = students[0].Id, Student = students[0],
+            //     OfferorId = publications[0].UserId, Offeror = publications[0].User,
+            //     PublicationId = publications[0].Id, Publication = publications[0],
+            //     RatingForStudent = 5, CommentForStudent = "Excelente estudiante, muy responsable y puntual. Cumplió con todas las expectativas.",
+            //     AtTime = true, GoodPresentation = true, IsReviewForStudentCompleted = true,
+            //     RatingForOfferor = 5, CommentForOfferor = "Muy buena experiencia laboral. Excelente ambiente de trabajo y aprendí mucho.",
+            //     IsReviewForOfferorCompleted = true, IsCompleted = true,
+            //     ReviewWindowEndDate = now.AddDays(-15),
+            //     HasReviewForStudentBeenDeleted = false, HasReviewForOfferorBeenDeleted = false,
+            // });
+
+            reviews.Add(new Review
+            {
+                StudentId = students[0].Id,
+                Student = students[0],
+                OfferorId = publications[1].UserId,
+                Offeror = publications[1].User,
+                PublicationId = publications[1].Id,
+                Publication = publications[1],
+                RatingForStudent = 4,
+                CommentForStudent = "Buen desempeño, aunque tuvo algunos retrasos menores. Muestra potencial.",
+                AtTime = false,
+                GoodPresentation = true,
+                IsReviewForStudentCompleted = true,
+                RatingForOfferor = 4,
+                CommentForOfferor = "Buena experiencia en general. Me permitió aplicar conocimientos universitarios.",
+                IsReviewForOfferorCompleted = true,
+                IsCompleted = true,
+                ReviewWindowEndDate = now.AddDays(-20),
+                HasReviewForStudentBeenDeleted = false,
+                HasReviewForOfferorBeenDeleted = false,
+            });
+
+            reviews.Add(new Review
+            {
+                StudentId = 5,
+                Student = students.FirstOrDefault(s => s.Id == 5),
+                OfferorId = publications[1].UserId,
+                Offeror = publications[1].User,
+                PublicationId = publications[1].Id,
+                Publication = publications[1],
+                RatingForStudent = 5,
+                CommentForStudent = "Muy comprometido con las tareas asignadas. Excelente actitud de trabajo.",
+                AtTime = true,
+                GoodPresentation = true,
+                IsReviewForStudentCompleted = true,
+                RatingForOfferor = 5,
+                CommentForOfferor = "Ambiente profesional y buena coordinación. Aprendí nuevas habilidades.",
+                IsReviewForOfferorCompleted = true,
+                IsCompleted = true,
+                ReviewWindowEndDate = now.AddDays(-20),
+                HasReviewForStudentBeenDeleted = false,
+                HasReviewForOfferorBeenDeleted = false,
+            });
+
+            reviews.Add(new Review
+            {
+                StudentId = 6,
+                Student = students.FirstOrDefault(s => s.Id == 6),
+                OfferorId = publications[1].UserId,
+                Offeror = publications[1].User,
+                PublicationId = publications[1].Id,
+                Publication = publications[1],
+                RatingForStudent = 3,
+                CommentForStudent = "Desempeño aceptable pero le faltó proactividad en algunos momentos.",
+                AtTime = true,
+                GoodPresentation = false,
+                IsReviewForStudentCompleted = true,
+                RatingForOfferor = 4,
+                CommentForOfferor = "Experiencia positiva. Instrucciones claras y buen trato del equipo.",
+                IsReviewForOfferorCompleted = true,
+                IsCompleted = true,
+                ReviewWindowEndDate = now.AddDays(-20),
+                HasReviewForStudentBeenDeleted = false,
+                HasReviewForOfferorBeenDeleted = false,
+            });
+
+            reviews.Add(new Review
+            {
+                StudentId = 7,
+                Student = students.FirstOrDefault(s => s.Id == 7),
+                OfferorId = publications[1].UserId,
+                Offeror = publications[1].User,
+                PublicationId = publications[1].Id,
+                Publication = publications[1],
+                RatingForStudent = 6,
+                CommentForStudent = "Estudiante excepcional. Superó todas las expectativas y mostró gran iniciativa.",
+                AtTime = true,
+                GoodPresentation = true,
+                IsReviewForStudentCompleted = true,
+                RatingForOfferor = 6,
+                CommentForOfferor = "Experiencia formativa increíble. Excelente mentoría y ambiente de aprendizaje.",
+                IsReviewForOfferorCompleted = true,
+                IsCompleted = true,
+                ReviewWindowEndDate = now.AddDays(-20),
+                HasReviewForStudentBeenDeleted = false,
+                HasReviewForOfferorBeenDeleted = false,
+            });
+
+            reviews.Add(new Review
+            {
+                StudentId = students[1 % students.Count].Id,
+                Student = students[1 % students.Count],
+                OfferorId = publications[2].UserId,
+                Offeror = publications[2].User,
+                PublicationId = publications[2].Id,
+                Publication = publications[2],
+                RatingForStudent = 6,
+                CommentForStudent = "Estudiante sobresaliente. Proactivo, responsable y con excelente actitud.",
+                AtTime = true,
+                GoodPresentation = true,
+                IsReviewForStudentCompleted = true,
+                RatingForOfferor = 5,
+                CommentForOfferor = "Excelente oportunidad de aprendizaje. Supervisión clara y buen ambiente.",
+                IsReviewForOfferorCompleted = true,
+                IsCompleted = true,
+                ReviewWindowEndDate = now.AddDays(-18),
+                HasReviewForStudentBeenDeleted = false,
+                HasReviewForOfferorBeenDeleted = false,
+            });
+
+            reviews.Add(new Review
+            {
+                StudentId = students[2 % students.Count].Id,
+                Student = students[2 % students.Count],
+                OfferorId = publications[3].UserId,
+                Offeror = publications[3].User,
+                PublicationId = publications[3].Id,
+                Publication = publications[3],
+                RatingForStudent = 3,
+                CommentForStudent = "Cumplió las tareas asignadas, pero faltó más iniciativa y comunicación.",
+                AtTime = true,
+                GoodPresentation = false,
+                IsReviewForStudentCompleted = true,
+                RatingForOfferor = 3,
+                CommentForOfferor = "Experiencia aceptable, pero faltó claridad en las instrucciones iniciales.",
+                IsReviewForOfferorCompleted = true,
+                IsCompleted = true,
+                ReviewWindowEndDate = now.AddDays(-16),
+                HasReviewForStudentBeenDeleted = false,
+                HasReviewForOfferorBeenDeleted = false,
+            });
+
+            reviews.Add(new Review
+            {
+                StudentId = students[2 % students.Count].Id,
+                Student = students[2 % students.Count],
+                OfferorId = publications[4].UserId,
+                Offeror = publications[4].User,
+                PublicationId = publications[4].Id,
+                Publication = publications[4],
+                RatingForStudent = 5,
+                CommentForStudent = "Muy buen estudiante. Adaptación rápida y trabajo en equipo destacable.",
+                AtTime = true,
+                GoodPresentation = true,
+                IsReviewForStudentCompleted = true,
+                RatingForOfferor = 6,
+                CommentForOfferor = "Experiencia excepcional. Organización impecable y excelente mentoría.",
+                IsReviewForOfferorCompleted = true,
+                IsCompleted = true,
+                ReviewWindowEndDate = now.AddDays(-22),
+                HasReviewForStudentBeenDeleted = false,
+                HasReviewForOfferorBeenDeleted = false,
+            });
+
+            reviews.Add(new Review
+            {
+                StudentId = students[3 % students.Count].Id,
+                Student = students[3 % students.Count],
+                OfferorId = publications[5].UserId,
+                Offeror = publications[5].User,
+                PublicationId = publications[5].Id,
+                Publication = publications[5],
+                RatingForStudent = 4,
+                CommentForStudent = "Buen nivel técnico y compromiso. Entregó trabajos de calidad.",
+                AtTime = true,
+                GoodPresentation = true,
+                IsReviewForStudentCompleted = true,
+                RatingForOfferor = 4,
+                CommentForOfferor = "Buena experiencia. Proyecto interesante y ambiente colaborativo.",
+                IsReviewForOfferorCompleted = true,
+                IsCompleted = true,
+                ReviewWindowEndDate = now.AddDays(-25),
+                HasReviewForStudentBeenDeleted = false,
+                HasReviewForOfferorBeenDeleted = false,
+            });
+
+            // REVIEWS INCOMPLETAS (4 en total)
+            // Solo oferente evaluo
+            reviews.Add(new Review
+            {
+                StudentId = students[0].Id,
+                Student = students[0],
+                OfferorId = publications[6 % publications.Count].UserId,
+                Offeror = publications[6 % publications.Count].User,
+                PublicationId = publications[6 % publications.Count].Id,
+                Publication = publications[6 % publications.Count],
+                RatingForStudent = 5,
+                CommentForStudent = "Estudiante confiable y organizado. Muy buena experiencia trabajando juntos.",
+                AtTime = true,
+                GoodPresentation = true,
+                IsReviewForStudentCompleted = true,
+                RatingForOfferor = null,
+                CommentForOfferor = null,
+                IsReviewForOfferorCompleted = false,
+                IsCompleted = false,
+                ReviewWindowEndDate = now.AddDays(10),
+                HasReviewForStudentBeenDeleted = false,
+                HasReviewForOfferorBeenDeleted = false,
+            });
+
+            reviews.Add(new Review
+            {
+                StudentId = students[1 % students.Count].Id,
+                Student = students[1 % students.Count],
+                OfferorId = publications[0].UserId,
+                Offeror = publications[0].User,
+                PublicationId = publications[0].Id,
+                Publication = publications[0],
+                RatingForStudent = 4,
+                CommentForStudent = "Buen trabajo en general. Cumplió plazos y mostró interés genuino.",
+                AtTime = false,
+                GoodPresentation = true,
+                IsReviewForStudentCompleted = true,
+                RatingForOfferor = null,
+                CommentForOfferor = null,
+                IsReviewForOfferorCompleted = false,
+                IsCompleted = false,
+                ReviewWindowEndDate = now.AddDays(-15), // Para probar que Hangfire lo cierre
+                HasReviewForStudentBeenDeleted = false,
+                HasReviewForOfferorBeenDeleted = false,
+            });
+            // Solo estudiante evaluo
+            reviews.Add(new Review
+            {
+                StudentId = students[3 % students.Count].Id,
+                Student = students[3 % students.Count],
+                OfferorId = publications[2].UserId,
+                Offeror = publications[2].User,
+                PublicationId = publications[2].Id,
+                Publication = publications[2],
+                RatingForStudent = null,
+                CommentForStudent = null,
+                AtTime = false,
+                GoodPresentation = false,
+                IsReviewForStudentCompleted = false,
+                RatingForOfferor = 5,
+                CommentForOfferor = "Muy buen ambiente laboral. Aprendí bastante y me trataron bien.",
+                IsReviewForOfferorCompleted = true,
+                IsCompleted = false,
+                ReviewWindowEndDate = now.AddDays(12),
+                HasReviewForStudentBeenDeleted = false,
+                HasReviewForOfferorBeenDeleted = false,
+            });
+
+            reviews.Add(new Review
+            {
+                StudentId = students[2 % students.Count].Id,
+                Student = students[2 % students.Count],
+                OfferorId = publications[3].UserId,
+                Offeror = publications[3].User,
+                PublicationId = publications[3].Id,
+                Publication = publications[3],
+                RatingForStudent = null,
+                CommentForStudent = null,
+                AtTime = false,
+                GoodPresentation = false,
+                IsReviewForStudentCompleted = false,
+                RatingForOfferor = 3,
+                CommentForOfferor = "Experiencia regular. Faltó mejor organización en las tareas asignadas.",
+                IsReviewForOfferorCompleted = true,
+                IsCompleted = false,
+                ReviewWindowEndDate = now.AddDays(5),
+                HasReviewForStudentBeenDeleted = false,
+                HasReviewForOfferorBeenDeleted = false,
+            });
 
             await context.Reviews.AddRangeAsync(reviews);
             await context.SaveChangesAsync();
+            Log.Information("DataSeeder: {Count} reviews creadas exitosamente (6 completas, 4 incompletas)", reviews.Count);
 
-            Log.Information("DataSeeder: {Count} reviews creadas exitosamente (6 completas, 6 incompletas)", reviews.Count);
-            // Lo genere casi todo con IA. Esto es innecesario ya que en el Service cada vez que se completa una Review se
-            // actualiza el rating del usuario correspondiente. Pero aca como se generan las Rewiews manual sin pasar por
-            // el service, se actualiza manualmente con el codigo de abajo.
-            // Actualizar ratings de todos los usuarios involucrados
+            // Actualizar ratings de usuarios (normalmente lo hace ReviewService automáticamente)
             Log.Information("DataSeeder: Actualizando ratings de estudiantes y oferentes...");
-
             var allUserIds = new HashSet<int>();
             foreach (var review in reviews)
             {
@@ -757,78 +1007,28 @@ namespace bolsafeucn_back.src.Application.Infrastructure.Data
                 if (user == null) continue;
 
                 double? averageRating = null;
-
                 if (user.UserType == UserType.Estudiante)
                 {
-                    // Calcular promedio de ratings para estudiante
                     var studentReviews = await context.Reviews
                         .Where(r => r.StudentId == userId && r.RatingForStudent.HasValue)
                         .ToListAsync();
-
                     if (studentReviews.Any())
-                    {
                         averageRating = studentReviews.Average(r => r.RatingForStudent!.Value);
-                    }
                 }
                 else if (user.UserType == UserType.Empresa || user.UserType == UserType.Particular)
                 {
-                    // Calcular promedio de ratings para oferente
                     var offerorReviews = await context.Reviews
                         .Where(r => r.OfferorId == userId && r.RatingForOfferor.HasValue)
                         .ToListAsync();
-
                     if (offerorReviews.Any())
-                    {
                         averageRating = offerorReviews.Average(r => r.RatingForOfferor!.Value);
-                    }
                 }
-
                 user.Rating = averageRating ?? 0.0;
                 context.Users.Update(user);
             }
 
             await context.SaveChangesAsync();
             Log.Information("DataSeeder: Ratings actualizados exitosamente para {Count} usuarios", allUserIds.Count);
-        }
-
-        private static string GenerateOfferentComment(Faker faker, int index)
-        {
-            var comments = new[]
-            {
-                "Excelente estudiante, muy responsable y puntual. Cumplió con todas las tareas asignadas de manera profesional.",
-                "Buen desempeño general, aunque tuvo algunos retrasos menores. Muestra potencial y ganas de aprender.",
-                "Estudiante proactivo y con gran iniciativa. Se adaptó rápidamente al equipo de trabajo.",
-                "Cumplió con las expectativas. Mostró buena disposición y capacidad de trabajo en equipo.",
-                "Destacable compromiso y dedicación. Entregó trabajos de calidad consistentemente.",
-                "Muy buen desempeño técnico. Resolvió problemas de forma eficiente y creativa.",
-                "Estudiante responsable, aunque podría mejorar en comunicación con el equipo.",
-                "Excelente actitud y profesionalismo. Superó las expectativas en varios aspectos.",
-                "Buen trabajo en general. Cumplió con los plazos establecidos y mostró interés genuino.",
-                "Demostró habilidades técnicas sólidas y capacidad de aprendizaje rápido.",
-                "Estudiante confiable y organizado. Muy buena experiencia trabajando con él/ella.",
-                "Buen nivel de compromiso. Aportó ideas valiosas al proyecto y trabajó de manera independiente."
-            };
-            return comments[index % comments.Length];
-        }
-
-        private static string GenerateStudentComment(Faker faker, int index)
-        {
-            var comments = new[]
-            {
-                "Muy buena experiencia laboral. El ambiente de trabajo fue excelente y aprendí mucho durante el proceso.",
-                "Excelente oportunidad de aprendizaje. El equipo fue muy acogedor y el proyecto interesante.",
-                "Buena experiencia en general. Me permitió aplicar conocimientos de la universidad en un contexto real.",
-                "Ambiente laboral positivo y enriquecedor. Recomendaría esta oportunidad a otros estudiantes.",
-                "Gran oportunidad para desarrollar habilidades profesionales. Supervisión y apoyo constante.",
-                "Experiencia muy formativa. Aprendí nuevas tecnologías y metodologías de trabajo.",
-                "Buen ambiente de trabajo, aunque a veces faltó claridad en las instrucciones.",
-                "Excelente organización y claridad en las expectativas. Muy profesional en todo momento.",
-                "Oportunidad valiosa que me permitió crecer profesionalmente. Muy agradecido/a por la experiencia.",
-                "Buena experiencia laboral. El proyecto fue desafiante y motivador.",
-                "Ambiente colaborativo y respetuoso. Aprendí mucho sobre trabajo en equipo.",
-                "Experiencia positiva que superó mis expectativas. Excelente mentoría y guía durante el proceso."
-            };
-            return comments[index % comments.Length];
         }
     }
 }
