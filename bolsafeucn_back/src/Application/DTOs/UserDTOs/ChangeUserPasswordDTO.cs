@@ -21,7 +21,7 @@ namespace bolsafeucn_back.src.Application.DTOs.UserDTOs
         /// <summary>
         /// Confirmación de la nueva contraseña del usuario.
         /// </summary>
-        
+        [Compare("NewPassword", ErrorMessage = "Las contraseñas no coinciden.")]
         public required string ConfirmNewPassword { get; set; }
     }
 }
