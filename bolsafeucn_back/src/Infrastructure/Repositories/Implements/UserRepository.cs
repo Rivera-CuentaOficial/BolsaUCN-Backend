@@ -341,7 +341,7 @@ namespace bolsafeucn_back.src.Infrastructure.Repositories.Implements
         /// <param name="userId">ID del usuario</param>
         /// <param name="userType">Tipo de usuario</param>
         /// <returns>Usuario general con las relaciones correspondientes</returns>
-        public async Task<GeneralUser?> GetUntrackedWithTypeAsync(int userId, UserType userType)
+        public async Task<GeneralUser?> GetUntrackedWithTypeAsync(int userId, UserType? userType)
         {
             var query = _context.Users.AsNoTracking().AsQueryable();
             switch (userType)
@@ -350,7 +350,7 @@ namespace bolsafeucn_back.src.Infrastructure.Repositories.Implements
                 case UserType.Particular: query = query.Include(u => u.Individual); break;
                 case UserType.Empresa: query = query.Include(u => u.Company); break;
                 case UserType.Administrador: query = query.Include(u => u.Admin); break;
-                default: return null;
+                default: break;
             }
             ;
             return await query
@@ -365,7 +365,7 @@ namespace bolsafeucn_back.src.Infrastructure.Repositories.Implements
         /// <param name="userId">ID del usuario</param>
         /// <param name="userType">Tipo de usuario</param>
         /// <returns>Usuario general con las relaciones correspondientes</returns>
-        public async Task<GeneralUser?> GetTrackedWithTypeAsync(int userId, UserType userType)
+        public async Task<GeneralUser?> GetTrackedWithTypeAsync(int userId, UserType? userType)
         {
             var query = _context.Users.AsQueryable();
             switch (userType)
@@ -374,7 +374,7 @@ namespace bolsafeucn_back.src.Infrastructure.Repositories.Implements
                 case UserType.Particular: query = query.Include(u => u.Individual); break;
                 case UserType.Empresa: query = query.Include(u => u.Company); break;
                 case UserType.Administrador: query = query.Include(u => u.Admin); break;
-                default: return null;
+                default: break;
             }
             ;
             return await query

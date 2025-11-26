@@ -46,7 +46,7 @@ namespace bolsafeucn_back.src.Application.Infrastructure.Data
                     Log.Information(
                         "DataSeeder: No se encontraron usuarios, creando usuarios de prueba..."
                     );
-                    await SeedUsers(userManager, context);
+                    await SeedUsers(userManager, context, configuration);
                     Log.Information("DataSeeder: Usuarios de prueba creados exitosamente.");
                 }
 
@@ -90,7 +90,8 @@ namespace bolsafeucn_back.src.Application.Infrastructure.Data
 
         private static async Task SeedUsers(
             UserManager<GeneralUser> userManager,
-            AppDbContext context
+            AppDbContext context,
+            IConfiguration configuration
         )
         {
             var faker = new Faker("es");
@@ -101,6 +102,7 @@ namespace bolsafeucn_back.src.Application.Infrastructure.Data
             Log.Information("DataSeeder: Creando usuarios de prueba con credenciales fáciles...");
 
             // 1. ESTUDIANTE DE PRUEBA
+
             var testStudentUser = new GeneralUser
             {
                 UserName = "estudiante",
@@ -110,6 +112,13 @@ namespace bolsafeucn_back.src.Application.Infrastructure.Data
                 Rut = "12345678-9",
                 EmailConfirmed = true,
                 Banned = false,
+                Rating = 3.3,
+                ProfilePhoto = new UserImage
+                {
+                    Url = configuration.GetValue<string>("Images:DefaultUserImageUrl") ?? throw new InvalidOperationException("DefaultUserImageUrl no está configurado"),
+                    PublicId = configuration.GetValue<string>("Images:DefaultUserImagePublicId") ?? throw new InvalidOperationException("DefaultUserImagePublicId no está configurado"),
+                    ImageType = UserImageType.Perfil,
+                }
             };
             var studentResult = await userManager.CreateAsync(testStudentUser, "Test123!");
             if (studentResult.Succeeded)
@@ -131,6 +140,7 @@ namespace bolsafeucn_back.src.Application.Infrastructure.Data
                 );
             }
 
+
             // 2. EMPRESA DE PRUEBA
             var testCompanyUser = new GeneralUser
             {
@@ -141,6 +151,12 @@ namespace bolsafeucn_back.src.Application.Infrastructure.Data
                 Rut = "76543210-K",
                 EmailConfirmed = true,
                 Banned = false,
+                ProfilePhoto = new UserImage
+                {
+                    Url = configuration.GetValue<string>("Images:DefaultUserImageUrl") ?? throw new InvalidOperationException("DefaultUserImageUrl no está configurado"),
+                    PublicId = configuration.GetValue<string>("Images:DefaultUserImagePublicId") ?? throw new InvalidOperationException("DefaultUserImagePublicId no está configurado"),
+                    ImageType = UserImageType.Perfil,
+                }
             };
             var companyResult = await userManager.CreateAsync(testCompanyUser, "Test123!");
             if (companyResult.Succeeded)
@@ -167,6 +183,12 @@ namespace bolsafeucn_back.src.Application.Infrastructure.Data
                 Rut = "11222333-4",
                 EmailConfirmed = true,
                 Banned = false,
+                ProfilePhoto = new UserImage
+                {
+                    Url = configuration.GetValue<string>("Images:DefaultUserImageUrl") ?? throw new InvalidOperationException("DefaultUserImageUrl no está configurado"),
+                    PublicId = configuration.GetValue<string>("Images:DefaultUserImagePublicId") ?? throw new InvalidOperationException("DefaultUserImagePublicId no está configurado"),
+                    ImageType = UserImageType.Perfil,
+                }
             };
             var individualResult = await userManager.CreateAsync(testIndividualUser, "Test123!");
             if (individualResult.Succeeded)
@@ -193,6 +215,12 @@ namespace bolsafeucn_back.src.Application.Infrastructure.Data
                 Rut = "99888777-6",
                 EmailConfirmed = true,
                 Banned = false,
+                ProfilePhoto = new UserImage
+                {
+                    Url = configuration.GetValue<string>("Images:DefaultUserImageUrl") ?? throw new InvalidOperationException("DefaultUserImageUrl no está configurado"),
+                    PublicId = configuration.GetValue<string>("Images:DefaultUserImagePublicId") ?? throw new InvalidOperationException("DefaultUserImagePublicId no está configurado"),
+                    ImageType = UserImageType.Perfil,
+                }
             };
             var adminResult = await userManager.CreateAsync(testAdminUser, "Test123!");
             if (adminResult.Succeeded)
@@ -248,6 +276,12 @@ namespace bolsafeucn_back.src.Application.Infrastructure.Data
                     Rut = faker.Random.Replace("##.###.###-K"),
                     EmailConfirmed = true,
                     Banned = faker.Random.Bool(0.3f),
+                    ProfilePhoto = new UserImage
+                    {
+                        Url = configuration.GetValue<string>("Images:DefaultUserImageUrl") ?? throw new InvalidOperationException("DefaultUserImageUrl no está configurado"),
+                        PublicId = configuration.GetValue<string>("Images:DefaultUserImagePublicId") ?? throw new InvalidOperationException("DefaultUserImagePublicId no está configurado"),
+                        ImageType = UserImageType.Perfil,
+                    }
                 };
                 var result = await userManager.CreateAsync(studentUser, "Password123!");
                 if (result.Succeeded)
@@ -276,6 +310,12 @@ namespace bolsafeucn_back.src.Application.Infrastructure.Data
                     Rut = faker.Random.Replace("##.###.###-K"),
                     EmailConfirmed = true,
                     Banned = faker.Random.Bool(0.3f),
+                    ProfilePhoto = new UserImage
+                    {
+                        Url = configuration.GetValue<string>("Images:DefaultUserImageUrl") ?? throw new InvalidOperationException("DefaultUserImageUrl no está configurado"),
+                        PublicId = configuration.GetValue<string>("Images:DefaultUserImagePublicId") ?? throw new InvalidOperationException("DefaultUserImagePublicId no está configurado"),
+                        ImageType = UserImageType.Perfil,
+                    }
                 };
                 var result = await userManager.CreateAsync(companyUser, "Password123!");
                 if (result.Succeeded)
@@ -301,6 +341,12 @@ namespace bolsafeucn_back.src.Application.Infrastructure.Data
                 Rut = faker.Random.Replace("##.###.###-K"),
                 EmailConfirmed = true,
                 Banned = faker.Random.Bool(0.9f),
+                ProfilePhoto = new UserImage
+                {
+                    Url = configuration.GetValue<string>("Images:DefaultUserImageUrl") ?? throw new InvalidOperationException("DefaultUserImageUrl no está configurado"),
+                    PublicId = configuration.GetValue<string>("Images:DefaultUserImagePublicId") ?? throw new InvalidOperationException("DefaultUserImagePublicId no está configurado"),
+                    ImageType = UserImageType.Perfil,
+                }
             };
             var randomIndividualResult = await userManager.CreateAsync(
                 randomIndividualUser,

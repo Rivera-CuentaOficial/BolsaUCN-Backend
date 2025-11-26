@@ -132,6 +132,33 @@ namespace bolsafeucn_back.src.API.Controllers
         }
 
         /// <summary>
+        /// Obtiene la foto de perfil del usuario autenticado.
+        /// </summary>
+        /// <returns>URL de la foto de perfil del usuario.</returns>
+        [HttpGet("profile/photo")]
+        [Authorize]
+        public async Task<IActionResult> GetProfilePhoto()
+        {
+            int userId = GetUserIdFromToken();
+            var result = await _userService.GetUserProfilePhotoByIdAsync(userId);
+            return Ok(new GenericResponse<GetPhotoDTO>("Foto de perfil obtenida", result));
+        }
+
+        /// <summary>
+        /// Actualiza la foto de perfil del usuario autenticado.
+        /// </summary>
+        /// <param name="updatePhotoDTO">Parámetros para actualizar la foto de perfil.</param>
+        /// <returns>Respuesta genérica indicando el resultado de la operación.</returns>
+        [HttpPatch("profile/photo")]
+        [Authorize]
+        public async Task<IActionResult> UpdateProfilePhoto([FromForm] UpdatePhotoDTO updatePhotoDTO)
+        {
+            int userId = GetUserIdFromToken();
+            var result = await _userService.UpdateUserProfilePhotoByIdAsync(updatePhotoDTO, userId);
+            return Ok(new GenericResponse<string>("Foto de perfil actualizada", result));
+        }
+
+        /// <summary>
         /// Cambia la contraseña del usuario autenticado.
         /// </summary>
         /// <param name="changeUserPasswordDTO">Parámetros para cambiar la contraseña del usuario.</param>

@@ -1,16 +1,19 @@
-using bolsafeucn_back.src.Application.Services.Interfaces;
 using bolsafeucn_back.src.Application.DTOs.ReviewDTO;
+using bolsafeucn_back.src.Application.Services.Interfaces;
 using Resend;
 using Serilog;
 
 namespace bolsafeucn_back.src.Application.Services.Implements
 {
+    /// <summary>
+    /// Default implementation of <see cref="IEmailService"/>.
+    /// Responsible for loading templates and sending transactional emails.
+    /// </summary>
     public class EmailService : IEmailService
     {
         private readonly IResend _resend;
         private readonly IConfiguration _configuration;
         private readonly IWebHostEnvironment _environment;
-
 
         public EmailService(
             IResend resend,
@@ -26,6 +29,11 @@ namespace bolsafeucn_back.src.Application.Services.Implements
         // --------------------------------------------------------------------
         // 1. EMAIL DE VERIFICACIÓN
         // --------------------------------------------------------------------
+        /// <summary>
+        /// Sends an account verification email containing a verification code.
+        /// </summary>
+        /// <param name="email">Recipient email address.</param>
+        /// <param name="code">Verification code to include in the template.</param>
         public async Task<bool> SendVerificationEmailAsync(string email, string code)
         {
             try
@@ -62,6 +70,11 @@ namespace bolsafeucn_back.src.Application.Services.Implements
         // --------------------------------------------------------------------
         // 2. EMAIL RESETEO DE CONTRASEÑA
         // --------------------------------------------------------------------
+        /// <summary>
+        /// Sends a password reset email with a verification code to the specified address.
+        /// </summary>
+        /// <param name="email">Recipient email address.</param>
+        /// <param name="code">Reset verification code.</param>
         public async Task<bool> SendResetPasswordVerificationEmailAsync(string email, string code)
         {
             try
@@ -92,6 +105,10 @@ namespace bolsafeucn_back.src.Application.Services.Implements
         // --------------------------------------------------------------------
         // 3. EMAIL DE BIENVENIDA
         // --------------------------------------------------------------------
+        /// <summary>
+        /// Sends a welcome email to a newly registered user.
+        /// </summary>
+        /// <param name="email">Recipient email address.</param>
         public async Task<bool> SendWelcomeEmailAsync(string email)
         {
             try
@@ -122,6 +139,12 @@ namespace bolsafeucn_back.src.Application.Services.Implements
         // --------------------------------------------------------------------
         // 4. TEMPLATE LOADER GENERAL
         // --------------------------------------------------------------------
+        /// <summary>
+        /// Loads an email template file from disk and optionally injects a code placeholder.
+        /// </summary>
+        /// <param name="templateName">Template file name without extension.</param>
+        /// <param name="code">Optional code to replace in the template.</param>
+        /// <returns>Rendered HTML content of the template.</returns>
         public async Task<string> LoadTemplateAsync(string templateName, string? code)
         {
             try
@@ -135,7 +158,11 @@ namespace bolsafeucn_back.src.Application.Services.Implements
                     $"{templateName}.html"
                 );
 
-                Log.Debug("Cargando template de email: {TemplateName} desde {Path}", templateName, templatePath);
+                Log.Debug(
+                    "Cargando template de email: {TemplateName} desde {Path}",
+                    templateName,
+                    templatePath
+                );
 
                 var htmlContent = await File.ReadAllTextAsync(templatePath);
 
@@ -154,20 +181,36 @@ namespace bolsafeucn_back.src.Application.Services.Implements
         // --------------------------------------------------------------------
         // 5. EMAIL CAMBIO DE ESTADO DE POSTULACIÓN
         // --------------------------------------------------------------------
-        public async Task<bool> SendPostulationStatusChangeEmailAsync(string email, string offerName, string companyName, string newStatus)
+        /// <summary>
+        /// Sends an email notifying the student that their application status has changed.
+        /// </summary>
+        /// <param name="email">Recipient student email.</param>
+        /// <param name="offerName">Offer title.</param>
+        /// <param name="companyName">Company name.</param>
+        /// <param name="newStatus">New status text.</param>
+        public async Task<bool> SendPostulationStatusChangeEmailAsync(
+            string email,
+            string offerName,
+            string companyName,
+            string newStatus
+        )
         {
             try
             {
                 Log.Information("Enviando email de cambio de estado a {Email}", email);
 
-                var htmlBody = await LoadPostulationStatusTemplateAsync(offerName, companyName, newStatus);
+                var htmlBody = await LoadPostulationStatusTemplateAsync(
+                    offerName,
+                    companyName,
+                    newStatus
+                );
 
                 var message = new EmailMessage
                 {
                     To = email,
                     From = _configuration["EmailConfiguration:From"]!,
                     Subject = "Actualización en tu postulación",
-                    HtmlBody = htmlBody
+                    HtmlBody = htmlBody,
                 };
 
                 var result = await _resend.EmailSendAsync(message);
@@ -188,7 +231,11 @@ namespace bolsafeucn_back.src.Application.Services.Implements
             }
         }
 
-        private async Task<string> LoadPostulationStatusTemplateAsync(string offerName, string companyName, string newStatus)
+        private async Task<string> LoadPostulationStatusTemplateAsync(
+            string offerName,
+            string companyName,
+            string newStatus
+        )
         {
             try
             {
@@ -219,6 +266,10 @@ namespace bolsafeucn_back.src.Application.Services.Implements
         // --------------------------------------------------------------------
         // 6. *** NUEVO *** EMAIL PARA REVIEW ≤ 3 (EVA-006)
         // --------------------------------------------------------------------
+        /// <summary>
+        /// Sends an administrative alert email for reviews with low ratings (<= 3).
+        /// </summary>
+        /// <param name="review">Review DTO describing the low-rated review.</param>
         public async Task<bool> SendLowRatingReviewAlertAsync(ReviewDTO review)
         {
             try
@@ -232,7 +283,8 @@ namespace bolsafeucn_back.src.Application.Services.Implements
                 int? rating = review.RatingForStudent ?? review.RatingForOfferor;
                 string? comment = review.CommentForStudent ?? review.CommentForOfferor;
 
-                string htmlBody = $@"
+                string htmlBody =
+                    $@"
                     <h2>Alerta: Nueva reseña crítica</h2>
 
                     <p><strong>Puntaje:</strong> {rating}</p>
@@ -253,7 +305,7 @@ namespace bolsafeucn_back.src.Application.Services.Implements
                     To = adminEmail,
                     From = fromEmail,
                     Subject = "[ALERTA] Nueva reseña crítica (≤ 3 estrellas)",
-                    HtmlBody = htmlBody
+                    HtmlBody = htmlBody,
                 };
 
                 var result = await _resend.EmailSendAsync(message);
@@ -273,6 +325,5 @@ namespace bolsafeucn_back.src.Application.Services.Implements
                 return false;
             }
         }
-
     }
 }
