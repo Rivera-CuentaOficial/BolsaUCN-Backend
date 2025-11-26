@@ -45,7 +45,7 @@ namespace bolsafeucn_back.src.Application.Services.Implements
                 : await _reviewService.GetReviewsByOfferorAsync(userId);
 
             // 4. Obtener datos detallados de reviews desde la BD
-            var reviewIds = reviewsDto.Select(r => r.IdReview).ToList();
+            var reviewIds = reviewsDto.Select(r => r.Review.IdReview).ToList();
             var reviews = await _context.Reviews
                 .Include(r => r.Publication)
                 .Include(r => r.Student)
