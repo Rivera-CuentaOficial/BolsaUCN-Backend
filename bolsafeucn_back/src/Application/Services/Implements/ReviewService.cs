@@ -128,7 +128,7 @@ namespace bolsafeucn_back.src.Application.Services.Implements
             var result = new List<PublicationAndReviewInfoDTO>();
             foreach (var review in reviews)
             {
-                var publications = await _repository.GetPublicationInformationAsync(review.Id);
+                var publications = await _repository.GetPublicationInformationAsync(review.PublicationId);
                 if (publications != null)
                 {
                     foreach (var publication in publications)
