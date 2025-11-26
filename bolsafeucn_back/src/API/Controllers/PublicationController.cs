@@ -401,7 +401,7 @@ namespace bolsafeucn_back.src.API.Controllers
         {
             try
             {
-                await _offerService.GetOfferForAdminToReject(id);
+                await _buySellService.GetBuySellForAdminToReject(id);
                 return Ok(
                     new GenericResponse<object>($"Compra/Venta {id} rechazada con exito", id)
                 );
