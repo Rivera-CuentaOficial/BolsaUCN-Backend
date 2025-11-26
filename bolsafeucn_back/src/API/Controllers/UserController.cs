@@ -171,5 +171,27 @@ namespace bolsafeucn_back.src.API.Controllers
             var result = await _userService.ChangeUserPasswordById(changeUserPasswordDTO, userId);
             return Ok(new GenericResponse<string>("Contraseña actualizada", result));
         }
+
+        /// <summary>
+        /// Sube el CV del usuario autenticado.
+        /// </summary>
+        /// <param name="updateCVDTO">Parámetros para subir el CV del usuario.</param>
+        /// <returns>Respuesta genérica indicando el resultado de la operación.</returns>
+        [HttpPatch("cv")]
+        [Authorize]
+        public async Task<IActionResult> UploadCV([FromForm] UploadCVDTO updateCVDTO)
+        {
+            int userId = GetUserIdFromToken();
+            var result = await _userService.UploadCVByIdAsync(updateCVDTO, userId);
+            return Ok(new GenericResponse<string>("CV actualizado", result));
+        }
+        [HttpGet("cv")]
+        [Authorize]
+        public async Task<IActionResult> GetCV()
+        {
+            int userId = GetUserIdFromToken();
+            var result = await _userService.DownloadCVByIdAsync(userId);
+            return Ok(new GenericResponse<GetCVDTO>("CV obtenido", result));
+        }
     }
 }

@@ -296,13 +296,25 @@ namespace bolsafeucn_back.src.Application.Services.Implements
 
             Log.Information($"Imagen subida exitosamente: {uploadResult.SecureUrl}");
 
+            string publicId;
+
             switch (imageType)
             {
                 case UserImageType.Perfil:
+                    if (user.ProfilePhoto != null) {
+                        publicId = user.ProfilePhoto.PublicId;
+                        await DeleteInCloudinaryAsync(publicId);
+                        await _fileRepository.DeleteUserImageAsync(publicId);
+                    }
+                    
                     user.ProfilePhoto = image;
                     user.ProfilePhotoId = image.Id;
                     break;
                 case UserImageType.Banner:
+                    if (user.ProfileBanner != null) {
+                        await _fileRepository.DeleteUserImageAsync(user.ProfileBanner.PublicId);
+                        //await DeleteInCloudinaryAsync(user.ProfileBanner.PublicId);
+                    }   
                     user.ProfileBanner = image;
                     user.ProfileBannerId = image.Id;
                     break;
@@ -310,6 +322,7 @@ namespace bolsafeucn_back.src.Application.Services.Implements
                     Log.Error($"Tipo de imagen de usuario no soportado: {imageType}");
                     throw new ArgumentException("Tipo de imagen de usuario no soportado");
             }
+
 
             return true;
         }
@@ -362,18 +375,28 @@ namespace bolsafeucn_back.src.Application.Services.Implements
         {
             var deletionParams = new DeletionParams(publicId);
             Log.Information($"Eliminando imagen con PublicId: {publicId} de Cloudinary");
-            var deleteResult = await _cloudinary.DestroyAsync(deletionParams);
-            if (deleteResult.Error != null)
+            try 
+            {
+                var deleteResult = await _cloudinary.DestroyAsync(deletionParams);
+                if (deleteResult.Error != null)
+                {
+                    Log.Error(
+                        $"Error al eliminar la imagen con PublicId: {publicId} de Cloudinary: {deleteResult.Error.Message}"
+                    );
+                    return false;
+                }
+                Log.Information(
+                $"Imagen con PublicId: {publicId} eliminada exitosamente de Cloudinary"
+                );
+            return true;
+            } 
+            catch 
             {
                 Log.Error(
-                    $"Error al eliminar la imagen con PublicId: {publicId} de Cloudinary: {deleteResult.Error.Message}"
+                    $"Error al eliminar la imagen con PublicId: {publicId} de Cloudinary: No es una publicId de cloudinary."
                 );
-                return false;
+                return false;   
             }
-            Log.Information(
-                $"Imagen con PublicId: {publicId} eliminada exitosamente de Cloudinary"
-            );
-            return true;
         }
 
         /// <summary>

@@ -50,6 +50,17 @@ namespace bolsafeucn_back.src.Infrastructure.Repositories.Implements
             return null;
         }
 
+        public async Task<bool?> CreateCVAsync(Curriculum file)
+        {
+            var existsCV = await _context.CVs.AnyAsync(i => i.PublicId == file.PublicId);
+            if (!existsCV)
+            {
+                _context.CVs.Add(file);
+                return await _context.SaveChangesAsync() > 0;
+            }
+            return null;
+        }
+
         /// <summary>
         /// Elimina un archivo de imagen de la base de datos.
         /// </summary>
@@ -61,6 +72,26 @@ namespace bolsafeucn_back.src.Infrastructure.Repositories.Implements
             if (image != null)
             {
                 _context.Images.Remove(image);
+                return await _context.SaveChangesAsync() > 0;
+            }
+            return null;
+        }
+        public async Task<bool?> DeleteUserImageAsync(string publicId)
+        {
+            var image = await _context.UserImages.FirstOrDefaultAsync(i => i.PublicId == publicId);
+            if (image != null)
+            {
+                _context.UserImages.Remove(image);
+                return await _context.SaveChangesAsync() > 0;
+            }
+            return null;
+        }
+        public async Task<bool?> DeleteCVAsync(string publicId)
+        {
+            var curriculum = await _context.CVs.FirstOrDefaultAsync(cv => cv.PublicId == publicId);
+            if (curriculum != null)
+            {
+                _context.CVs.Remove(curriculum);
                 return await _context.SaveChangesAsync() > 0;
             }
             return null;

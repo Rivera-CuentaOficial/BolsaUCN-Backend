@@ -380,6 +380,7 @@ namespace bolsafeucn_back.src.Infrastructure.Repositories.Implements
             return await query
                             .Include(u => u.ProfilePhoto)
                             .Include(u => u.ProfileBanner)
+                            .Include(u => u.CV)
                             .FirstOrDefaultAsync(u => u.Id == userId);
         }
 
