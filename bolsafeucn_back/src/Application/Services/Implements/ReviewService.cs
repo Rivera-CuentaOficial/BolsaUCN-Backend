@@ -58,11 +58,27 @@ namespace bolsafeucn_back.src.Application.Services.Implements
         /// </summary>
         /// <param name="offerorId">El identificador del oferente.</param>
         /// <returns>Una colección de DTOs de reseñas del oferente.</returns>
-        public async Task<IEnumerable<ShowReviewDTO>> GetReviewsByOfferorAsync(int offerorId)
+        public async Task<IEnumerable<PublicationAndReviewInfoDTO>> GetReviewsByOfferorAsync(int offerorId)
         {
             var reviews = await _repository.GetByOfferorIdAsync(offerorId);
-            return reviews.Select(ReviewMapper.ShowReviewDTO);
-            // return reviews.Select(ReviewMapper.ToDTO);
+            if (reviews == null || !reviews.Any())
+                throw new KeyNotFoundException($"No se encontraron reseñas para el oferente con ID {offerorId}.");
+
+            var user = await _userRepository.GetByIdAsync(offerorId) ?? throw new KeyNotFoundException($"No se encontró el usuario con ID {offerorId}.");
+
+            var result = new List<PublicationAndReviewInfoDTO>();
+            foreach (var review in reviews)
+            {
+                var publications = await _repository.GetPublicationInformationAsync(review.PublicationId);
+                if (publications != null)
+                {
+                    foreach (var publication in publications)
+                    {
+                        result.Add(ReviewMapper.MapToPublicationAndReviewInfoDTO(review, publication, user.UserType));
+                    }
+                }
+            }
+            return result;
         }
 
         /// <summary>
@@ -80,18 +96,29 @@ namespace bolsafeucn_back.src.Application.Services.Implements
         }
         public async Task<ShowReviewDTO> GetReviewAsync(int id)
         {
-            var review = await _repository.GetByIdAsync(id);
-            if (review == null)
-                throw new KeyNotFoundException($"No se encontró una review con ID {id}.");
+            var review = await _repository.GetByIdAsync(id) ?? throw new KeyNotFoundException($"No se encontró una review con ID {id}.");
             return ReviewMapper.ShowReviewDTO(review);
         }
 
-        public async Task<IEnumerable<ShowReviewDTO>> GetReviewsByStudentAsync(int studentId)
+        public async Task<IEnumerable<PublicationAndReviewInfoDTO>> GetReviewsByStudentAsync(int studentId)
         {
             var reviews = await _repository.GetByStudentIdAsync(studentId);
             if (reviews == null || !reviews.Any())
                 throw new KeyNotFoundException($"No se encontraron reseñas para el estudiante con ID {studentId}.");
-            return reviews.Select(ReviewMapper.ShowReviewDTO);
+
+            var result = new List<PublicationAndReviewInfoDTO>();
+            foreach (var review in reviews)
+            {
+                var publications = await _repository.GetPublicationInformationAsync(review.PublicationId);
+                if (publications != null)
+                {
+                    foreach (var publication in publications)
+                    {
+                        result.Add(ReviewMapper.MapToPublicationAndReviewInfoDTO(review, publication, UserType.Estudiante));
+                    }
+                }
+            }
+            return result;
         }
         public async Task<IEnumerable<PublicationAndReviewInfoDTO>> GetAllReviewsAsync()
         {
@@ -99,7 +126,7 @@ namespace bolsafeucn_back.src.Application.Services.Implements
             var result = new List<PublicationAndReviewInfoDTO>();
             foreach (var review in reviews)
             {
-                var publications = await _repository.GetPublicationInformationAsync(review.Id);
+                var publications = await _repository.GetPublicationInformationAsync(review.PublicationId);
                 if (publications != null)
                 {
                     foreach (var publication in publications)

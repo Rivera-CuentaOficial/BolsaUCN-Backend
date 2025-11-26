@@ -290,7 +290,7 @@ namespace bolsafeucn_back.src.API.Controllers
         /// </summary>
         /// <param name="dto">DTO especificando qué partes eliminar</param>
         /// <returns></returns>
-        [HttpDelete("Admin/DeleteReviewPart")]
+        [HttpPost("Admin/DeleteReviewPart")]
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> DeleteReviewPart([FromBody] DeleteReviewPartDTO dto)
         {
