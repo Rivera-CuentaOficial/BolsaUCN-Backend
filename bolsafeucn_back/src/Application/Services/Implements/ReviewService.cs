@@ -96,9 +96,7 @@ namespace bolsafeucn_back.src.Application.Services.Implements
         }
         public async Task<ShowReviewDTO> GetReviewAsync(int id)
         {
-            var review = await _repository.GetByIdAsync(id);
-            if (review == null)
-                throw new KeyNotFoundException($"No se encontró una review con ID {id}.");
+            var review = await _repository.GetByIdAsync(id) ?? throw new KeyNotFoundException($"No se encontró una review con ID {id}.");
             return ReviewMapper.ShowReviewDTO(review);
         }
 
