@@ -126,6 +126,7 @@ dotnet watch run
 
 
 El proyecto incluye un `Makefile` con atajos para tareas comunes de desarrollo.
+
 Es posible que para los usuarios de Windows no les funcione los comandos Make, para eso deben instalar el gestor de paquetes Chocolatey y ejecutar el siguiente comando:
 ```bash
 choco install make
