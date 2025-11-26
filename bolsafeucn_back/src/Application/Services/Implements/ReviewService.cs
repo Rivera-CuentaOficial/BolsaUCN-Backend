@@ -27,13 +27,13 @@ namespace bolsafeucn_back.src.Application.Services.Implements
         /// </summary>
         /// <param name="repository">El repositorio de reseñas para acceso a datos.</param>
         /// <param name="userRepository">El repositorio de usuarios para validación.</param>
-       public ReviewService(
-            IReviewRepository repository,
-            IUserRepository userRepository,
-            IAdminNotificationRepository adminNotificationRepository,
-            IEmailService emailService)
-            
-            {
+        public ReviewService(
+             IReviewRepository repository,
+             IUserRepository userRepository,
+             IAdminNotificationRepository adminNotificationRepository,
+             IEmailService emailService)
+
+        {
             _repository = repository;
             _userRepository = userRepository;
             _adminNotificationRepository = adminNotificationRepository;
@@ -93,10 +93,22 @@ namespace bolsafeucn_back.src.Application.Services.Implements
                 throw new KeyNotFoundException($"No se encontraron reseñas para el estudiante con ID {studentId}.");
             return reviews.Select(ReviewMapper.ShowReviewDTO);
         }
-        public async Task<IEnumerable<ReviewDTO>> GetAllReviewsAsync()
+        public async Task<IEnumerable<PublicationAndReviewInfoDTO>> GetAllReviewsAsync()
         {
             var reviews = await _repository.GetAllAsync();
-            return reviews.Select(ReviewMapper.ToDTO);
+            var result = new List<PublicationAndReviewInfoDTO>();
+            foreach (var review in reviews)
+            {
+                var publications = await _repository.GetPublicationInformationAsync(review.Id);
+                if (publications != null)
+                {
+                    foreach (var publication in publications)
+                    {
+                        result.Add(ReviewMapper.MapToPublicationAndReviewInfoDTO(review, publication, UserType.Administrador));
+                    }
+                }
+            }
+            return result;
         }
         #endregion
         #region Agregar Reviews
@@ -137,7 +149,7 @@ namespace bolsafeucn_back.src.Application.Services.Implements
             if (review.IsCompleted) await BothReviewsCompletedAsync(review);
             await _repository.UpdateAsync(review);
             Log.Information("Offeror {OfferorId} added review for student in publication {PublicationId}", currentUserId, dto.PublicationId);
-        
+
             if (review.RatingForStudent.HasValue && review.RatingForStudent <= 3)
             {
                 await _emailService.SendLowRatingReviewAlertAsync(new ReviewDTO

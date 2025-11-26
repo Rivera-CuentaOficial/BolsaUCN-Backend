@@ -102,6 +102,7 @@ namespace bolsafeucn_back.src.Application.Mappers
         }
         public static ShowReviewDTO ShowReviewDTO(Review entity)
         {
+            // TODO: Manejar en caso donde las relaciones sean nulas.
             return new ShowReviewDTO
             {
                 IdReview = entity.Id,

@@ -100,7 +100,7 @@ namespace bolsafeucn_back.src.Application.Services.Interfaces
         /// Obtiene todas las reseñas del sistema.
         /// </summary>
         /// <returns></returns>
-        Task<IEnumerable<ReviewDTO>> GetAllReviewsAsync();
+        Task<IEnumerable<PublicationAndReviewInfoDTO>> GetAllReviewsAsync();
         /// <summary>
         /// Obtiene la información de publicaciones asociadas a las reseñas de un usuario.
         /// Identifica automáticamente si el usuario es estudiante u oferente y devuelve las publicaciones correspondientes.

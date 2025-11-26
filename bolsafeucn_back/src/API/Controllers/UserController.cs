@@ -151,7 +151,8 @@ namespace bolsafeucn_back.src.API.Controllers
         /// <returns>Respuesta genérica indicando el resultado de la operación.</returns>
         [HttpPatch("profile/photo")]
         [Authorize]
-        public async Task<IActionResult> UpdateProfilePhoto([FromForm] UpdatePhotoDTO updatePhotoDTO) {
+        public async Task<IActionResult> UpdateProfilePhoto([FromForm] UpdatePhotoDTO updatePhotoDTO)
+        {
             int userId = GetUserIdFromToken();
             var result = await _userService.UpdateUserProfilePhotoByIdAsync(updatePhotoDTO, userId);
             return Ok(new GenericResponse<string>("Foto de perfil actualizada", result));

@@ -1,5 +1,22 @@
 # BolsaFE UCN Backend - AI Agent Instructions
 
+## CRITICAL: Maintaining These Instructions
+
+**MANDATORY**: When making structural changes to the project (new models, services, controllers, migrations, authentication patterns, external integrations, architectural changes, etc.), you MUST update this document to reflect those changes. This ensures future AI agents have accurate context.
+
+**Update triggers include**:
+- Adding/removing/modifying domain models or enums
+- Creating new services, repositories, or controllers
+- Changing authentication/authorization patterns
+- Adding external service integrations (email, storage, etc.)
+- Modifying database schema or migration patterns
+- Adding new endpoints or changing API conventions
+- Updating dependency injection configuration
+- Changing file/folder structure conventions
+- Adding new testing credentials or seed data
+
+**How to update**: After making structural changes, review this document and update the relevant sections with the new information. Be specific and concise. Follow the existing documentation style.
+
 ## Architecture Overview
 
 **Clean Architecture + ASP.NET Core 9.0** with strict layer separation:

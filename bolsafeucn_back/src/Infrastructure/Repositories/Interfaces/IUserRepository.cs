@@ -22,7 +22,7 @@ namespace bolsafeucn_back.src.Infrastructure.Repositories.Interfaces
         Task<GeneralUser?> GetByIdAsync(int id);
         Task<GeneralUser?> GetByIdWithRelationsAsync(int id);
         Task<GeneralUser?> GetUntrackedWithTypeAsync(int id, UserType? userType);
-        Task<GeneralUser?> GetTrackedWithTypeAsync(int id, UserType? userType);  
+        Task<GeneralUser?> GetTrackedWithTypeAsync(int id, UserType? userType);
         Task<GeneralUser> AddAsync(GeneralUser usuario);
         Task<bool> DeleteAsync(int id);
     }
