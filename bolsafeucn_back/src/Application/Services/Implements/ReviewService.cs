@@ -151,7 +151,7 @@ namespace bolsafeucn_back.src.Application.Services.Implements
         /// <exception cref="InvalidOperationException">Lanzada si el oferente ya completó su evaluación.</exception>
         public async Task AddStudentReviewAsync(ReviewForStudentDTO dto, int currentUserId)
         {
-            var review = await _repository.GetByPublicationIdAsync(dto.PublicationId) ?? throw new KeyNotFoundException("No se ha encontrado una reseña para el ID de publicación dado.");
+            var review = await _repository.GetByIdAsync(dto.ReviewId) ?? throw new KeyNotFoundException("No se ha encontrado una reseña para el ID de publicación dado.");
 
             // Validar que el usuario actual sea el OFERENTE (quien califica al estudiante)
             if (review.OfferorId != currentUserId)
@@ -175,7 +175,7 @@ namespace bolsafeucn_back.src.Application.Services.Implements
             ReviewMapper.StudentUpdateReview(dto, review);
             if (review.IsCompleted) await BothReviewsCompletedAsync(review);
             await _repository.UpdateAsync(review);
-            Log.Information("Offeror {OfferorId} added review for student in publication {PublicationId}", currentUserId, dto.PublicationId);
+            Log.Information("Offeror {OfferorId} added review for student in review {ReviewId}", currentUserId, dto.ReviewId);
 
             if (review.RatingForStudent.HasValue && review.RatingForStudent <= 3)
             {
@@ -206,7 +206,7 @@ namespace bolsafeucn_back.src.Application.Services.Implements
         /// <exception cref="InvalidOperationException">Lanzada si el estudiante ya completó su evaluación.</exception>
         public async Task AddOfferorReviewAsync(ReviewForOfferorDTO dto, int currentUserId)
         {
-            var review = await _repository.GetByPublicationIdAsync(dto.PublicationId) ?? throw new KeyNotFoundException("No se ha encontrado una reseña para el ID de publicación dado.");
+            var review = await _repository.GetByIdAsync(dto.ReviewId) ?? throw new KeyNotFoundException("No se ha encontrado una reseña para el ID de publicación dado.");
             // Validar que el usuario actual sea el ESTUDIANTE (quien califica al oferente)
             if (review.StudentId != currentUserId)
             {
@@ -229,7 +229,7 @@ namespace bolsafeucn_back.src.Application.Services.Implements
             ReviewMapper.OfferorUpdateReview(dto, review);
             if (review.IsCompleted) await BothReviewsCompletedAsync(review);
             await _repository.UpdateAsync(review);
-            Log.Information("Student {StudentId} added review for offeror in publication {PublicationId}", currentUserId, dto.PublicationId);
+            Log.Information("Student {StudentId} added review for offeror in Review {ReviewId}", currentUserId, dto.ReviewId);
 
             if (review.RatingForOfferor.HasValue && review.RatingForOfferor <= 3)
             {
