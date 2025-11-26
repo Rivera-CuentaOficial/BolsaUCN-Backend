@@ -31,6 +31,7 @@ namespace bolsafeucn_back.src.Infrastructure.Data
         // DbSets - Representan las tablas en la base de datos
         public DbSet<Image> Images { get; set; }
         public DbSet<UserImage> UserImages { get; set; }
+        public DbSet<Curriculum> CVs { get; set; }
         public DbSet<Student> Students { get; set; }
         public DbSet<Company> Companies { get; set; }
         public DbSet<Individual> Individuals { get; set; }
@@ -154,6 +155,13 @@ namespace bolsafeucn_back.src.Infrastructure.Data
                 .HasOne(gu => gu.ProfileBanner)
                 .WithOne()
                 .HasForeignKey<GeneralUser>(gu => gu.ProfileBannerId)
+                .OnDelete(DeleteBehavior.SetNull);
+            // Relaciones de Documentos
+            builder
+                .Entity<GeneralUser>()
+                .HasOne(gu => gu.CV)
+                .WithOne()
+                .HasForeignKey<GeneralUser>(gu => gu.CVId)
                 .OnDelete(DeleteBehavior.SetNull);
 
             // --- Fix: almacenar ApplicationStatus como string en la base de datos ---

@@ -173,64 +173,25 @@ namespace bolsafeucn_back.src.API.Controllers
         }
 
         /// <summary>
-        /// Obtiene el ID y tipo de usuario desde el token de autenticación.
+        /// Sube el CV del usuario autenticado.
         /// </summary>
-        /// <returns>Tupla con el ID y tipo de usuario.</returns>
-        /// <exception cref="UnauthorizedAccessException"></exception>
-        /// <exception cref="ArgumentException"></exception>
-        private (int, UserType) GetIdAndTypeFromToken()
+        /// <param name="updateCVDTO">Parámetros para subir el CV del usuario.</param>
+        /// <returns>Respuesta genérica indicando el resultado de la operación.</returns>
+        [HttpPatch("cv")]
+        [Authorize]
+        public async Task<IActionResult> UploadCV([FromForm] UploadCVDTO updateCVDTO)
         {
-            Log.Information("Verificando token de autenticacion");
-            if (User.Identity?.IsAuthenticated != true)
-                throw new UnauthorizedAccessException("Usuario no autenticado.");
-            var userId = User.Claims
-                .FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?
-                .Value
-                ?? null;
-            var userType = User.Claims
-                .FirstOrDefault(c => c.Type == "userType")?
-                .Value
-                ?? null;
-            int.TryParse(userId, out int parsedUserId);
-            if (!Enum.TryParse<UserType>(userType, ignoreCase: true, out var parsedUserType))
-                throw new ArgumentException("Tipo de usuario no existe");
-            return (parsedUserId, parsedUserType);
+            int userId = GetUserIdFromToken();
+            var result = await _userService.UploadCVByIdAsync(updateCVDTO, userId);
+            return Ok(new GenericResponse<string>("CV actualizado", result));
         }
-
-        /// <summary>
-        /// Obtiene el ID del usuario desde el token de autenticación.
-        /// </summary>
-        /// <returns>ID del usuario.</returns>
-        /// <exception cref="UnauthorizedAccessException"></exception>
-        private int GetUserIdFromToken()
+        [HttpGet("cv")]
+        [Authorize]
+        public async Task<IActionResult> GetCV()
         {
-            if (User.Identity?.IsAuthenticated != true)
-                throw new UnauthorizedAccessException("Usuario no autenticado.");
-            var userId = User.Claims
-                .FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?
-                .Value
-                ?? null;
-            int.TryParse(userId, out int parsedUserId);
-            return parsedUserId;
-        }
-
-        /// <summary>
-        /// Obtiene el tipo de usuario desde el token de autenticación.
-        /// </summary>
-        /// <returns>Tipo de usuario.</returns>
-        /// <exception cref="UnauthorizedAccessException"></exception>
-        /// <exception cref="ArgumentException"></exception>
-        private UserType GetTypeFromToken()
-        {
-            if (User.Identity?.IsAuthenticated != true)
-                throw new UnauthorizedAccessException("Usuario no autenticado.");
-            var userType = User.Claims
-                .FirstOrDefault(c => c.Type == "userType")?
-                .Value
-                ?? null;
-            if (!Enum.TryParse<UserType>(userType, ignoreCase: true, out var parsedUserType))
-                throw new ArgumentException("Tipo de usuario no existe");
-            return parsedUserType;
+            int userId = GetUserIdFromToken();
+            var result = await _userService.DownloadCVByIdAsync(userId);
+            return Ok(new GenericResponse<GetCVDTO>("CV obtenido", result));
         }
     }
 }
