@@ -159,6 +159,10 @@ make docker-stop
 ```
 
 > **Nota:** Los comandos `make docker-*` usan las credenciales configuradas en `appsettings.json` automáticamente. Para utilizar otras credenciales, puedes forzar sus valores en el archivo Makefile, o bien reemplazando la direccion del appsettings definido en el Makefile por el appsettings utilizado en el ambiente de desarollo.
+> Es posible que para los usuarios de Windows no les funcione los comandos Make, para eso deben instalar el gestor de paquetes Chocolatey y ejecutar el siguiente comando:
+> ```bash
+> choco install make
+> ```
 
 ## 🐳 Comandos útiles de Docker
 
