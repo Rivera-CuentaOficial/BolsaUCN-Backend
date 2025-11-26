@@ -351,7 +351,8 @@ namespace bolsafeucn_back.src.Infrastructure.Repositories.Implements
                 case UserType.Empresa: query = query.Include(u => u.Company); break;
                 case UserType.Administrador: query = query.Include(u => u.Admin); break;
                 default: break;
-            };
+            }
+            ;
             return await query
                             .Include(u => u.ProfilePhoto)
                             .Include(u => u.ProfileBanner)
@@ -374,7 +375,8 @@ namespace bolsafeucn_back.src.Infrastructure.Repositories.Implements
                 case UserType.Empresa: query = query.Include(u => u.Company); break;
                 case UserType.Administrador: query = query.Include(u => u.Admin); break;
                 default: break;
-            };
+            }
+            ;
             return await query
                             .Include(u => u.ProfilePhoto)
                             .Include(u => u.ProfileBanner)

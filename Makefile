@@ -15,11 +15,12 @@ POSTGRES_USER := $(shell echo '$(CONNECTION_STRING)' | grep -o 'Username=[^;]*' 
 POSTGRES_PASSWORD := $(shell echo '$(CONNECTION_STRING)' | grep -o 'Password=[^;]*' | cut -d= -f2)
 POSTGRES_DB := $(shell echo '$(CONNECTION_STRING)' | grep -o 'Database=[^;]*' | cut -d= -f2)
 
-.PHONY: help db-restart run watch docker-create docker-rm docker-start docker-stop
+.PHONY: help db-restart db-migrate run watch docker-create docker-rm docker-start docker-stop
 
 help:
 	@echo "Makefile - targets disponibles:"
 	@echo "  make db-restart      -> drop, update DB y ejecutar dotnet watch (no-hot-reload)"
+	@echo "  make db-migrate      -> drop DB, crear nueva migracion y actualizar DB"
 	@echo "  make run             -> ejecutar dotnet run"
 	@echo "  make watch           -> ejecutar dotnet watch (no-hot-reload)"
 	@echo "  make docker-create   -> crear y ejecutar contenedor PostgreSQL"
@@ -35,17 +36,34 @@ db-restart:
 		dotnet ef database update && \
 		dotnet watch --no-hot-reload
 
-# 2) dotnet run simple
+# 2) Drop DB, crear nueva migracion y actualizar DB
+db-migrate:
+	@echo "Droppeando BD, creando migracion y actualizando..."
+	@MIGRATION_BASE="Migration$$(date +%d%m)"; \
+	COUNTER=1; \
+	MIGRATION_NAME=$$MIGRATION_BASE; \
+	cd $(DOTNET_DIR)/Migrations && \
+	while ls -1 | grep -q "^[0-9]*_$${MIGRATION_NAME}\.cs$$" 2>/dev/null; do \
+		COUNTER=$$((COUNTER + 1)); \
+		MIGRATION_NAME="$${MIGRATION_BASE}_$$COUNTER"; \
+	done; \
+	cd .. && \
+	echo "Nombre de migracion: $$MIGRATION_NAME" && \
+	dotnet ef database drop --force && \
+	dotnet ef migrations add $$MIGRATION_NAME && \
+	dotnet ef database update
+
+# 3) dotnet run simple
 run:
 	@echo "Ejecutando: cd $(DOTNET_DIR) && dotnet run"
 	cd $(DOTNET_DIR) && dotnet run
 
-# 3) dotnet watch simple
+# 4) dotnet watch simple
 watch:
 	@echo "Ejecutando: cd $(DOTNET_DIR) && dotnet watch --no-hot-reload"
 	cd $(DOTNET_DIR) && dotnet watch --no-hot-reload
 
-# 4) Crear y ejecutar contenedor PostgreSQL
+# 5) Crear y ejecutar contenedor PostgreSQL
 docker-create:
 	@echo "Creando contenedor PostgreSQL: $(CONTAINER_NAME)"
 	docker run --name $(CONTAINER_NAME) \
@@ -55,19 +73,19 @@ docker-create:
 		-p 5432:5432 \
 		-d postgres
 
-# 5) Detener y eliminar contenedor PostgreSQL (si existe)
+# 6) Detener y eliminar contenedor PostgreSQL (si existe)
 docker-rm:
 	@echo "Deteniendo y eliminando contenedor PostgreSQL: $(CONTAINER_NAME)"
 	-@docker stop $(CONTAINER_NAME) >/dev/null 2>&1 || true
 	-@docker rm $(CONTAINER_NAME) >/dev/null 2>&1 || true
 	@echo "Contenedor $(CONTAINER_NAME) eliminado (si existía)."
 
-# 6) Iniciar contenedor PostgreSQL existente
+# 7) Iniciar contenedor PostgreSQL existente
 docker-start:
 	@echo "Iniciando contenedor PostgreSQL: $(CONTAINER_NAME)"
 	docker start $(CONTAINER_NAME)
 
-# 7) Detener contenedor PostgreSQL
+# 8) Detener contenedor PostgreSQL
 docker-stop:
 	@echo "Deteniendo contenedor PostgreSQL: $(CONTAINER_NAME)"
 	docker stop $(CONTAINER_NAME)
