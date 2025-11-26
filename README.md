@@ -54,6 +54,7 @@ Una vez se crea, se debe correr con el comando
 Make docker-start
 ```
 
+
 Deberías ver un contenedor llamado `bolsafeucn-container` en estado `Up`.
 
 #### Credenciales de desarrollo
@@ -73,6 +74,18 @@ Para otros entornos, copia `appsettings.Example.json` y configura según sea nec
 cd bolsafeucn_back
 cp appsettings.Example.json appsettings.Production.json
 # Edita appsettings.Production.json con tus credenciales
+```
+Configuracion para la subida de archivos
+```bash
+"Storage":{
+		"Provider": "Local",
+		"LocalPath": "uploads",
+		"BaseUrl": "/uploads",
+		"FileAllowedExtensions": [
+			".pdf"
+		],
+		"MaxFileSizeMB": 10
+	},
 ```
 
 ### 4️⃣ Restaurar dependencias
