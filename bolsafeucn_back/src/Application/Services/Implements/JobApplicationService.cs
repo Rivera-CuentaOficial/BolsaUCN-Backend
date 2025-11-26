@@ -289,6 +289,7 @@ namespace bolsafeucn_back.src.Application.Services.Implements
             return applicant
                 .Select(app => new ViewApplicantsDto
                 {
+                    Id = app.Id,
                     Applicant = $"{app.Student.Student?.Name} {app.Student.Student?.LastName}",
                     Status = app.Status.ToString(),
                 })
@@ -300,6 +301,7 @@ namespace bolsafeucn_back.src.Application.Services.Implements
             var applicant = await _jobApplicationRepository.GetByIdAsync(studentId);
             return new ViewApplicantDetailAdminDto
             {
+                Id = applicant.Id,
                 StudentName =
                     $"{applicant.Student.Student?.Name} {applicant.Student.Student?.LastName}",
                 Email = applicant.Student.Email,

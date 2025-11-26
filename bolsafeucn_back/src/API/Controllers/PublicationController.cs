@@ -705,7 +705,7 @@ namespace bolsafeucn_back.src.API.Controllers
         /// <summary>
         /// Obtiene los detalles de una publicación de compra/venta específica
         /// </summary>
-        [HttpGet("buysells/{id}")]
+        [HttpGet("buysells/{id}/validation")]
         public async Task<IActionResult> GetBuySellDetails(int id)
         {
             _logger.LogInformation(
