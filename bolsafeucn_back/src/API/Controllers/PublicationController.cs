@@ -703,13 +703,39 @@ namespace bolsafeucn_back.src.API.Controllers
         }
 
         /// <summary>
-        /// Obtiene los detalles de una publicación de compra/venta específica
+        /// Obtiene los detalles de una publicación de compra/venta específica (público)
+        /// </summary>
+        [HttpGet("buysells/{id}")]
+        public async Task<IActionResult> GetBuySellDetailsPublic(int id)
+        {
+            _logger.LogInformation(
+                "GET /api/publications/buysells/{Id} - Obteniendo detalles de publicación (público)",
+                id
+            );
+            var buySell = await _buySellService.GetBuySellDetailsAsync(id);
+
+            if (buySell == null)
+            {
+                _logger.LogWarning("Publicación de compra/venta {Id} no encontrada", id);
+                return NotFound(new GenericResponse<object>("Publicación no encontrada"));
+            }
+
+            return Ok(
+                new GenericResponse<object>(
+                    "Detalles de publicación recuperados exitosamente",
+                    buySell
+                )
+            );
+        }
+
+        /// <summary>
+        /// Obtiene los detalles de una publicación de compra/venta para validación (admin)
         /// </summary>
         [HttpGet("buysells/{id}/validation")]
         public async Task<IActionResult> GetBuySellDetails(int id)
         {
             _logger.LogInformation(
-                "GET /api/publications/buysells/{Id} - Obteniendo detalles de publicación",
+                "GET /api/publications/buysells/{Id}/validation - Obteniendo detalles de publicación para validación",
                 id
             );
             var buySell = await _buySellService.GetBuySellDetailsAsync(id);
