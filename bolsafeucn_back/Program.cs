@@ -197,12 +197,6 @@ try
     // =========================
     // Pipeline
     // =========================
-    app.UseStaticFiles(new StaticFileOptions
-    {
-        FileProvider = new PhysicalFileProvider(
-            Path.Combine(builder.Environment.ContentRootPath, "uploads")),
-        RequestPath = "/uploads"
-    });
     #endregion
     #region Hangfire Dashboard + Recurring Jobs
     // Hangfire dashboard (solo en desarrollo)
