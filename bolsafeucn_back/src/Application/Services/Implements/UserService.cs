@@ -496,7 +496,6 @@ namespace bolsafeucn_back.src.Application.Services.Implements
         )
         {
             Log.Information("Intentando verificar email: {Email}", verifyEmailDTO.Email);
-
             var user = await _userRepository.GetByEmailAsync(verifyEmailDTO.Email);
             if (user == null)
             {
@@ -518,7 +517,7 @@ namespace bolsafeucn_back.src.Application.Services.Implements
             var verificationCode = testing
                 ? new VerificationCode
                 {
-                    Code = _configuration.GetValue<string>("Testing:FixedVerificationCode")! ?? "000000",
+                    Code = _configuration.GetValue<string>("Testing:FixedVerificationCode") ?? "000000",
                     CodeType = type,
                     GeneralUserId = user.Id,
                     Expiration = DateTime.UtcNow.AddHours(1)
