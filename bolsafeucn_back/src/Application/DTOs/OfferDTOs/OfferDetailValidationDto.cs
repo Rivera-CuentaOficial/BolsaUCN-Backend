@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using bolsafeucn_back.src.Domain.Models;
 
 namespace bolsafeucn_back.src.Application.DTOs.OfferDTOs
 {
@@ -45,6 +46,11 @@ namespace bolsafeucn_back.src.Application.DTOs.OfferDTOs
         public DateTime DeadlineDate { get; set; }
         public DateTime PublicationDate { get; set; }
         public int Remuneration { get; set; }
+
+        /// <summary>
+        /// Offer type enum from the domain model.
+        /// </summary>
+        public OfferTypes OfferType { get; set; }
 
     }
 }
