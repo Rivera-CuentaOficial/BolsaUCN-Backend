@@ -27,7 +27,6 @@ namespace bolsafeucn_back.src.Application.Mappers
                 .NewConfig()
                 .Map(dest => dest.CompanyName, src => src.CompanyName)
                 .Map(dest => dest.LegalName, src => src.LegalName);
-            //.Map(dest => dest.Rating, src => 0.0f); El rating inicial se establece en 0.0f por defecto
         }
     }
 }

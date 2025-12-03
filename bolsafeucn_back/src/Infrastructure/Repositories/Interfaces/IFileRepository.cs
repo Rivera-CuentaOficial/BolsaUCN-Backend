@@ -21,6 +21,12 @@ namespace bolsafeucn_back.src.Infrastructure.Repositories.Interfaces
         /// <param name="file">El archivo de imagen a crear.</param>
         /// <returns>True si el archivo se creó correctamente, de lo contrario false y null en caso de que la imagen ya existe.</returns>
         Task<bool?> CreateUserImageAsync(UserImage file);
+        /// <summary>
+        /// Crea un archivo de CV en la base de datos.
+        /// </summary>
+        /// <param name="file">El archivo de CV a crear.</param>
+        /// <returns>True si el archivo se creó correctamente, de lo contrario false y null en caso de que el CV ya existe.</returns>
+        Task<bool?> CreateCVAsync(Curriculum file);
 
         /// <summary>
         /// Elimina un archivo de imagen de la base de datos.
@@ -28,5 +34,7 @@ namespace bolsafeucn_back.src.Infrastructure.Repositories.Interfaces
         /// <param name="publicId">El identificador público del archivo a eliminar.</param>
         /// <returns>True si el archivo se eliminó correctamente, de lo contrario false y null si la imagen no existe.</returns>
         Task<bool?> DeleteAsync(string publicId);
+        Task<bool?> DeleteUserImageAsync(string publicId);
+        Task<bool?> DeleteCVAsync(string publicId);
     }
 }

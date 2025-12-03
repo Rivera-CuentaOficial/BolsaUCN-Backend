@@ -140,6 +140,7 @@ public class OfferService : IOfferService
                 Location = o.Location,
                 PostDate = o.PublicationDate,
                 Remuneration = o.Remuneration,
+                OfferType = o.OfferType
             })
             .ToList();
     }
@@ -200,6 +201,7 @@ public class OfferService : IOfferService
             Active = offer.IsActive,
             statusValidation = offer.statusValidation,
             Remuneration = offer.Remuneration,
+            OfferType = offer.OfferType
         };
         _logger.LogInformation("Detalles de oferta ID: {OfferId} obtenidos exitosamente", offerId);
         return result;
@@ -250,6 +252,7 @@ public class OfferService : IOfferService
             DeadlineDate = offer.DeadlineDate,
             EndDate = offer.EndDate,
             Remuneration = offer.Remuneration,
+            OfferType = offer.OfferType
         };
     }
 

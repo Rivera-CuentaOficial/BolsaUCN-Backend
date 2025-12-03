@@ -11,7 +11,7 @@ namespace bolsafeucn_back.src.API.Controllers
     {
         private readonly IUserService _service;
 
-        public AuthController(IUserService userService, ILogger<AuthController> logger)
+        public AuthController(IUserService userService)
         {
             _service = userService;
         }

@@ -117,7 +117,9 @@ namespace bolsafeucn_back.src.Application.Mappers
                 IsCompleted = entity.IsCompleted,
                 IsReviewForStudentCompleted = entity.IsReviewForStudentCompleted,
                 IsReviewForOfferorCompleted = entity.IsReviewForOfferorCompleted,
-                IsClosed = DateTime.UtcNow > entity.ReviewWindowEndDate
+                IsClosed = DateTime.UtcNow > entity.ReviewWindowEndDate,
+                HasReviewForOfferorBeenDeleted = entity.HasReviewForOfferorBeenDeleted,
+                HasReviewForStudentBeenDeleted = entity.HasReviewForStudentBeenDeleted
             };
         }
         public static PublicationAndReviewInfoDTO MapToPublicationAndReviewInfoDTO(Review review, Publication publication, UserType userType)

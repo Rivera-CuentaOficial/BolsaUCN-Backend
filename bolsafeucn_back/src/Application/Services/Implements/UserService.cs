@@ -20,6 +20,7 @@ namespace bolsafeucn_back.src.Application.Services.Implements
         private readonly IEmailService _emailService;
         private readonly ITokenService _tokenService;
         private readonly IFileService _fileService;
+        private readonly IDocumentStorageProvider _documentService;
         private readonly IVerificationCodeRepository _verificationCodeRepository;
 
         public UserService(
@@ -29,7 +30,8 @@ namespace bolsafeucn_back.src.Application.Services.Implements
             IVerificationCodeRepository verificationCodeRepository,
             IEmailService emailService,
             ITokenService tokenService,
-            IFileService fileService
+            IFileService fileService,
+            IDocumentStorageProvider documentService
         )
         {
             _configuration = configuration;
@@ -39,6 +41,7 @@ namespace bolsafeucn_back.src.Application.Services.Implements
             _verificationCodeRepository = verificationCodeRepository;
             _tokenService = tokenService;
             _fileService = fileService;
+            _documentService = documentService;
         }
 
         /// <summary>
@@ -496,7 +499,6 @@ namespace bolsafeucn_back.src.Application.Services.Implements
         )
         {
             Log.Information("Intentando verificar email: {Email}", verifyEmailDTO.Email);
-
             var user = await _userRepository.GetByEmailAsync(verifyEmailDTO.Email);
             if (user == null)
             {
@@ -518,7 +520,7 @@ namespace bolsafeucn_back.src.Application.Services.Implements
             var verificationCode = testing
                 ? new VerificationCode
                 {
-                    Code = _configuration.GetValue<string>("Testing:FixedVerificationCode")! ?? "000000",
+                    Code = _configuration.GetValue<string>("Testing:FixedVerificationCode") ?? "000000",
                     CodeType = type,
                     GeneralUserId = user.Id,
                     Expiration = DateTime.UtcNow.AddHours(1)
@@ -1074,6 +1076,59 @@ namespace bolsafeucn_back.src.Application.Services.Implements
             return "Contraseña actualizada exitosamente.";
         }
 
+        #endregion
+        #region Documents Management
+        public async Task<string> UploadCVByIdAsync(UploadCVDTO uploadCVDTO, int userId)
+        {
+            Log.Information("Buscando usuario con la ID: {UserId}", userId);
+            GeneralUser? user = await _userRepository.
+                GetTrackedWithTypeAsync(userId, UserType.Estudiante)
+                ?? throw new KeyNotFoundException("No existe estudiante con ese ID");
+            if (user.CV != null)
+            {
+                Log.Information("El usuario con ID: {UserId} ya tiene un CV, se reemplazará el existente.", user.Id);
+                var deleteResult = await _documentService.DeleteCVAsync(user);
+                if (!deleteResult)
+                {
+                    Log.Error("Error al eliminar el CV existente del estudiante con ID: {UserId}", user.Id);
+                    throw new Exception("Error al eliminar el CV existente del estudiante");
+                }
+            }
+            var uploadResult = await _documentService.UploadCVAsync(
+                uploadCVDTO.CVFile,
+                user
+            );
+            if (!uploadResult)
+            {
+                Log.Error("Error al subir el CV del estudiante con ID: {UserId}", user.Id);
+                throw new Exception("Error al subir el CV del estudiante");
+            }
+           
+            return "CV del usuario actualizado correctamente";
+        }
+        public async Task<GetCVDTO> DownloadCVByIdAsync(int userId)
+        {
+            Log.Information("Buscando usuario con la ID: {UserId}", userId);
+            GeneralUser? user = await _userRepository.
+                GetTrackedWithTypeAsync(userId, UserType.Estudiante)
+                ?? throw new KeyNotFoundException("No existe estudiante con ese ID");
+            if (user.CV == null)
+            {
+                Log.Warning("El usuario con ID: {UserId} no tiene un CV para descargar.", user.Id);
+                throw new KeyNotFoundException("El usuario no tiene un CV para descargar");
+            }
+            return new GetCVDTO
+            {
+                Url = user.CV.Url,
+                OriginalFileName = user.CV.OriginalFileName,
+                FileSizeBytes = user.CV.FileSizeBytes,
+                UploadDate = user.CV.CreatedAt,
+            };
+        }
+        public async Task<string> DeleteCVByIdAsync(int userId)
+        {
+            throw new NotImplementedException();
+        }
         #endregion
 
         /*public async Task<IEnumerable<GeneralUser>> GetUsuariosAsync()

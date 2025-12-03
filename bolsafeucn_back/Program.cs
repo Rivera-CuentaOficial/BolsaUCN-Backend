@@ -16,6 +16,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Net.Http.Headers; // <<-- para CORS (HeaderNames)
 using Resend;
 using Serilog;
+using bolsafeucn_back.src.Infrastructure.Extensions;
+using Microsoft.Extensions.FileProviders;
 
 Log.Logger = new LoggerConfiguration()
     .ReadFrom.Configuration(
@@ -167,24 +169,24 @@ try
     builder.Services.AddScoped<IVerificationCodeRepository, VerificationCodeRepository>();
     builder.Services.AddScoped<IJobApplicationRepository, JobApplicationRepository>();
     builder.Services.AddScoped<INotificationRepository, NotificationRepository>();
-    builder.Services.AddScoped<INotificationService, NotificationService>();
+    builder.Services.AddScoped<IAdminNotificationRepository, AdminNotificationRepository>();
     builder.Services.AddScoped<IFileRepository, FileRepository>();
+    builder.Services.AddScoped<IPublicationRepository, PublicationRepository>();
+    builder.Services.AddScoped<IReviewRepository, ReviewRepository>();
 
     builder.Services.AddScoped<IUserService, UserService>();
     builder.Services.AddScoped<IEmailService, EmailService>();
     builder.Services.AddScoped<ITokenService, TokenService>();
     builder.Services.AddScoped<IOfferService, OfferService>();
     builder.Services.AddScoped<IJobApplicationService, JobApplicationService>();
-    builder.Services.AddScoped<INotificationRepository, NotificationRepository>();
     builder.Services.AddScoped<IPublicationService, PublicationService>();
     builder.Services.AddScoped<IBuySellService, BuySellService>();
-    builder.Services.AddScoped<IPublicationRepository, PublicationRepository>();
-    builder.Services.AddScoped<IReviewRepository, ReviewRepository>();
     builder.Services.AddScoped<IReviewService, ReviewService>();
     builder.Services.AddScoped<IPdfGeneratorService, PdfGeneratorService>();
     builder.Services.AddScoped<IFileService, FileService>();
-    builder.Services.AddScoped<IAdminNotificationRepository, AdminNotificationRepository>();
-
+    builder.Services.AddScoped<INotificationService, NotificationService>();
+    builder.Services.AddDocumentStorageProvider(builder.Configuration);
+    
 
     builder.Services.AddMapster();
 

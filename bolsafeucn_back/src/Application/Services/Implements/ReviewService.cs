@@ -58,11 +58,27 @@ namespace bolsafeucn_back.src.Application.Services.Implements
         /// </summary>
         /// <param name="offerorId">El identificador del oferente.</param>
         /// <returns>Una colección de DTOs de reseñas del oferente.</returns>
-        public async Task<IEnumerable<ShowReviewDTO>> GetReviewsByOfferorAsync(int offerorId)
+        public async Task<IEnumerable<PublicationAndReviewInfoDTO>> GetReviewsByOfferorAsync(int offerorId)
         {
             var reviews = await _repository.GetByOfferorIdAsync(offerorId);
-            return reviews.Select(ReviewMapper.ShowReviewDTO);
-            // return reviews.Select(ReviewMapper.ToDTO);
+            if (reviews == null || !reviews.Any())
+                throw new KeyNotFoundException($"No se encontraron reseñas para el oferente con ID {offerorId}.");
+
+            var user = await _userRepository.GetByIdAsync(offerorId) ?? throw new KeyNotFoundException($"No se encontró el usuario con ID {offerorId}.");
+
+            var result = new List<PublicationAndReviewInfoDTO>();
+            foreach (var review in reviews)
+            {
+                var publications = await _repository.GetPublicationInformationAsync(review.PublicationId);
+                if (publications != null)
+                {
+                    foreach (var publication in publications)
+                    {
+                        result.Add(ReviewMapper.MapToPublicationAndReviewInfoDTO(review, publication, user.UserType));
+                    }
+                }
+            }
+            return result;
         }
 
         /// <summary>
@@ -80,18 +96,29 @@ namespace bolsafeucn_back.src.Application.Services.Implements
         }
         public async Task<ShowReviewDTO> GetReviewAsync(int id)
         {
-            var review = await _repository.GetByIdAsync(id);
-            if (review == null)
-                throw new KeyNotFoundException($"No se encontró una review con ID {id}.");
+            var review = await _repository.GetByIdAsync(id) ?? throw new KeyNotFoundException($"No se encontró una review con ID {id}.");
             return ReviewMapper.ShowReviewDTO(review);
         }
 
-        public async Task<IEnumerable<ShowReviewDTO>> GetReviewsByStudentAsync(int studentId)
+        public async Task<IEnumerable<PublicationAndReviewInfoDTO>> GetReviewsByStudentAsync(int studentId)
         {
             var reviews = await _repository.GetByStudentIdAsync(studentId);
             if (reviews == null || !reviews.Any())
                 throw new KeyNotFoundException($"No se encontraron reseñas para el estudiante con ID {studentId}.");
-            return reviews.Select(ReviewMapper.ShowReviewDTO);
+
+            var result = new List<PublicationAndReviewInfoDTO>();
+            foreach (var review in reviews)
+            {
+                var publications = await _repository.GetPublicationInformationAsync(review.PublicationId);
+                if (publications != null)
+                {
+                    foreach (var publication in publications)
+                    {
+                        result.Add(ReviewMapper.MapToPublicationAndReviewInfoDTO(review, publication, UserType.Estudiante));
+                    }
+                }
+            }
+            return result;
         }
         public async Task<IEnumerable<PublicationAndReviewInfoDTO>> GetAllReviewsAsync()
         {
@@ -99,7 +126,7 @@ namespace bolsafeucn_back.src.Application.Services.Implements
             var result = new List<PublicationAndReviewInfoDTO>();
             foreach (var review in reviews)
             {
-                var publications = await _repository.GetPublicationInformationAsync(review.Id);
+                var publications = await _repository.GetPublicationInformationAsync(review.PublicationId);
                 if (publications != null)
                 {
                     foreach (var publication in publications)
@@ -124,7 +151,7 @@ namespace bolsafeucn_back.src.Application.Services.Implements
         /// <exception cref="InvalidOperationException">Lanzada si el oferente ya completó su evaluación.</exception>
         public async Task AddStudentReviewAsync(ReviewForStudentDTO dto, int currentUserId)
         {
-            var review = await _repository.GetByPublicationIdAsync(dto.PublicationId) ?? throw new KeyNotFoundException("No se ha encontrado una reseña para el ID de publicación dado.");
+            var review = await _repository.GetByIdAsync(dto.ReviewId) ?? throw new KeyNotFoundException("No se ha encontrado una reseña para el ID de publicación dado.");
 
             // Validar que el usuario actual sea el OFERENTE (quien califica al estudiante)
             if (review.OfferorId != currentUserId)
@@ -148,7 +175,7 @@ namespace bolsafeucn_back.src.Application.Services.Implements
             ReviewMapper.StudentUpdateReview(dto, review);
             if (review.IsCompleted) await BothReviewsCompletedAsync(review);
             await _repository.UpdateAsync(review);
-            Log.Information("Offeror {OfferorId} added review for student in publication {PublicationId}", currentUserId, dto.PublicationId);
+            Log.Information("Offeror {OfferorId} added review for student in review {ReviewId}", currentUserId, dto.ReviewId);
 
             if (review.RatingForStudent.HasValue && review.RatingForStudent <= 3)
             {
@@ -179,7 +206,7 @@ namespace bolsafeucn_back.src.Application.Services.Implements
         /// <exception cref="InvalidOperationException">Lanzada si el estudiante ya completó su evaluación.</exception>
         public async Task AddOfferorReviewAsync(ReviewForOfferorDTO dto, int currentUserId)
         {
-            var review = await _repository.GetByPublicationIdAsync(dto.PublicationId) ?? throw new KeyNotFoundException("No se ha encontrado una reseña para el ID de publicación dado.");
+            var review = await _repository.GetByIdAsync(dto.ReviewId) ?? throw new KeyNotFoundException("No se ha encontrado una reseña para el ID de publicación dado.");
             // Validar que el usuario actual sea el ESTUDIANTE (quien califica al oferente)
             if (review.StudentId != currentUserId)
             {
@@ -202,7 +229,7 @@ namespace bolsafeucn_back.src.Application.Services.Implements
             ReviewMapper.OfferorUpdateReview(dto, review);
             if (review.IsCompleted) await BothReviewsCompletedAsync(review);
             await _repository.UpdateAsync(review);
-            Log.Information("Student {StudentId} added review for offeror in publication {PublicationId}", currentUserId, dto.PublicationId);
+            Log.Information("Student {StudentId} added review for offeror in Review {ReviewId}", currentUserId, dto.ReviewId);
 
             if (review.RatingForOfferor.HasValue && review.RatingForOfferor <= 3)
             {

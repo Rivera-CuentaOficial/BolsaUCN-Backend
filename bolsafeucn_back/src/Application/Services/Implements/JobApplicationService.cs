@@ -1,4 +1,5 @@
 using bolsafeucn_back.src.Application.DTOs.JobAplicationDTO;
+using bolsafeucn_back.src.Application.Events;
 using bolsafeucn_back.src.Application.Services.Interfaces;
 using bolsafeucn_back.src.Domain.Models;
 using bolsafeucn_back.src.Infrastructure.Repositories.Interfaces;
@@ -11,16 +12,19 @@ namespace bolsafeucn_back.src.Application.Services.Implements
         private readonly IJobApplicationRepository _jobApplicationRepository;
         private readonly IOfferRepository _offerRepository;
         private readonly IUserRepository _userRepository;
+        private readonly INotificationService _notificationService;
 
         public JobApplicationService(
             IJobApplicationRepository jobApplicationRepository,
             IOfferRepository offerRepository,
-            IUserRepository userRepository
+            IUserRepository userRepository,
+            INotificationService notificationService
         )
         {
             _jobApplicationRepository = jobApplicationRepository;
             _offerRepository = offerRepository;
             _userRepository = userRepository;
+            _notificationService = notificationService;
         }
 
         public async Task<JobApplicationResponseDto> CreateApplicationAsync(
@@ -246,6 +250,26 @@ namespace bolsafeucn_back.src.Application.Services.Implements
             // Actualizar el estado
             application.Status = newStatus;
             await _jobApplicationRepository.UpdateAsync(application);
+
+            // Obtener información del oferente para el email
+            var offererUser = await _userRepository.GetByIdWithRelationsAsync(OwnnerUserId);
+            var companyName = offererUser?.UserType == UserType.Empresa
+                ? (offererUser.Company?.CompanyName ?? "Empresa desconocida")
+                : offererUser?.UserType == UserType.Particular
+                    ? $"{offererUser.Individual?.Name ?? ""} {offererUser.Individual?.LastName ?? ""}".Trim()
+                    : "UCN";
+
+            // Enviar notificación y email al estudiante
+            var statusEvent = new PostulationStatusChangedEvent
+            {
+                PostulationId = applicationId,
+                NewStatus = newStatus,
+                OfferName = offer.Title,
+                CompanyName = companyName,
+                StudentEmail = application.Student.Email!
+            };
+
+            await _notificationService.SendPostulationStatusChangeAsync(statusEvent);
 
             return true;
         }

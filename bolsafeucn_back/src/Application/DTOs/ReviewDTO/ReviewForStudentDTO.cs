@@ -15,6 +15,6 @@ namespace bolsafeucn_back.src.Application.DTOs.ReviewDTO
         public DateTime SendedAt { get; set; }
         public required bool atTime { get; set; }
         public required bool goodPresentation { get; set; }
-        public required int PublicationId { get; set; }
+        public required int ReviewId { get; set; }
     }
 }
