@@ -16,5 +16,9 @@ namespace bolsafeucn_back.src.Application.DTOs.JobAplicationDTO
         public string Email { get; set; }
         public string PhoneNumber { get; set; }
         public string Status { get; set; }
+        public required float? Rating { get; set; }
+        public required string MotivationLetter { get; set; }
+        public required string Disability { get; set; }
+        public required string CurriculumVitae { get; set; }
     }
 }

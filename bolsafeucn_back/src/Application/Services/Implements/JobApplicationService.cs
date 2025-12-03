@@ -331,6 +331,10 @@ namespace bolsafeucn_back.src.Application.Services.Implements
                 Email = applicant.Student.Email,
                 PhoneNumber = applicant.Student.PhoneNumber,
                 Status = applicant.Status.ToString(),
+                CurriculumVitae = applicant.Student.Student?.CurriculumVitae,
+                Rating = (float?)applicant.Student.Rating,
+                MotivationLetter = applicant.Student.Student?.MotivationLetter,
+                Disability = applicant.Student.Student?.Disability.ToString(),
                 // TODO: falta descripcion
             };
         }
