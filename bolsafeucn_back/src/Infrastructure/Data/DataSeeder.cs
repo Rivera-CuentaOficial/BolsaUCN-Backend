@@ -140,6 +140,42 @@ namespace bolsafeucn_back.src.Application.Infrastructure.Data
                 );
             }
 
+            var testStudentUser1 = new GeneralUser
+            {
+                UserName = "Gabriel",
+                Email = "gabriel.briones@alumnos.ucn.cl",
+                PhoneNumber = "+56912345678",
+                UserType = UserType.Estudiante,
+                Rut = "12345678-9",
+                EmailConfirmed = true,
+                Banned = false,
+                Rating = 4.3,
+                ProfilePhoto = new UserImage
+                {
+                    Url = configuration.GetValue<string>("Images:DefaultUserImageUrl") ?? throw new InvalidOperationException("DefaultUserImageUrl no está configurado"),
+                    PublicId = configuration.GetValue<string>("Images:DefaultUserImagePublicId") ?? throw new InvalidOperationException("DefaultUserImagePublicId no está configurado"),
+                    ImageType = UserImageType.Perfil,
+                }
+            };
+            var studentResult1 = await userManager.CreateAsync(testStudentUser1, "Test123!");
+            if (studentResult.Succeeded)
+            {
+                await userManager.AddToRoleAsync(testStudentUser1, "Applicant");
+                var testStudent1 = new Student
+                {
+                    GeneralUserId = testStudentUser1.Id,
+                    Name = "Gabriel",
+                    LastName = "Cofre",
+                    Disability = Disability.Ninguna,
+                    GeneralUser = testStudentUser1,
+                    CurriculumVitae = "https://ejemplo.com/cv/Gabriel_Cofre.pdf", // CV de prueba
+                    MotivationLetter = "Soy un estudiante motivado y con ganas de aprender", // Carta opcional
+                };
+                context.Students.Add(testStudent1);
+                Log.Information(
+                    "✅ Usuario estudiante creado: gabriel.Cofre@alumnos.ucn.cl / Test123!"
+                );
+            }
 
             // 2. EMPRESA DE PRUEBA
             var testCompanyUser = new GeneralUser
