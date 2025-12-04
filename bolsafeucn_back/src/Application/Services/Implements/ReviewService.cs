@@ -189,7 +189,6 @@ namespace bolsafeucn_back.src.Application.Services.Implements
                     IdPublication = review.PublicationId,
                     AtTime = review.ReviewChecklistValues.AtTime,
                     GoodPresentation = review.ReviewChecklistValues.GoodPresentation,
-                    ReviewWindowEndDate = review.ReviewWindowEndDate
                 });
             }
         }
@@ -243,7 +242,6 @@ namespace bolsafeucn_back.src.Application.Services.Implements
                     IdPublication = review.PublicationId,
                     AtTime = review.ReviewChecklistValues.AtTime,
                     GoodPresentation = review.ReviewChecklistValues.GoodPresentation,
-                    ReviewWindowEndDate = review.ReviewWindowEndDate
                 });
             }
         }
@@ -402,22 +400,24 @@ namespace bolsafeucn_back.src.Application.Services.Implements
         /// <summary>
         /// Cierra las reseñas cuya ventana de revisión terminó y las marca como no modificables.
         /// </summary>
+        /// Las clientas no quieren que se cierren automaticamente, a si que este metodo queda obsoleto
         public async Task CloseExpiredReviewsAsync()
         {
-            var now = DateTime.UtcNow;
-            var expiredReviews = await _repository.GetExpiredReviewsAsync(now);
-            if (expiredReviews == null || !expiredReviews.Any())
-            {
-                Log.Information("No hay reviews vencidas para cerrar a las {Now}", now);
-                return;
-            }
-            foreach (var review in expiredReviews)
-            {
-                review.IsClosed = true;
-                await _repository.UpdateAsync(review);
-                Log.Information("Review {ReviewId} cerrada automáticamente por vencimiento.", review.Id);
-            }
-            Log.Information("Cierre automático de reviews vencidas completado. Total cerrado: {Count}", expiredReviews.Count());
+            return;
+            // var now = DateTime.UtcNow;
+            // var expiredReviews = await _repository.GetExpiredReviewsAsync(now);
+            // if (expiredReviews == null || !expiredReviews.Any())
+            // {
+            //     Log.Information("No hay reviews vencidas para cerrar a las {Now}", now);
+            //     return;
+            // }
+            // foreach (var review in expiredReviews)
+            // {
+            //     review.IsClosed = true;
+            //     await _repository.UpdateAsync(review);
+            //     Log.Information("Review {ReviewId} cerrada automáticamente por vencimiento.", review.Id);
+            // }
+            // Log.Information("Cierre automático de reviews vencidas completado. Total cerrado: {Count}", expiredReviews.Count());
         }
         #endregion
     }

@@ -33,12 +33,6 @@ namespace bolsafeucn_back.src.Domain.Models
         /// <returns></returns>
         public ReviewChecklistValues ReviewChecklistValues { get; set; } = new ReviewChecklistValues();
         /// <summary>
-        /// Fecha y hora límite para completar la ventana de revisión.
-        /// Después de esta fecha, puede que no se permitan más modificaciones.
-        /// </summary>
-        public DateTime ReviewWindowEndDate { get; set; } = DateTime.UtcNow.AddDays(14);
-
-        /// <summary>
         /// Referencia de navegación al estudiante evaluado.
         /// </summary>
         public GeneralUser? Student { get; set; }

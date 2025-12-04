@@ -91,7 +91,6 @@ namespace bolsafeucn_back.src.Application.Mappers
                 CommentForOfferor = entity.CommentForOfferor,
                 AtTime = entity.ReviewChecklistValues.AtTime,
                 GoodPresentation = entity.ReviewChecklistValues.GoodPresentation,
-                ReviewWindowEndDate = entity.ReviewWindowEndDate,
                 IdStudent = entity.StudentId,
                 IdOfferor = entity.OfferorId,
                 IdPublication = entity.PublicationId,
@@ -117,7 +116,6 @@ namespace bolsafeucn_back.src.Application.Mappers
                 IsCompleted = entity.IsCompleted,
                 IsReviewForStudentCompleted = entity.IsReviewForStudentCompleted,
                 IsReviewForOfferorCompleted = entity.IsReviewForOfferorCompleted,
-                IsClosed = DateTime.UtcNow > entity.ReviewWindowEndDate,
                 HasReviewForOfferorBeenDeleted = entity.HasReviewForOfferorBeenDeleted,
                 HasReviewForStudentBeenDeleted = entity.HasReviewForStudentBeenDeleted
             };

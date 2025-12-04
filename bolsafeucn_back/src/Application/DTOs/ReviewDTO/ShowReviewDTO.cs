@@ -16,6 +16,5 @@ namespace bolsafeucn_back.src.Application.DTOs.ReviewDTO
         public required bool IsReviewForOfferorCompleted { get; set; }
         public required bool HasReviewForOfferorBeenDeleted { get; set; }
         public required bool HasReviewForStudentBeenDeleted { get; set; }
-        public required bool IsClosed { get; set; }
     }
 }

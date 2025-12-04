@@ -1,9 +1,6 @@
-using bolsafeucn_back.src.Application.DTOs.ReviewDTO;
-using bolsafeucn_back.src.Application.Services.Implements;
 using bolsafeucn_back.src.Domain.Models;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
 using Serilog;
 
 namespace bolsafeucn_back.src.Infrastructure.Data
@@ -43,6 +40,7 @@ namespace bolsafeucn_back.src.Infrastructure.Data
         public DbSet<NotificationDTO> Notifications { get; set; }
         public DbSet<JobApplication> JobApplications { get; set; }
         public DbSet<Review> Reviews { get; set; }
+        public DbSet<ReviewChecklistValues> ReviewChecklistValues { get; set; }
         public DbSet<AdminNotification> AdminNotifications { get; set; }
 
 
@@ -141,6 +139,12 @@ namespace bolsafeucn_back.src.Infrastructure.Data
                 .WithMany()
                 .HasForeignKey(r => r.OfferorId)
                 .OnDelete(DeleteBehavior.Restrict); // TODO: Revisar luego logica de Delete
+
+            // Review - ReviewChecklistValues (1:1)
+            // Cada review tiene exactamente un conjunto de valores de checklist
+            builder
+                .Entity<Review>()
+                .OwnsOne(r => r.ReviewChecklistValues);
 
             // Relaciones de UserImage (Imágenes de usuario)
             // Relación uno a uno entre GeneralUser y sus imágenes de perfil y banner
@@ -330,7 +334,6 @@ namespace bolsafeucn_back.src.Infrastructure.Data
                             PublicationId = offer.Id,
                             StudentId = postulation.StudentId,
                             OfferorId = offer.UserId,
-                            ReviewWindowEndDate = DateTime.UtcNow.AddDays(14),
                             IsReviewForStudentCompleted = false,
                             IsReviewForOfferorCompleted = false,
                             IsCompleted = false,
