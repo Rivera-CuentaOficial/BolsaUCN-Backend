@@ -49,6 +49,16 @@ namespace bolsafeucn_back.src.Infrastructure.Repositories.Implements
         }
 
         /// <summary>
+        /// Obtiene el estado de bloqueo de un usuario.
+        /// </summary>
+        /// <param name="userId">ID del usuario</param>
+        /// <returns>Estado de bloqueo del usuario</returns>
+        public async Task<bool> GetBlockedStatusAsync(int userId)
+        {
+            return await _context.Users.AnyAsync(u => u.Id == userId && u.Banned);
+        }
+
+        /// <summary>
         /// Crea un nuevo usuario en el sistema.
         /// </summary>
         /// <param name="user">Usuario a crear</param>
@@ -384,6 +394,20 @@ namespace bolsafeucn_back.src.Infrastructure.Repositories.Implements
                             .FirstOrDefaultAsync(u => u.Id == userId);
         }
 
+        /// <summary>
+        /// Obtiene el número de administradores en el sistema.
+        /// </summary>
+        /// <returns>El número de administradores activos</returns>
+        public async Task<int> GetNumberOfAdmins()
+        {
+            return await _context.Admins.CountAsync(a => a.GeneralUser!.Banned == false);
+        }
+
+        /// <summary>
+        /// Agrega un nuevo usuario al sistema.
+        /// </summary>
+        /// <param name="user">Usuario a agregar</param>
+        /// <returns>El usuario agregado</returns>
         public async Task<GeneralUser> AddAsync(GeneralUser user)
         {
             _context.Users.Add(user);

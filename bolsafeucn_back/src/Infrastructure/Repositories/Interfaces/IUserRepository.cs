@@ -7,6 +7,7 @@ namespace bolsafeucn_back.src.Infrastructure.Repositories.Interfaces
         Task<GeneralUser?> GetByEmailAsync(string email);
         Task<bool> ExistsByEmailAsync(string email);
         Task<bool> ExistsByRutAsync(string rut);
+        Task<bool> GetBlockedStatusAsync(int userId);
         Task<bool> CreateUserAsync(GeneralUser user, string password, string role);
         Task<bool> CreateStudentAsync(Student student);
         Task<bool> CreateIndividualAsync(Individual individual);
@@ -23,6 +24,7 @@ namespace bolsafeucn_back.src.Infrastructure.Repositories.Interfaces
         Task<GeneralUser?> GetByIdWithRelationsAsync(int id);
         Task<GeneralUser?> GetUntrackedWithTypeAsync(int id, UserType? userType);
         Task<GeneralUser?> GetTrackedWithTypeAsync(int id, UserType? userType);
+        Task<int> GetNumberOfAdmins();
         Task<GeneralUser> AddAsync(GeneralUser usuario);
         Task<bool> DeleteAsync(int id);
     }

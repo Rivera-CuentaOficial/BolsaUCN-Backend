@@ -16,5 +16,6 @@ namespace bolsafeucn_back.src.Application.DTOs.UserDTOs.UserProfileDTOs
         public required string CurriculumVitae { get; set; }
         public string? ProfilePhoto { get; set; }
         public string? ProfileBanner { get; set; }
+        public bool Banned { get; set; }
     }
 }

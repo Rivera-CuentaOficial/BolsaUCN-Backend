@@ -753,6 +753,17 @@ namespace bolsafeucn_back.src.Application.Services.Implements
                 );
                 throw new UnauthorizedAccessException("Credenciales inválidas.");
             }
+            if (user.Banned)
+            {
+                Log.Warning(
+                    "Intento de login para usuario bloqueado: {Email}, UserId: {UserId}",
+                    loginDTO.Email,
+                    user.Id
+                );
+                throw new UnauthorizedAccessException(
+                    "Tu cuenta ha sido bloqueada. Por favor, contacta al soporte para más información."
+                );
+            }
             var role = await _userRepository.GetRoleAsync(user);
             Log.Information(
                 "Login exitoso para usuario: {Email}, UserId: {UserId}, Role: {Role}",
