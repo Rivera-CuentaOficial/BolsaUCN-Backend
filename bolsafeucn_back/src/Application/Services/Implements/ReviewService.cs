@@ -187,8 +187,8 @@ namespace bolsafeucn_back.src.Application.Services.Implements
                     IdStudent = review.StudentId,
                     IdOfferor = review.OfferorId,
                     IdPublication = review.PublicationId,
-                    AtTime = review.AtTime,
-                    GoodPresentation = review.GoodPresentation,
+                    AtTime = review.ReviewChecklistValues.AtTime,
+                    GoodPresentation = review.ReviewChecklistValues.GoodPresentation,
                     ReviewWindowEndDate = review.ReviewWindowEndDate
                 });
             }
@@ -241,8 +241,8 @@ namespace bolsafeucn_back.src.Application.Services.Implements
                     IdStudent = review.StudentId,
                     IdOfferor = review.OfferorId,
                     IdPublication = review.PublicationId,
-                    AtTime = review.AtTime,
-                    GoodPresentation = review.GoodPresentation,
+                    AtTime = review.ReviewChecklistValues.AtTime,
+                    GoodPresentation = review.ReviewChecklistValues.GoodPresentation,
                     ReviewWindowEndDate = review.ReviewWindowEndDate
                 });
             }

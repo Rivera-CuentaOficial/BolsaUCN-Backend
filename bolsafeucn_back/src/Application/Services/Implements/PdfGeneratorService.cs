@@ -71,8 +71,8 @@ namespace bolsafeucn_back.src.Application.Services.Implements
                     ReviewerName = isStudent
                         ? (r.Offeror?.UserName ?? "Oferente")
                         : (r.Student?.UserName ?? "Estudiante"),
-                    AtTime = isStudent ? r.AtTime : null,
-                    GoodPresentation = isStudent ? r.GoodPresentation : null
+                    AtTime = isStudent ? r.ReviewChecklistValues.AtTime : null,
+                    GoodPresentation = isStudent ? r.ReviewChecklistValues.GoodPresentation : null
                 }).ToList()
             };
 
@@ -310,8 +310,8 @@ namespace bolsafeucn_back.src.Application.Services.Implements
                     RatingForOfferor = r.RatingForOfferor,
                     CommentForOfferor = r.CommentForOfferor,
                     ReviewDate = r.CreatedAt,
-                    AtTime = r.AtTime,
-                    GoodPresentation = r.GoodPresentation,
+                    AtTime = r.ReviewChecklistValues.AtTime,
+                    GoodPresentation = r.ReviewChecklistValues.GoodPresentation,
                     IsCompleted = r.IsCompleted,
                     IsClosed = r.IsClosed
                 }).ToList()

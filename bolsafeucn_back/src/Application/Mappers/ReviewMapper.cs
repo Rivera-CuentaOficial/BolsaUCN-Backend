@@ -22,8 +22,8 @@ namespace bolsafeucn_back.src.Application.Mappers
         {
             review.RatingForStudent = dto.RatingForStudent;
             review.CommentForStudent = dto.CommentForStudent;
-            review.AtTime = dto.atTime;
-            review.GoodPresentation = dto.goodPresentation;
+            review.ReviewChecklistValues.AtTime = dto.atTime;
+            review.ReviewChecklistValues.GoodPresentation = dto.goodPresentation;
             review.IsReviewForStudentCompleted = true;
             review.IsCompleted = review.IsReviewForStudentCompleted && review.IsReviewForOfferorCompleted;
             return review;
@@ -89,8 +89,8 @@ namespace bolsafeucn_back.src.Application.Mappers
                 CommentForStudent = entity.CommentForStudent,
                 RatingForOfferor = entity.RatingForOfferor,
                 CommentForOfferor = entity.CommentForOfferor,
-                AtTime = entity.AtTime,
-                GoodPresentation = entity.GoodPresentation,
+                AtTime = entity.ReviewChecklistValues.AtTime,
+                GoodPresentation = entity.ReviewChecklistValues.GoodPresentation,
                 ReviewWindowEndDate = entity.ReviewWindowEndDate,
                 IdStudent = entity.StudentId,
                 IdOfferor = entity.OfferorId,
@@ -112,8 +112,8 @@ namespace bolsafeucn_back.src.Application.Mappers
                 CommentForStudent = entity.CommentForStudent ?? string.Empty,
                 RatingForOfferor = entity.RatingForOfferor ?? 0,
                 CommentForOfferor = entity.CommentForOfferor ?? string.Empty,
-                AtTime = entity.AtTime,
-                GoodPresentation = entity.GoodPresentation,
+                AtTime = entity.ReviewChecklistValues.AtTime,
+                GoodPresentation = entity.ReviewChecklistValues.GoodPresentation,
                 IsCompleted = entity.IsCompleted,
                 IsReviewForStudentCompleted = entity.IsReviewForStudentCompleted,
                 IsReviewForOfferorCompleted = entity.IsReviewForOfferorCompleted,
@@ -165,8 +165,8 @@ namespace bolsafeucn_back.src.Application.Mappers
         {
             review.RatingForStudent = null;
             review.CommentForStudent = null;
-            review.AtTime = false;
-            review.GoodPresentation = false;
+            review.ReviewChecklistValues.AtTime = false;
+            review.ReviewChecklistValues.GoodPresentation = false;
             review.IsReviewForStudentCompleted = false;
             review.IsCompleted = false;
             review.HasReviewForStudentBeenDeleted = true;
