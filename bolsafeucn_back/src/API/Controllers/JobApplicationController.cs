@@ -16,14 +16,17 @@ namespace bolsafeucn_back.src.API.Controllers
     public class JobApplicationController : ControllerBase
     {
         private readonly IJobApplicationService _jobApplicationService;
+        private readonly IReviewService _reviewService;
         private readonly ILogger<JobApplicationController> _logger;
 
         public JobApplicationController(
             IJobApplicationService jobApplicationService,
+            IReviewService reviewService,
             ILogger<JobApplicationController> logger
         )
         {
             _jobApplicationService = jobApplicationService;
+            _reviewService = reviewService;
             _logger = logger;
         }
 
@@ -57,6 +60,22 @@ namespace bolsafeucn_back.src.API.Controllers
                     offerId,
                     studentId
                 );
+
+                // Validar que el estudiante no tenga más de 3 reseñas pendientes
+                var pendingReviewsCount = await _reviewService.GetPendingReviewsCountAsync(studentId);
+                if (pendingReviewsCount > 3)
+                {
+                    _logger.LogWarning(
+                        "Estudiante {StudentId} intentó postular con {PendingCount} reseñas pendientes",
+                        studentId,
+                        pendingReviewsCount
+                    );
+                    return BadRequest(
+                        new GenericResponse<object>(
+                            $"No puedes postular a nuevas ofertas porque tienes {pendingReviewsCount} reseñas pendientes. Debes completar tus reseñas pendientes (máximo permitido: 3)."
+                        )
+                    );
+                }
 
                 // Postulación directa - sin body
                 var application = await _jobApplicationService.CreateApplicationAsync(

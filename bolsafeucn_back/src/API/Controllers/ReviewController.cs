@@ -1,5 +1,4 @@
 using bolsafeucn_back.src.Application.DTOs.ReviewDTO;
-using bolsafeucn_back.src.Application.DTOs.ReviewDTO.ReviewReport;
 using bolsafeucn_back.src.Application.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -12,16 +11,10 @@ namespace bolsafeucn_back.src.API.Controllers
     /// <summary>
     /// Controlador para gestionar las reseñas entre oferentes y estudiantes.
     /// </summary>
-    public class ReviewController : BaseController
+    public class ReviewController(IReviewService reviewService, IPdfGeneratorService pdfGeneratorService) : BaseController
     {
-        private readonly IReviewService _reviewService;
-        private readonly IPdfGeneratorService _pdfGeneratorService;
-
-        public ReviewController(IReviewService reviewService, IPdfGeneratorService pdfGeneratorService)
-        {
-            _reviewService = reviewService;
-            _pdfGeneratorService = pdfGeneratorService;
-        }
+        private readonly IReviewService _reviewService = reviewService;
+        private readonly IPdfGeneratorService _pdfGeneratorService = pdfGeneratorService;
 
         #region Endpoints de Usuario (Applicant/Offerent)
 

@@ -26,6 +26,7 @@ namespace bolsafeucn_back.src.API.Controllers
         private readonly IOfferService _offerService;
         private readonly IBuySellService _buySellService;
         private readonly IJobApplicationService _jobApplicationService;
+        private readonly IReviewService _reviewService;
         private readonly ILogger<PublicationController> _logger;
         private readonly IPublicationRepository _publicationRepository;
 
@@ -35,6 +36,7 @@ namespace bolsafeucn_back.src.API.Controllers
             IOfferService offerService,
             IBuySellService buySellService,
             IJobApplicationService jobApplicationService,
+            IReviewService reviewService,
             ILogger<PublicationController> logger,
             IPublicationRepository publicationRepository
         )
@@ -44,6 +46,7 @@ namespace bolsafeucn_back.src.API.Controllers
             _offerService = offerService;
             _buySellService = buySellService;
             _jobApplicationService = jobApplicationService;
+            _reviewService = reviewService;
             _logger = logger;
             _publicationRepository = publicationRepository;
         }
@@ -79,6 +82,23 @@ namespace bolsafeucn_back.src.API.Controllers
             }
 
             _logger.LogInformation("Usuario {UserId} creando oferta: {Title}", userId, dto.Title);
+
+            // Validar que el usuario no tenga más de 3 reseñas pendientes
+            var pendingReviewsCount = await _reviewService.GetPendingReviewsCountAsync(userId);
+            if (pendingReviewsCount > 3)
+            {
+                _logger.LogWarning(
+                    "Usuario {UserId} intentó crear oferta con {PendingCount} reseñas pendientes",
+                    userId,
+                    pendingReviewsCount
+                );
+                return BadRequest(
+                    new GenericResponse<object>(
+                        $"No puedes crear nuevas publicaciones porque tienes {pendingReviewsCount} reseñas pendientes. Debes completar tus reseñas pendientes (máximo permitido: 3)."
+                    )
+                );
+            }
+
             try
             {
                 var response = await _publicationService.CreateOfferAsync(dto, currentUser);
@@ -139,6 +159,23 @@ namespace bolsafeucn_back.src.API.Controllers
                 userId,
                 dto.Title
             );
+
+            // Validar que el usuario no tenga más de 3 reseñas pendientes
+            var pendingReviewsCount = await _reviewService.GetPendingReviewsCountAsync(userId);
+            if (pendingReviewsCount > 3)
+            {
+                _logger.LogWarning(
+                    "Usuario {UserId} intentó crear publicación de compra/venta con {PendingCount} reseñas pendientes",
+                    userId,
+                    pendingReviewsCount
+                );
+                return BadRequest(
+                    new GenericResponse<object>(
+                        $"No puedes crear nuevas publicaciones porque tienes {pendingReviewsCount} reseñas pendientes. Debes completar tus reseñas pendientes (máximo permitido: 3)."
+                    )
+                );
+            }
+
             try
             {
                 var response = await _publicationService.CreateBuySellAsync(dto, currentUser);

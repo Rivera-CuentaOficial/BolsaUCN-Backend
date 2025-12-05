@@ -127,6 +127,20 @@ builder.Services.AddScoped<IFileService, FileService>();
 
 **Hangfire Job**: `CloseExpiredReviewsAsync()` runs hourly (configured in `Program.cs`).
 
+**Pending Reviews Limit**: Users cannot create new publications or apply to offers if they have more than 3 pending reviews. A review is considered pending when:
+- The review is not completed by both parties (`!IsCompleted`)
+- The review is not closed (`!IsClosed`)
+- The specific user has not completed their part:
+  - For students: `!IsReviewForOfferorCompleted`
+  - For offerors: `!IsReviewForStudentCompleted`
+
+This validation is enforced in:
+- `JobApplicationController.ApplyToOffer` - Students cannot apply to new offers
+- `PublicationController.CreateOffer` - Users cannot create new job offers
+- `PublicationController.CreateBuySell` - Users cannot create new buy/sell publications
+
+Service method: `IReviewService.GetPendingReviewsCountAsync(int userId)` returns the count of pending reviews for a user.
+
 ## PDF Generation
 
 Uses **QuestPDF** (Community license for educational use).
