@@ -1,4 +1,3 @@
-using bolsafe_ucn.src.Application.Services.Interfaces;
 using bolsafeucn_back.src.Application.Infrastructure.Data;
 using bolsafeucn_back.src.Application.Mappers;
 using bolsafeucn_back.src.Application.Services.Implements;
@@ -173,6 +172,7 @@ try
     builder.Services.AddScoped<IFileRepository, FileRepository>();
     builder.Services.AddScoped<IPublicationRepository, PublicationRepository>();
     builder.Services.AddScoped<IReviewRepository, ReviewRepository>();
+    builder.Services.AddScoped<ITokenRepository, TokenRepository>();
 
     builder.Services.AddScoped<IUserService, UserService>();
     builder.Services.AddScoped<IEmailService, EmailService>();
@@ -198,6 +198,7 @@ try
     // Pipeline
     // =========================
     #endregion
+
     #region Hangfire Dashboard + Recurring Jobs
     // Hangfire dashboard (solo en desarrollo)
     if (app.Environment.IsDevelopment())
@@ -237,6 +238,20 @@ try
     // Muy importante: primero autenticación, luego autorización
     app.UseAuthentication();
     app.UseAuthorization();
+
+    // Configuración para servir archivos estáticos desde la carpeta "uploads"
+    var uploadsPath = Path.Combine(builder.Environment.ContentRootPath, "uploads");
+    if (!Directory.Exists(uploadsPath)) Directory.CreateDirectory(uploadsPath);
+    app.UseStaticFiles(new StaticFileOptions
+    {
+        FileProvider = new PhysicalFileProvider(
+            Path.Combine(builder.Environment.ContentRootPath, "uploads")),
+        RequestPath = "/uploads",
+        OnPrepareResponse = ctx =>
+        {
+            ctx.Context.Response.Headers.Append("Cache-Control", "public,max-age=3600");
+        }
+    });
 
     app.MapControllers();
 

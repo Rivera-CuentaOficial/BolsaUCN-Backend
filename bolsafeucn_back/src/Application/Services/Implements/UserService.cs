@@ -1,4 +1,3 @@
-using bolsafe_ucn.src.Application.Services.Interfaces;
 using bolsafeucn_back.src.Application.DTOs.AuthDTOs;
 using bolsafeucn_back.src.Application.DTOs.AuthDTOs.ResetPasswordDTOs;
 using bolsafeucn_back.src.Application.DTOs.UserDTOs;
@@ -771,7 +770,28 @@ namespace bolsafeucn_back.src.Application.Services.Implements
                 user.Id,
                 role
             );
-            return _tokenService.CreateToken(user, role, loginDTO.RememberMe);
+            var newToken = _tokenService.CreateToken(user, role, loginDTO.RememberMe);
+            var whitelist = new Whitelist
+            {
+                UserId = user.Id,
+                Email = user.Email!,
+                Token = newToken,
+                Expiration = loginDTO.RememberMe
+                    ? DateTime.UtcNow.AddDays(24)
+                    : DateTime.UtcNow.AddHours(1)
+            };
+            var whitelistResult = await _tokenService.AddToWhitelistAsync(whitelist);
+        
+            if (!whitelistResult)
+            {
+                Log.Error(
+                    "Error al agregar token a la whitelist para usuario: {Email}, UserId: {UserId}",
+                    loginDTO.Email,
+                    user.Id
+                );
+                throw new Exception("Error al iniciar sesión.");
+            }
+            return newToken;
         }
 
         /// <summary>

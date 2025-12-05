@@ -9,10 +9,12 @@ namespace bolsafeucn_back.src.Application.Services.Implements
     public class AdminService : IAdminService
     {
         private readonly IUserRepository _userRepository;
+        private readonly ITokenService _tokenService;
 
-        public AdminService(IUserRepository userRepository)
+        public AdminService(IUserRepository userRepository, ITokenService tokenService)
         {
             _userRepository = userRepository;
+            _tokenService = tokenService;
         }
 
         /// <summary>
@@ -75,6 +77,13 @@ namespace bolsafeucn_back.src.Application.Services.Implements
             if (toggleResult)
             {
                 Log.Information($"El estado de bloqueo del usuario con ID {userId} ha sido alternado a {user.Banned}.");
+                if (user.Banned)
+                {
+                    var revokeResult = await _tokenService.RevokeAllActiveTokensAsync(userId);
+                    Log.Information(revokeResult
+                        ? $"Tokens activos revocados para el usuario con ID {userId} tras ser bloqueado."
+                        : $"No se pudieron revocar los tokens activos para el usuario con ID {userId} tras ser bloqueado.");
+                }
                 return user.Banned;
             }
             else
