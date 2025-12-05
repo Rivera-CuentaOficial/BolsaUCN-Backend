@@ -1,14 +1,13 @@
 # Makefile para tareas comunes de desarrollo
-# - aliases para dotnet ef / watch dentro de `./bolsafeucn_back`
 # hice esto con claude pq me da flojera apreneder makefile
 DOTNET_DIR := ./bolsafeucn_back
 CONTAINER_NAME := bolsafeucn-docker
 
-# Extraer variables de la cadena de conexión en appsettings.json
-# Valores esperados (deben coincidir con appsettings.json):
-#   POSTGRES_USER := bolsafeucn-user
-#   POSTGRES_PASSWORD := bolsafeucn-password
-#   POSTGRES_DB := bolsafeucn-db
+# Valores por defecto en caso de que no se encuentren en appsettings.json:
+POSTGRES_USER := bolsafeucn-user
+POSTGRES_PASSWORD := bolsafeucn-password
+POSTGRES_DB := bolsafeucn-db
+# Valores extraídos de appsettings.json (si existen):
 APPSETTINGS_FILE := $(DOTNET_DIR)/appsettings.json # Pueden cambiar el appsettings.json por sus variables.
 CONNECTION_STRING := $(shell grep -o '"DefaultConnection": *"[^"]*"' $(APPSETTINGS_FILE) | sed 's/"DefaultConnection": *"\(.*\)"/\1/')
 POSTGRES_USER := $(shell echo '$(CONNECTION_STRING)' | grep -o 'Username=[^;]*' | cut -d= -f2)
@@ -39,6 +38,10 @@ db-restart:
 # 2) Drop DB, crear nueva migracion y actualizar DB
 db-migrate:
 	@echo "Droppeando BD, creando migracion y actualizando..."
+	@if [ ! -d "$(DOTNET_DIR)/Migrations" ]; then \
+		echo "Carpeta Migrations no existe. Creandola..."; \
+		mkdir -p $(DOTNET_DIR)/Migrations; \
+	fi
 	@MIGRATION_BASE="Migration$$(date +%d%m)"; \
 	COUNTER=1; \
 	MIGRATION_NAME=$$MIGRATION_BASE; \
