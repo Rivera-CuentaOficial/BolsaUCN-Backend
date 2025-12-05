@@ -118,7 +118,10 @@ builder.Services.AddScoped<IFileService, FileService>();
 `Review` model is **bidirectional**: Offeror rates Student AND Student rates Offeror.
 - `RatingForStudent` / `CommentForStudent` (from Offeror)
 - `RatingForOfferor` / `CommentForOfferor` (from Student)
-- `AtTime`, `GoodPresentation` (boolean flags for students only)
+- `ReviewChecklistValues` (embedded object for student evaluation):
+  - `AtTime`: boolean flag indicating if student arrived on time
+  - `GoodPresentation`: boolean flag for student's presentation quality
+  - `StudentHasRespectOfferor`: boolean flag indicating if student showed respect to offeror
 - `PublicationId` links to the offer
 - Window closes 14 days after creation (`ReviewWindowEndDate`)
 

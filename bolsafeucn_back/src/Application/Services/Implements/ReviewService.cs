@@ -181,7 +181,7 @@ namespace bolsafeucn_back.src.Application.Services.Implements
             {
                 await _emailService.SendLowRatingReviewAlertAsync(new ReviewDTO
                 {
-                    idReview = review.Id,
+                    IdReview = review.Id,
                     RatingForStudent = review.RatingForStudent,
                     CommentForStudent = review.CommentForStudent,
                     IdStudent = review.StudentId,
@@ -189,6 +189,7 @@ namespace bolsafeucn_back.src.Application.Services.Implements
                     IdPublication = review.PublicationId,
                     AtTime = review.ReviewChecklistValues.AtTime,
                     GoodPresentation = review.ReviewChecklistValues.GoodPresentation,
+                    StudentHasRespectOfferor = review.ReviewChecklistValues.StudentHasRespectOfferor,
                 });
             }
         }
@@ -234,7 +235,7 @@ namespace bolsafeucn_back.src.Application.Services.Implements
             {
                 await _emailService.SendLowRatingReviewAlertAsync(new ReviewDTO
                 {
-                    idReview = review.Id,
+                    IdReview = review.Id,
                     RatingForOfferor = review.RatingForOfferor,
                     CommentForOfferor = review.CommentForOfferor,
                     IdStudent = review.StudentId,
@@ -242,6 +243,7 @@ namespace bolsafeucn_back.src.Application.Services.Implements
                     IdPublication = review.PublicationId,
                     AtTime = review.ReviewChecklistValues.AtTime,
                     GoodPresentation = review.ReviewChecklistValues.GoodPresentation,
+                    StudentHasRespectOfferor = review.ReviewChecklistValues.StudentHasRespectOfferor,
                 });
             }
         }

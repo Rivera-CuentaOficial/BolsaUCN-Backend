@@ -44,5 +44,10 @@ namespace bolsafeucn_back.src.Application.DTOs.ReviewDTO.ReviewReport
         /// Indica si el estudiante tuvo buena presentación (solo para estudiantes)
         /// </summary>
         public bool? GoodPresentation { get; set; }
+
+        /// <summary>
+        /// Indica si el estudiante mostró respeto hacia el oferente (solo para estudiantes)
+        /// </summary>
+        public bool? StudentHasRespectOfferor { get; set; }
     }
 }

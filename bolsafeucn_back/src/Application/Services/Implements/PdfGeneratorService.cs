@@ -72,7 +72,8 @@ namespace bolsafeucn_back.src.Application.Services.Implements
                         ? (r.Offeror?.UserName ?? "Oferente")
                         : (r.Student?.UserName ?? "Estudiante"),
                     AtTime = isStudent ? r.ReviewChecklistValues.AtTime : null,
-                    GoodPresentation = isStudent ? r.ReviewChecklistValues.GoodPresentation : null
+                    GoodPresentation = isStudent ? r.ReviewChecklistValues.GoodPresentation : null,
+                    StudentHasRespectOfferor = isStudent ? r.ReviewChecklistValues.StudentHasRespectOfferor : null
                 }).ToList()
             };
 
@@ -249,6 +250,17 @@ namespace bolsafeucn_back.src.Application.Services.Implements
                                     .FontColor(review.GoodPresentation.Value ? Colors.Green.Medium : Colors.Orange.Medium);
                             }
                         });
+
+                        if (review.StudentHasRespectOfferor.HasValue)
+                        {
+                            column.Item().PaddingTop(3).Row(row =>
+                            {
+                                row.AutoItem().Text("• Respeto al oferente: ").FontSize(9);
+                                row.AutoItem().Text(review.StudentHasRespectOfferor.Value ? "Sí" : "No")
+                                    .FontSize(9)
+                                    .FontColor(review.StudentHasRespectOfferor.Value ? Colors.Green.Medium : Colors.Red.Medium);
+                            });
+                        }
                     }
 
                     // Revisor y fecha
@@ -312,6 +324,7 @@ namespace bolsafeucn_back.src.Application.Services.Implements
                     ReviewDate = r.CreatedAt,
                     AtTime = r.ReviewChecklistValues.AtTime,
                     GoodPresentation = r.ReviewChecklistValues.GoodPresentation,
+                    StudentHasRespectOfferor = r.ReviewChecklistValues.StudentHasRespectOfferor,
                     IsCompleted = r.IsCompleted,
                     IsClosed = r.IsClosed
                 }).ToList()
@@ -495,7 +508,7 @@ namespace bolsafeucn_back.src.Application.Services.Implements
                             }
 
                             // Campos específicos
-                            if (review.AtTime.HasValue || review.GoodPresentation.HasValue)
+                            if (review.AtTime.HasValue || review.GoodPresentation.HasValue || review.StudentHasRespectOfferor.HasValue)
                             {
                                 col.Item().PaddingTop(3).Row(r =>
                                 {
@@ -514,6 +527,16 @@ namespace bolsafeucn_back.src.Application.Services.Implements
                                             .FontColor(review.GoodPresentation.Value ? Colors.Green.Medium : Colors.Orange.Medium);
                                     }
                                 });
+
+                                if (review.StudentHasRespectOfferor.HasValue)
+                                {
+                                    col.Item().PaddingTop(2).Row(r =>
+                                    {
+                                        r.AutoItem().Text("Respeto al oferente: ");
+                                        r.AutoItem().Text(review.StudentHasRespectOfferor.Value ? "Sí" : "No")
+                                            .FontColor(review.StudentHasRespectOfferor.Value ? Colors.Green.Medium : Colors.Red.Medium);
+                                    });
+                                }
                             }
                         });
 
