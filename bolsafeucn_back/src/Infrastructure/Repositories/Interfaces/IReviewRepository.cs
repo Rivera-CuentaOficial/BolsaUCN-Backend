@@ -67,11 +67,6 @@ namespace bolsafeucn_back.src.Infrastructure.Repositories.Interfaces
         /// </summary>
         /// <returns></returns>
         Task<IEnumerable<Review>> GetAllAsync();
-        /// <summary>
-        /// Obtiene reseñas cuya ventana de revisión terminó y que aún no han sido cerradas.
-        /// </summary>
-        /// <param name="now">Fecha de referencia para determinar vencimiento.</param>
-        Task<IEnumerable<Review>> GetExpiredReviewsAsync(DateTime now);
         Task<IEnumerable<Publication>> GetPublicationInformationAsync(int publicationId);
     }
 }

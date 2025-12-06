@@ -117,5 +117,14 @@ namespace bolsafeucn_back.src.Application.Services.Interfaces
         /// Este método será invocado por un job en segundo plano.
         /// </summary>
         Task CloseExpiredReviewsAsync();
+        /// <summary>
+        /// Obtiene el número de reseñas pendientes de un usuario.
+        /// Una reseña está pendiente si el usuario no ha completado su parte de la evaluación,
+        /// la reseña no está cerrada y no está completada por ambas partes.
+        /// </summary>
+        /// <param name="userId">El identificador del usuario (estudiante u oferente).</param>
+        /// <returns>El número de reseñas pendientes del usuario.</returns>
+        /// <exception cref="KeyNotFoundException">Lanzada si no se encuentra el usuario.</exception>
+        Task<int> GetPendingReviewsCountAsync(int userId);
     }
 }

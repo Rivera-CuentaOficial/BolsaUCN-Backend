@@ -22,8 +22,9 @@ namespace bolsafeucn_back.src.Application.Mappers
         {
             review.RatingForStudent = dto.RatingForStudent;
             review.CommentForStudent = dto.CommentForStudent;
-            review.AtTime = dto.atTime;
-            review.GoodPresentation = dto.goodPresentation;
+            review.ReviewChecklistValues.AtTime = dto.AtTime;
+            review.ReviewChecklistValues.GoodPresentation = dto.GoodPresentation;
+            review.ReviewChecklistValues.StudentHasRespectOfferor = dto.StudentHasRespectOfferor;
             review.IsReviewForStudentCompleted = true;
             review.IsCompleted = review.IsReviewForStudentCompleted && review.IsReviewForOfferorCompleted;
             return review;
@@ -84,14 +85,14 @@ namespace bolsafeucn_back.src.Application.Mappers
         {
             return new ReviewDTO
             {
-                idReview = entity.Id,
+                IdReview = entity.Id,
                 RatingForStudent = entity.RatingForStudent,
                 CommentForStudent = entity.CommentForStudent,
                 RatingForOfferor = entity.RatingForOfferor,
                 CommentForOfferor = entity.CommentForOfferor,
-                AtTime = entity.AtTime,
-                GoodPresentation = entity.GoodPresentation,
-                ReviewWindowEndDate = entity.ReviewWindowEndDate,
+                AtTime = entity.ReviewChecklistValues.AtTime,
+                GoodPresentation = entity.ReviewChecklistValues.GoodPresentation,
+                StudentHasRespectOfferor = entity.ReviewChecklistValues.StudentHasRespectOfferor,
                 IdStudent = entity.StudentId,
                 IdOfferor = entity.OfferorId,
                 IdPublication = entity.PublicationId,
@@ -112,12 +113,12 @@ namespace bolsafeucn_back.src.Application.Mappers
                 CommentForStudent = entity.CommentForStudent ?? string.Empty,
                 RatingForOfferor = entity.RatingForOfferor ?? 0,
                 CommentForOfferor = entity.CommentForOfferor ?? string.Empty,
-                AtTime = entity.AtTime,
-                GoodPresentation = entity.GoodPresentation,
+                AtTime = entity.ReviewChecklistValues.AtTime,
+                GoodPresentation = entity.ReviewChecklistValues.GoodPresentation,
+                StudentHasRespectOfferor = entity.ReviewChecklistValues.StudentHasRespectOfferor,
                 IsCompleted = entity.IsCompleted,
                 IsReviewForStudentCompleted = entity.IsReviewForStudentCompleted,
                 IsReviewForOfferorCompleted = entity.IsReviewForOfferorCompleted,
-                IsClosed = DateTime.UtcNow > entity.ReviewWindowEndDate,
                 HasReviewForOfferorBeenDeleted = entity.HasReviewForOfferorBeenDeleted,
                 HasReviewForStudentBeenDeleted = entity.HasReviewForStudentBeenDeleted
             };
@@ -143,6 +144,7 @@ namespace bolsafeucn_back.src.Application.Mappers
                     reviewDto.CommentForStudent = "Review no completada. Ocultado datos.";
                     reviewDto.AtTime = false;
                     reviewDto.GoodPresentation = false;
+                    reviewDto.StudentHasRespectOfferor = false;
                 }
             }
             return new PublicationAndReviewInfoDTO
@@ -165,8 +167,9 @@ namespace bolsafeucn_back.src.Application.Mappers
         {
             review.RatingForStudent = null;
             review.CommentForStudent = null;
-            review.AtTime = false;
-            review.GoodPresentation = false;
+            review.ReviewChecklistValues.AtTime = false;
+            review.ReviewChecklistValues.GoodPresentation = false;
+            review.ReviewChecklistValues.StudentHasRespectOfferor = false;
             review.IsReviewForStudentCompleted = false;
             review.IsCompleted = false;
             review.HasReviewForStudentBeenDeleted = true;

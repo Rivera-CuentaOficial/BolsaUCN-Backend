@@ -3,7 +3,6 @@ using bolsafeucn_back.src.Application.DTOs.BaseResponse;
 using bolsafeucn_back.src.Application.DTOs.JobAplicationDTO;
 using bolsafeucn_back.src.Application.DTOs.OfferDTOs;
 using bolsafeucn_back.src.Application.DTOs.PublicationDTO;
-using bolsafeucn_back.src.Application.Services.Implements;
 using bolsafeucn_back.src.Application.Services.Interfaces;
 using bolsafeucn_back.src.Domain.Models;
 using bolsafeucn_back.src.Infrastructure.Repositories.Interfaces;
@@ -79,6 +78,7 @@ namespace bolsafeucn_back.src.API.Controllers
             }
 
             _logger.LogInformation("Usuario {UserId} creando oferta: {Title}", userId, dto.Title);
+
             try
             {
                 var response = await _publicationService.CreateOfferAsync(dto, currentUser);
@@ -139,6 +139,7 @@ namespace bolsafeucn_back.src.API.Controllers
                 userId,
                 dto.Title
             );
+
             try
             {
                 var response = await _publicationService.CreateBuySellAsync(dto, currentUser);

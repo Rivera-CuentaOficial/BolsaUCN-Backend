@@ -20,13 +20,15 @@ namespace bolsafeucn_back.src.Application.Services.Implements
 
         private readonly IPublicationRepository _publicationRepository;
         private readonly IMapper _mapper;
+        private readonly IReviewService _reviewService;
 
         public PublicationService(
             IOfferRepository offerRepository,
             IBuySellRepository buySellRepository,
             ILogger<PublicationService> logger,
             IPublicationRepository publicationRepository,
-            IMapper mapper
+            IMapper mapper,
+            IReviewService reviewService
         )
         {
             _offerRepository = offerRepository;
@@ -34,6 +36,7 @@ namespace bolsafeucn_back.src.Application.Services.Implements
             _logger = logger;
             _publicationRepository = publicationRepository;
             _mapper = mapper;
+            _reviewService = reviewService;
         }
 
         /// <summary>
@@ -64,6 +67,20 @@ namespace bolsafeucn_back.src.Application.Services.Implements
             {
                 throw new InvalidOperationException(
                     "La fecha límite de postulación (DeadlineDate) debe ser anterior a la fecha de finalización de la oferta."
+                );
+            }
+            // Validar que el usuario no tenga más de 3 reseñas pendientes
+            var pendingReviewsCount = await _reviewService.GetPendingReviewsCountAsync(currentUser.Id);
+            if (pendingReviewsCount >= 3)
+            {
+                _logger.LogWarning(
+                    "Usuario {UserId} intentó crear publicación de compra/venta con {PendingCount} reseñas pendientes",
+                    currentUser.Id,
+                    pendingReviewsCount
+                );
+                return new GenericResponse<string>(
+                    "No puedes crear una publicación de compra/venta mientras tengas 3 o más reseñas pendientes de revisión.",
+                    null
                 );
             }
             try
@@ -129,6 +146,20 @@ namespace bolsafeucn_back.src.Application.Services.Implements
             {
                 throw new UnauthorizedAccessException(
                     "Solo usuarios tipo Empresa o Particular pueden crear publicaciones de compra/venta."
+                );
+            }
+            // Validar que el usuario no tenga más de 3 reseñas pendientes
+            var pendingReviewsCount = await _reviewService.GetPendingReviewsCountAsync(currentUser.Id);
+            if (pendingReviewsCount >= 3)
+            {
+                _logger.LogWarning(
+                    "Usuario {UserId} intentó crear publicación de compra/venta con {PendingCount} reseñas pendientes",
+                    currentUser.Id,
+                    pendingReviewsCount
+                );
+                return new GenericResponse<string>(
+                    "No puedes crear una publicación de compra/venta mientras tengas 3 o más reseñas pendientes de revisión.",
+                    null
                 );
             }
             try
@@ -235,6 +266,6 @@ namespace bolsafeucn_back.src.Application.Services.Implements
             );
             // 2. Mapea y devuelve el DTO
             return _mapper.Adapt<IEnumerable<PublicationsDTO>>((TypeAdapterConfig)publications);
-        }    
+        }
     }
 }

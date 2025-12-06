@@ -5,7 +5,8 @@ using bolsafeucn_back.src.Application.Services.Interfaces;
 using bolsafeucn_back.src.Domain.Models;
 using bolsafeucn_back.src.Infrastructure.Repositories.Interfaces;
 using Serilog;
-
+// Este codigo funciona en base a sueños y esperanzas, y mucho Claude Sonnet 4.5
+// lo lamento para la pobre alma que tenga que mantener esto en el futuro.
 namespace bolsafeucn_back.src.Application.Services.Implements
 {
     /// <summary>
@@ -181,15 +182,15 @@ namespace bolsafeucn_back.src.Application.Services.Implements
             {
                 await _emailService.SendLowRatingReviewAlertAsync(new ReviewDTO
                 {
-                    idReview = review.Id,
+                    IdReview = review.Id,
                     RatingForStudent = review.RatingForStudent,
                     CommentForStudent = review.CommentForStudent,
                     IdStudent = review.StudentId,
                     IdOfferor = review.OfferorId,
                     IdPublication = review.PublicationId,
-                    AtTime = review.AtTime,
-                    GoodPresentation = review.GoodPresentation,
-                    ReviewWindowEndDate = review.ReviewWindowEndDate
+                    AtTime = review.ReviewChecklistValues.AtTime,
+                    GoodPresentation = review.ReviewChecklistValues.GoodPresentation,
+                    StudentHasRespectOfferor = review.ReviewChecklistValues.StudentHasRespectOfferor,
                 });
             }
         }
@@ -235,15 +236,15 @@ namespace bolsafeucn_back.src.Application.Services.Implements
             {
                 await _emailService.SendLowRatingReviewAlertAsync(new ReviewDTO
                 {
-                    idReview = review.Id,
+                    IdReview = review.Id,
                     RatingForOfferor = review.RatingForOfferor,
                     CommentForOfferor = review.CommentForOfferor,
                     IdStudent = review.StudentId,
                     IdOfferor = review.OfferorId,
                     IdPublication = review.PublicationId,
-                    AtTime = review.AtTime,
-                    GoodPresentation = review.GoodPresentation,
-                    ReviewWindowEndDate = review.ReviewWindowEndDate
+                    AtTime = review.ReviewChecklistValues.AtTime,
+                    GoodPresentation = review.ReviewChecklistValues.GoodPresentation,
+                    StudentHasRespectOfferor = review.ReviewChecklistValues.StudentHasRespectOfferor,
                 });
             }
         }
@@ -397,27 +398,81 @@ namespace bolsafeucn_back.src.Application.Services.Implements
                 throw new InvalidOperationException($"El tipo de usuario {user.UserType} no puede tener calificaciones.");
             }
         }
+        /// <summary>
+        /// Obtiene el número de reseñas pendientes de un usuario.
+        /// Una reseña está pendiente si el usuario no ha completado su parte,
+        /// la reseña no está cerrada y no está completada por ambas partes.
+        /// </summary>
+        /// <param name="userId">El identificador del usuario (estudiante u oferente).</param>
+        /// <returns>El número de reseñas pendientes del usuario.</returns>
+        /// <exception cref="KeyNotFoundException">Lanzada si no se encuentra el usuario.</exception>
+        public async Task<int> GetPendingReviewsCountAsync(int userId)
+        {
+            var user = await _userRepository.GetByIdAsync(userId) ?? throw new KeyNotFoundException($"No se encontró el usuario con ID {userId}.");
+            IEnumerable<Review> allReviews;
+            // Obtener todas las reseñas según el tipo de usuario
+            if (user.UserType == UserType.Estudiante)
+            {
+                allReviews = await _repository.GetByStudentIdAsync(userId);
+            }
+            else if (user.UserType == UserType.Empresa || user.UserType == UserType.Particular)
+            {
+                allReviews = await _repository.GetByOfferorIdAsync(userId);
+            }
+            else
+            {
+                // Administradores no tienen reseñas pendientes
+                return 0;
+            }
+            // Si no hay reseñas, retornar 0
+            if (allReviews == null || !allReviews.Any())
+            {
+                return 0;
+            }
+            // Filtrar reseñas pendientes según el tipo de usuario
+            int pendingCount = 0;
+            foreach (var review in allReviews)
+            {
+                if (!review.IsCompleted)
+                {
+                    if (user.UserType == UserType.Estudiante && !review.IsReviewForOfferorCompleted)
+                    {
+                        pendingCount++;
+                    }
+                    else if ((user.UserType == UserType.Empresa || user.UserType == UserType.Particular) && !review.IsReviewForStudentCompleted)
+                    {
+                        pendingCount++;
+                    }
+                }
+            }
+            Log.Information("Usuario {UserId} ({UserType}) tiene {PendingCount} reseñas pendientes",
+                userId, user.UserType, pendingCount);
+            return pendingCount;
+        }
+
         #endregion
         #region Hangfire
         /// <summary>
         /// Cierra las reseñas cuya ventana de revisión terminó y las marca como no modificables.
         /// </summary>
+        /// Las clientas no quieren que se cierren automaticamente, a si que este metodo queda obsoleto
         public async Task CloseExpiredReviewsAsync()
         {
-            var now = DateTime.UtcNow;
-            var expiredReviews = await _repository.GetExpiredReviewsAsync(now);
-            if (expiredReviews == null || !expiredReviews.Any())
-            {
-                Log.Information("No hay reviews vencidas para cerrar a las {Now}", now);
-                return;
-            }
-            foreach (var review in expiredReviews)
-            {
-                review.IsClosed = true;
-                await _repository.UpdateAsync(review);
-                Log.Information("Review {ReviewId} cerrada automáticamente por vencimiento.", review.Id);
-            }
-            Log.Information("Cierre automático de reviews vencidas completado. Total cerrado: {Count}", expiredReviews.Count());
+            return;
+            // var now = DateTime.UtcNow;
+            // var expiredReviews = await _repository.GetExpiredReviewsAsync(now);
+            // if (expiredReviews == null || !expiredReviews.Any())
+            // {
+            //     Log.Information("No hay reviews vencidas para cerrar a las {Now}", now);
+            //     return;
+            // }
+            // foreach (var review in expiredReviews)
+            // {
+            //     review.IsClosed = true;
+            //     await _repository.UpdateAsync(review);
+            //     Log.Information("Review {ReviewId} cerrada automáticamente por vencimiento.", review.Id);
+            // }
+            // Log.Information("Cierre automático de reviews vencidas completado. Total cerrado: {Count}", expiredReviews.Count());
         }
         #endregion
     }

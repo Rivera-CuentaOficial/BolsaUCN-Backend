@@ -1,6 +1,0 @@
-TODO: 
-hola soy matias estos son mis todos que se me olvido agregar al gitignore a si que ignorenlo
-1. avisar al admin cuando haya review baja | CritialReview xd
-2. mermaid explicando flujos
-3. lista de usuarios en modelo publication // a lo mejor no es necesario
-4. discriminar buy & sell de offer para los atributos solicitados.

@@ -11,7 +11,7 @@ namespace bolsafeucn_back.src.Application.DTOs.ReviewDTO
         /// Identificador único de la reseña.
         /// </summary>
         /// <value></value>
-        public int idReview { get; set; }
+        public int IdReview { get; set; }
         /// <summary>
         /// Calificacion otorgada al estudiante.
         /// </summary>
@@ -42,6 +42,11 @@ namespace bolsafeucn_back.src.Application.DTOs.ReviewDTO
         /// </summary>
         /// <value></value>
         public bool GoodPresentation { get; set; }
+        /// <summary>
+        /// Variable booleana indicando si el estudiante mostró respeto hacia el oferente.
+        /// </summary>
+        /// <value></value>
+        public bool StudentHasRespectOfferor { get; set; }
         /// <summary>
         /// Fecha y hora de finalización de la ventana de revisión.
         /// </summary>
