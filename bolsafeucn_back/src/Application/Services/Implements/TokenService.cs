@@ -100,23 +100,15 @@ namespace bolsafeucn_back.src.Application.Services.Implements
         /// <returns>Indica si la operación fue exitosa</returns>
         public async Task<bool> RevokeAllActiveTokensAsync(int userId)
         {
-            var activeTokens = await _tokenRepository.GetAllByUserIdAsync(userId);
-            if (activeTokens == null || !activeTokens.Any())
+            var activeTokens = await _tokenRepository.ExistsByUserIdAsync(userId);
+            if (!activeTokens)
             {
                 Log.Information($"No hay tokens activos para revocar para el usuario ID: {userId}");
-                return true; // No hay tokens que revocar
+                return false; // No hay tokens que revocar
             }
-            foreach (var token in activeTokens)
-            {
-                Log.Information($"Revocando token ID: {token.Id} para el usuario ID: {userId}");
-                var blacklistEntry = new Blacklist
-                {
-                    UserId = token.UserId,
-                    Email = token.Email,
-                    Token = token.Token
-                };
-                await _tokenRepository.AddToBlacklistAsync(blacklistEntry);
-            }
+
+            Log.Information($"Revocando tokens para el usuario ID: {userId}");
+            await _tokenRepository.RemoveAllFromWhitelistByUserIdAsync(userId);
             Log.Information($"Tokens activos revocados para el usuario ID: {userId}");
             return true;
         }

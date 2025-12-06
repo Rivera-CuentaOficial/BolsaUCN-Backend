@@ -32,11 +32,11 @@ namespace bolsafeucn_back.src.API.Controllers
 
         [HttpGet("users")]
         [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> GetAllUsers()
+        public async Task<IActionResult> GetAllUsers([FromQuery] SearchParamsDTO searchParams)
         {
             var adminId = GetUserIdFromToken();
             Log.Information("Obteniendo todos los usuarios.");
-            var users = await _adminService.GetAllUsersAsync(adminId);
+            var users = await _adminService.GetAllUsersAsync(adminId, searchParams);
             return Ok(new GenericResponse<UsersForAdminDTO>("Usuarios obtenidos exitosamente.", users));
         }
     }

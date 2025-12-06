@@ -5,9 +5,8 @@ namespace bolsafeucn_back.src.Infrastructure.Repositories.Interfaces
     public interface ITokenRepository
     {
         Task<Whitelist> AddToWhitelistAsync(Whitelist token);
-        Task<bool> RemoveFromWhitelistAsync(int userId);
-        Task<Blacklist> AddToBlacklistAsync(Blacklist token);
-        Task<bool> RemoveFromBlacklistAsync(int userId);
-        Task<IEnumerable<Whitelist>> GetAllByUserIdAsync(int userId);
+        Task<bool> RemoveAllFromWhitelistByUserIdAsync(int userId);
+        Task<bool> ExistsByUserIdAsync(int userId);
+        Task<bool> IsTokenWhitelistedAsync(int userId, string token);
     }
 }

@@ -2,6 +2,7 @@ using Mapster;
 using bolsafeucn_back.src.Domain.Models;
 using bolsafeucn_back.src.Application.DTOs.UserDTOs.UserProfileDTOs;
 using System.IO.Compression;
+using bolsafeucn_back.src.Application.DTOs.UserDTOs.AdminDTOs;
 
 namespace bolsafeucn_back.src.Application.Mappers
 {
@@ -34,8 +35,7 @@ namespace bolsafeucn_back.src.Application.Mappers
                 .Map(dest => dest.Email, src => src.Email)
                 .Map(dest => dest.PhoneNumber, src => src.PhoneNumber)
                 .Map(dest => dest.AboutMe, src => src.AboutMe)
-                .Map(dest => dest.ProfilePhoto, src => src.ProfilePhoto!.Url)
-                .Map(dest => dest.ProfileBanner, src => src.ProfileBanner!.Url);
+                .Map(dest => dest.ProfilePhoto, src => src.ProfilePhoto!.Url);
 
             TypeAdapterConfig<GeneralUser, GetIndividualProfileDTO>
                 .NewConfig()
@@ -47,8 +47,7 @@ namespace bolsafeucn_back.src.Application.Mappers
                 .Map(dest => dest.Email, src => src.Email)
                 .Map(dest => dest.PhoneNumber, src => src.PhoneNumber)
                 .Map(dest => dest.AboutMe, src => src.AboutMe)
-                .Map(dest => dest.ProfilePhoto, src => src.ProfilePhoto!.Url)
-                .Map(dest => dest.ProfileBanner, src => src.ProfileBanner!.Url);
+                .Map(dest => dest.ProfilePhoto, src => src.ProfilePhoto!.Url);
 
             TypeAdapterConfig<GeneralUser, GetCompanyProfileDTO>
                 .NewConfig()
@@ -60,8 +59,7 @@ namespace bolsafeucn_back.src.Application.Mappers
                 .Map(dest => dest.Email, src => src.Email)
                 .Map(dest => dest.PhoneNumber, src => src.PhoneNumber)
                 .Map(dest => dest.AboutMe, src => src.AboutMe)
-                .Map(dest => dest.ProfilePhoto, src => src.ProfilePhoto!.Url)
-                .Map(dest => dest.ProfileBanner, src => src.ProfileBanner!.Url);
+                .Map(dest => dest.ProfilePhoto, src => src.ProfilePhoto!.Url);
 
             TypeAdapterConfig<GeneralUser, GetAdminProfileDTO>
                 .NewConfig()
@@ -72,8 +70,7 @@ namespace bolsafeucn_back.src.Application.Mappers
                 .Map(dest => dest.Email, src => src.Email)
                 .Map(dest => dest.PhoneNumber, src => src.PhoneNumber)
                 .Map(dest => dest.AboutMe, src => src.AboutMe)
-                .Map(dest => dest.ProfilePhoto, src => src.ProfilePhoto!.Url)
-                .Map(dest => dest.ProfileBanner, src => src.ProfileBanner!.Url);
+                .Map(dest => dest.ProfilePhoto, src => src.ProfilePhoto!.Url);
 
             /*TypeAdapterConfig<GeneralUser, GetUserProfileDTO>
                 .NewConfig()
@@ -153,6 +150,35 @@ namespace bolsafeucn_back.src.Application.Mappers
             .Map(dest => dest.AboutMe, src => src.AboutMe)
             .Map(dest => dest.PhoneNumber, src => src.PhoneNumber)
             .Map(dest => dest.Admin!.SuperAdmin, src => src.IsSuperAdmin);
+        }
+
+        public void ConfigureAdminMappings()
+        {
+            TypeAdapterConfig<GeneralUser, UserForAdminDTO>
+                .NewConfig()
+                .Map(dest => dest.UserName, src => src.UserName)
+                .Map(dest => dest.Name, src =>
+                    src.Student != null ? src.Student.Name :
+                    src.Individual != null ? src.Individual.Name :
+                    src.Company != null ? src.Company.CompanyName :
+                    src.Admin != null ? src.Admin.Name :
+                    null)
+                .Map(dest => dest.LastName, src =>
+                    src.Student != null ? src.Student.LastName :
+                    src.Individual != null ? src.Individual.LastName :
+                    src.Company != null ? src.Company.LegalName :
+                    src.Admin != null ? src.Admin.LastName :
+                    null)
+                .Map(dest => dest.Email, src => src.Email)
+                .Map(dest => dest.PhoneNumber, src => src.PhoneNumber)
+                .Map(dest => dest.Rating, src => src.Rating)
+                .Map(dest => dest.UserType, src =>
+                    src.Student != null ? "Student" :
+                    src.Individual != null ? "Individual" :
+                    src.Company != null ? "Company" :
+                    src.Admin != null ? "Admin" :
+                    "Unknown")
+                .Map(dest => dest.Banned, src => src.Banned);
         }
     }
 }

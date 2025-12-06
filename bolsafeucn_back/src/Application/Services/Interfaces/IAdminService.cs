@@ -5,6 +5,6 @@ namespace bolsafeucn_back.src.Application.Services.Interfaces
     public interface IAdminService
     {
         Task<bool> ToggleUserBlockedStatusAsync(int adminId, int userId);
-        Task<UsersForAdminDTO> GetAllUsersAsync(int adminId);
+        Task<UsersForAdminDTO> GetAllUsersAsync(int adminId, SearchParamsDTO searchParams);
     }
 }

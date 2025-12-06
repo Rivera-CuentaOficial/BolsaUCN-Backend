@@ -82,7 +82,7 @@ namespace bolsafeucn_back.src.Application.Services.Implements
                     var revokeResult = await _tokenService.RevokeAllActiveTokensAsync(userId);
                     Log.Information(revokeResult
                         ? $"Tokens activos revocados para el usuario con ID {userId} tras ser bloqueado."
-                        : $"No se pudieron revocar los tokens activos para el usuario con ID {userId} tras ser bloqueado.");
+                        : $"El usuario con ID {userId} no tenía tokens activos para revocar tras ser bloqueado.");
                 }
                 return user.Banned;
             }
@@ -93,8 +93,17 @@ namespace bolsafeucn_back.src.Application.Services.Implements
             }
         }
 
-        public async Task<UsersForAdminDTO> GetAllUsersAsync(int adminId)
+        /// <summary>
+        /// Obtiene todos los usuarios del sistema para un administrador.
+        /// </summary>
+        /// <param name="adminId">ID del administrador que realiza la solicitud</param>
+        /// <returns>DTO con la lista de usuarios</returns>
+        /// <exception cref="KeyNotFoundException"></exception>
+        /// <exception cref="UnauthorizedAccessException"></exception>
+        /// <exception cref="NotImplementedException"></exception>
+        public async Task<UsersForAdminDTO> GetAllUsersAsync(int adminId, SearchParamsDTO searchParams)
         {
+            // Verificar que el solicitante es un administrador
             var admin = await _userRepository.GetByIdAsync(adminId);
             if (admin == null)
             {
@@ -106,7 +115,13 @@ namespace bolsafeucn_back.src.Application.Services.Implements
                 Log.Warning($"El usuario con ID {adminId} no tiene permisos de administrador.");
                 throw new UnauthorizedAccessException("El usuario no tiene permisos de administrador.");
             }
-            throw new NotImplementedException();
+            var (allUsers, totalCount) = await _userRepository.GetFilteredForAdminAsync(searchParams);
+            if (allUsers == null)
+            {
+                Log.Error("Error al obtener la lista de usuarios para el administrador.");
+                throw new ArgumentNullException("Error al obtener la lista de usuarios.");
+            }
+            return null!;
         }
     }
 }

@@ -1,6 +1,7 @@
 using bolsafeucn_back.src.Domain.Models;
 using bolsafeucn_back.src.Infrastructure.Data;
 using bolsafeucn_back.src.Infrastructure.Repositories.Interfaces;
+using Microsoft.EntityFrameworkCore;
 
 namespace bolsafeucn_back.src.Infrastructure.Repositories.Implements
 {
@@ -18,32 +19,25 @@ namespace bolsafeucn_back.src.Infrastructure.Repositories.Implements
             return whitelistEntry;
         }
         
-        public async Task<bool> RemoveFromWhitelistAsync(int userId)
+        public async Task<bool> RemoveAllFromWhitelistByUserIdAsync(int userId)
         {
-            var tokens = _context.Whitelists.Where(w => w.UserId == userId);
+            var tokens = await _context.Whitelists
+                .Where(w => w.UserId == userId)
+                .ToListAsync();
             _context.Whitelists.RemoveRange(tokens);
             var result = await _context.SaveChangesAsync();
             return result > 0;
         }
 
-        public async Task<Blacklist> AddToBlacklistAsync(Blacklist blacklistEntry)
+        public async Task<bool> ExistsByUserIdAsync(int userId)
         {
-            await _context.Blacklists.AddAsync(blacklistEntry);
-            await _context.SaveChangesAsync();
-            return blacklistEntry;
+            return await _context.Whitelists
+                .AnyAsync(w => w.UserId == userId);
         }
-
-        public async Task<bool> RemoveFromBlacklistAsync(int userId)
+        public async Task<bool> IsTokenWhitelistedAsync(int userId, string token)
         {
-            var tokens = _context.Blacklists.Where(b => b.UserId == userId);
-            _context.Blacklists.RemoveRange(tokens);
-            var result = await _context.SaveChangesAsync();
-            return result > 0;
-        }
-
-        public async Task<IEnumerable<Whitelist>> GetAllByUserIdAsync(int userId)
-        {
-            return _context.Whitelists.Where(w => w.UserId == userId);
+            return await _context.Whitelists
+                .AnyAsync(w => w.UserId == userId && w.Token == token);
         }
     }
 }

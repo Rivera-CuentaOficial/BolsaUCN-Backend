@@ -38,7 +38,6 @@ namespace bolsafeucn_back.src.Infrastructure.Data
         public DbSet<Admin> Admins { get; set; }
         public DbSet<AdminLog> AdminLogs { get; set; }
         public DbSet<Whitelist> Whitelists { get; set; }
-        public DbSet<Blacklist> Blacklists { get; set; }
         public DbSet<VerificationCode> VerificationCodes { get; set; }
         public DbSet<Publication> Publications { get; set; }
         public DbSet<Offer> Offers { get; set; }

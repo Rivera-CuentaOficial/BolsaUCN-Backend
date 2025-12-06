@@ -175,6 +175,7 @@ try
     builder.Services.AddScoped<ITokenRepository, TokenRepository>();
 
     builder.Services.AddScoped<IUserService, UserService>();
+    builder.Services.AddScoped<IAdminService, AdminService>();
     builder.Services.AddScoped<IEmailService, EmailService>();
     builder.Services.AddScoped<ITokenService, TokenService>();
     builder.Services.AddScoped<IOfferService, OfferService>();
@@ -237,6 +238,7 @@ try
 
     // Muy importante: primero autenticación, luego autorización
     app.UseAuthentication();
+    app.UseMiddleware<bolsafeucn_back.src.API.Middlewares.BlacklistMiddleware>(); // Middleware para validar tokens en blacklist debe ir entre auth y authorization
     app.UseAuthorization();
 
     // Configuración para servir archivos estáticos desde la carpeta "uploads"

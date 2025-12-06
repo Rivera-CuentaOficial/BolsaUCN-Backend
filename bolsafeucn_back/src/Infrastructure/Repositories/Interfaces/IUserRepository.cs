@@ -1,3 +1,4 @@
+using bolsafeucn_back.src.Application.DTOs.UserDTOs.AdminDTOs;
 using bolsafeucn_back.src.Domain.Models;
 
 namespace bolsafeucn_back.src.Infrastructure.Repositories.Interfaces
@@ -24,6 +25,7 @@ namespace bolsafeucn_back.src.Infrastructure.Repositories.Interfaces
         Task<GeneralUser?> GetByIdWithRelationsAsync(int id);
         Task<GeneralUser?> GetUntrackedWithTypeAsync(int id, UserType? userType);
         Task<GeneralUser?> GetTrackedWithTypeAsync(int id, UserType? userType);
+        Task<(IEnumerable<GeneralUser>, int TotalCount)> GetFilteredForAdminAsync(SearchParamsDTO searchParams);
         Task<int> GetNumberOfAdmins();
         Task<GeneralUser> AddAsync(GeneralUser usuario);
         Task<bool> DeleteAsync(int id);

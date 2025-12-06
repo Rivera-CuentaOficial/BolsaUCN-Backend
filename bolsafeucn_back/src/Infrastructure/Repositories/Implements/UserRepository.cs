@@ -1,3 +1,4 @@
+using bolsafeucn_back.src.Application.DTOs.UserDTOs.AdminDTOs;
 using bolsafeucn_back.src.Domain.Models;
 using bolsafeucn_back.src.Infrastructure.Data;
 using bolsafeucn_back.src.Infrastructure.Repositories.Interfaces;
@@ -394,6 +395,49 @@ namespace bolsafeucn_back.src.Infrastructure.Repositories.Implements
                             .FirstOrDefaultAsync(u => u.Id == userId);
         }
 
+        public async Task<(IEnumerable<GeneralUser>, int TotalCount)> GetFilteredForAdminAsync(SearchParamsDTO searchParams)
+        {
+            var query = _context
+                .Users
+                .Include(u => u.Student)
+                .Include(u => u.Company)
+                .Include(u => u.Individual)
+                .Include(u => u.Admin)
+                .AsNoTracking()
+                .AsQueryable();
+            if (query == null)
+            {
+                Log.Warning("No se encontraron usuarios en la base de datos.");
+                throw new ArgumentNullException("No se encontraron usuarios.");
+            }
+            // Filtros
+            if (!string.IsNullOrEmpty(searchParams.SearchTerm))
+            {
+                var searchTerm = searchParams.SearchTerm.ToLower();
+                query = query.Where(u =>
+                    u.Student != null ? u.Student.Name.ToLower().Contains(searchTerm) :
+                    u.Individual != null ? u.Individual.Name.ToLower().Contains(searchTerm) :
+                    u.Company != null ? u.Company.CompanyName.ToLower().Contains(searchTerm) :
+                    u.Admin != null ? u.Admin.Name.ToLower().Contains(searchTerm) : false ||
+                    u.Student != null ? u.Student.LastName.ToLower().Contains(searchTerm) :
+                    u.Individual != null ? u.Individual.LastName.ToLower().Contains(searchTerm) :
+                    u.Company != null ? u.Company.LegalName.ToLower().Contains(searchTerm) :
+                    u.Admin != null ? u.Admin.LastName.ToLower().Contains(searchTerm) : false ||
+                    u.Email!.ToLower().Contains(searchTerm) ||
+                    u.UserName!.ToLower().Contains(searchTerm) ||
+                    u.UserType.ToString().ToLower().Contains(searchTerm));
+            }
+            // Ordenamiento
+            query = ApplySorting(query, searchParams.SortBy, searchParams.SortOrder);
+            // Paginación
+            var totalCount = await query.CountAsync();
+            var users = await query
+                .Skip((searchParams.PageNumber - 1) * searchParams.PageSize)
+                .Take(searchParams.PageSize)
+                .ToListAsync();
+            return (users, totalCount);
+        }
+
         /// <summary>
         /// Obtiene el número de administradores en el sistema.
         /// </summary>
@@ -434,6 +478,44 @@ namespace bolsafeucn_back.src.Infrastructure.Repositories.Implements
             await _context.SaveChangesAsync();
             Log.Information("Usuario ID: {UserId} eliminado exitosamente", id);
             return true;
+        }
+
+        private IQueryable<GeneralUser> ApplySorting(IQueryable<GeneralUser> query, string? sortBy, string? sortOrder)
+        {
+            if (string.IsNullOrEmpty(sortBy))
+            {
+                return query.OrderBy(u => u.Id); // Ordenamiento por defecto
+            }
+
+            bool ascending = string.IsNullOrEmpty(sortOrder) || sortOrder.Equals("asc", StringComparison.CurrentCultureIgnoreCase);
+
+            return query = sortBy.ToLower() switch
+            {
+                "email" => ascending 
+                    ? query.OrderBy(u => u.Email) 
+                    : query.OrderByDescending(u => u.Email),
+                "usertype" => ascending 
+                    ? query.OrderBy(u => u.UserType) 
+                    : query.OrderByDescending(u => u.UserType),
+                "name" => ascending
+                    ? query.OrderBy(u =>
+                        u.Student != null ? u.Student.Name :
+                        u.Individual != null ? u.Individual.Name :
+                        u.Company != null ? u.Company.CompanyName :
+                        u.Admin != null ? u.Admin.Name : string.Empty)
+                    : query.OrderByDescending(u =>
+                        u.Student != null ? u.Student.Name :
+                        u.Individual != null ? u.Individual.Name :
+                        u.Company != null ? u.Company.CompanyName :
+                        u.Admin != null ? u.Admin.Name : string.Empty),
+                "banned" => ascending 
+                    ? query.OrderBy(u => u.Banned) 
+                    : query.OrderByDescending(u => u.Banned),
+                "rating" => ascending 
+                    ? query.OrderBy(u => u.Rating) 
+                    : query.OrderByDescending(u => u.Rating),
+                _ => query.OrderBy(u => u.Id), // Ordenamiento por defecto si el campo no es reconocido
+            };
         }
     }
 }
