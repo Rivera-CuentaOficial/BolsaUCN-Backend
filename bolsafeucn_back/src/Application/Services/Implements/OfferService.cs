@@ -15,16 +15,19 @@ public class OfferService : IOfferService
     private readonly IOfferRepository _offerRepository;
     private readonly ILogger<OfferService> _logger;
     private readonly AppDbContext _context;
+    private readonly IEmailService _emailService;
 
     public OfferService(
         IOfferRepository offerRepository,
         ILogger<OfferService> logger,
-        AppDbContext context
+        AppDbContext context,
+        IEmailService emailService
     )
     {
         _offerRepository = offerRepository;
         _logger = logger;
         _context = context;
+        _emailService = emailService;
     }
 
     public async Task<IEnumerable<OfferSummaryDto>> GetActiveOffersAsync()
@@ -272,6 +275,15 @@ public class OfferService : IOfferService
         offer.IsActive = true;
         offer.statusValidation = StatusValidation.Published;
         await _offerRepository.UpdateOfferAsync(offer);
+
+        if (offer.User?.Email != null) 
+        {
+            await _emailService.SendPublicationStatusChangeEmailAsync(
+                offer.User.Email,
+                offer.Title,
+                "Publicada"
+            );
+        }
     }
 
     public async Task GetOfferForAdminToReject(int id)
@@ -290,6 +302,15 @@ public class OfferService : IOfferService
         offer.IsActive = false;
         offer.statusValidation = StatusValidation.Rejected;
         await _offerRepository.UpdateOfferAsync(offer);
+
+        if (offer.User?.Email != null) 
+        {
+            await _emailService.SendPublicationStatusChangeEmailAsync(
+                offer.User.Email,
+                offer.Title,
+                "Rechazada"
+            );
+        }
     }
 
     public async Task<OfferDetailDto> GetOfferDetailForOfferer(int id, string userId)
@@ -334,4 +355,6 @@ public class OfferService : IOfferService
 
         _logger.LogInformation("Oferta ID: {OfferId} cerrada por el oferente. Reviews se crearán automáticamente.", offerId);
     }
+
+    
 }

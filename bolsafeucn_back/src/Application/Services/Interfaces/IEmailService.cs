@@ -55,5 +55,17 @@ namespace bolsafeucn_back.src.Application.Services.Interfaces
             string companyName,
             string newStatus
         );
+
+        /// <summary>
+        /// Sends an email notifying the user that their publication status has changed (e.g., approved/rejected).
+        /// </summary>
+        /// <param name="recipientEmail">Recipient user email.</param>
+        /// <param name="publicationTitle">Publication title.</param>
+        /// <param name="newStatus">New status text (e.g., Publicada, Rechazada).</param>
+        Task<bool> SendPublicationStatusChangeEmailAsync(
+            string recipientEmail,
+            string publicationTitle,
+            string newStatus
+        );
     }
 }

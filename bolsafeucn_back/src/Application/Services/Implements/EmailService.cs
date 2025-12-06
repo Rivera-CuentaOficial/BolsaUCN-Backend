@@ -263,6 +263,90 @@ namespace bolsafeucn_back.src.Application.Services.Implements
             }
         }
 
+        public async Task<bool> SendPublicationStatusChangeEmailAsync(
+            string recipientEmail,
+            string publicationTitle,
+            string newStatus
+        )
+        {
+            try
+            {
+                Log.Information(
+                    "Enviando email de cambio de estado de publicación a {Email}",
+                    recipientEmail
+                );
+
+                var htmlBody = await LoadPublicationStatusTemplateAsync(
+                    publicationTitle,
+                    newStatus
+                );
+
+                var message = new EmailMessage
+                {
+                    To = recipientEmail,
+                    From = _configuration["EmailConfiguration:From"]!,
+                    Subject = "Actualización en tu publicación",
+                    HtmlBody = htmlBody,
+                };
+
+                var result = await _resend.EmailSendAsync(message);
+
+                if (!result.Success)
+                {
+                    Log.Error(
+                        "Error al enviar correo de cambio de estado de publicación a {Email}",
+                        recipientEmail
+                    );
+                    return false;
+                }
+
+                Log.Information(
+                    "Correo de cambio de estado de publicación enviado exitosamente a {Email}",
+                    recipientEmail
+                );
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Log.Error(
+                    ex,
+                    "Error enviando correo de cambio de estado de publicación a {Email}",
+                    recipientEmail
+                );
+                return false;
+            }
+        }
+
+        private async Task<string> LoadPublicationStatusTemplateAsync(
+            string publicationTitle,
+            string newStatus
+        )
+        {
+            try
+            {
+                var templatePath = Path.Combine(
+                    _environment.ContentRootPath,
+                    "src",
+                    "Application",
+                    "Templates",
+                    "Emails",
+                    "PublicationStatusChanged.html"
+                );
+
+                var html = await File.ReadAllTextAsync(templatePath);
+
+                html = html.Replace("{{PUBLICATION_TITLE}}", publicationTitle);
+                html = html.Replace("{{NEW_STATUS}}", newStatus);
+
+                return html;
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "Error cargando template PublicationStatusChanged");
+                throw;
+            }
+        }
+
         // --------------------------------------------------------------------
         // 6. *** NUEVO *** EMAIL PARA REVIEW ≤ 3 (EVA-006)
         // --------------------------------------------------------------------

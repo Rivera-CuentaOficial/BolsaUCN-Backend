@@ -15,11 +15,17 @@ namespace bolsafeucn_back.src.Application.Services.Implements
     {
         private readonly IBuySellRepository _buySellRepository;
         private readonly ILogger<BuySellService> _logger;
+        private readonly IEmailService _emailService;
 
-        public BuySellService(IBuySellRepository buySellRepository, ILogger<BuySellService> logger)
+        public BuySellService(
+            IBuySellRepository buySellRepository,
+            ILogger<BuySellService> logger,
+            IEmailService emailService
+        )
         {
             _buySellRepository = buySellRepository;
             _logger = logger;
+            _emailService = emailService;
         }
 
         public async Task<IEnumerable<BuySellSummaryDto>> GetActiveBuySellsAsync()
@@ -201,6 +207,15 @@ namespace bolsafeucn_back.src.Application.Services.Implements
             buySell.IsActive = true;
             buySell.statusValidation = StatusValidation.Published;
             await _buySellRepository.UpdateAsync(buySell);
+
+            if (buySell.User?.Email != null)
+            {
+                await _emailService.SendPublicationStatusChangeEmailAsync(
+                    buySell.User.Email,
+                    buySell.Title,
+                    "Publicada"
+                );
+            }
         }
 
         public async Task GetBuySellForAdminToReject(int id)
@@ -219,6 +234,15 @@ namespace bolsafeucn_back.src.Application.Services.Implements
             buySell.IsActive = false;
             buySell.statusValidation = StatusValidation.Rejected;
             await _buySellRepository.UpdateAsync(buySell);
+
+            if (buySell.User?.Email != null)
+            {
+                await _emailService.SendPublicationStatusChangeEmailAsync(
+                    buySell.User.Email,
+                    buySell.Title,
+                    "Rechazada"
+                );
+            }
         }
 
         public async Task ClosePublishedBuySellAsync(int buySellId)
