@@ -228,6 +228,15 @@ public class OfferService : IOfferService
             "Oferta ID: {OfferId} cerrada. Reviews se crearán automáticamente.",
             offerId
         );
+
+        if (offer.User?.Email != null)
+        {
+            await _emailService.SendPublicationStatusChangeEmailAsync(
+                offer.User.Email,
+                offer.Title,
+                "Cerrada (Finalizada)" // Estado a mostrar en el email
+            );
+        }
     }
 
     public async Task<OfferDetailValidationDto> GetOfferDetailForOfferValidationAsync(int id)
