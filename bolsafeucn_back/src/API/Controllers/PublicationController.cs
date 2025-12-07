@@ -3,7 +3,6 @@ using bolsafeucn_back.src.Application.DTOs.BaseResponse;
 using bolsafeucn_back.src.Application.DTOs.JobAplicationDTO;
 using bolsafeucn_back.src.Application.DTOs.OfferDTOs;
 using bolsafeucn_back.src.Application.DTOs.PublicationDTO;
-using bolsafeucn_back.src.Application.Services.Implements;
 using bolsafeucn_back.src.Application.Services.Interfaces;
 using bolsafeucn_back.src.Domain.Models;
 using bolsafeucn_back.src.Infrastructure.Repositories.Interfaces;
@@ -79,6 +78,7 @@ namespace bolsafeucn_back.src.API.Controllers
             }
 
             _logger.LogInformation("Usuario {UserId} creando oferta: {Title}", userId, dto.Title);
+
             try
             {
                 var response = await _publicationService.CreateOfferAsync(dto, currentUser);
@@ -139,6 +139,7 @@ namespace bolsafeucn_back.src.API.Controllers
                 userId,
                 dto.Title
             );
+
             try
             {
                 var response = await _publicationService.CreateBuySellAsync(dto, currentUser);
@@ -732,7 +733,33 @@ namespace bolsafeucn_back.src.API.Controllers
         /// Obtiene los detalles de una publicación de compra/venta para validación (admin)
         /// </summary>
         [HttpGet("buysells/{id}/validation")]
-        public async Task<IActionResult> GetBuySellDetails(int id)
+        public async Task<IActionResult> GetBuySellDetailsValidation(int id)
+        {
+            _logger.LogInformation(
+                "GET /api/publications/buysells/{Id}/validation - Obteniendo detalles de publicación para validación",
+                id
+            );
+            var buySell = await _buySellService.GetBuySellDetailsAsync(id);
+
+            if (buySell == null)
+            {
+                _logger.LogWarning("Publicación de compra/venta {Id} no encontrada", id);
+                return NotFound(new GenericResponse<object>("Publicación no encontrada"));
+            }
+
+            return Ok(
+                new GenericResponse<object>(
+                    "Detalles de publicación recuperados exitosamente",
+                    buySell
+                )
+            );
+        }
+
+        /// <summary>
+        /// Obtiene los detalles de una publicación de compra/venta para validación (admin)
+        /// </summary>
+        [HttpGet("buysells/{id}/details")]
+        public async Task<IActionResult> GetBuySellDetailsManage(int id)
         {
             _logger.LogInformation(
                 "GET /api/publications/buysells/{Id}/validation - Obteniendo detalles de publicación para validación",

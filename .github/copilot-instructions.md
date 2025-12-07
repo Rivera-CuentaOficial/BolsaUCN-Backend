@@ -118,11 +118,28 @@ builder.Services.AddScoped<IFileService, FileService>();
 `Review` model is **bidirectional**: Offeror rates Student AND Student rates Offeror.
 - `RatingForStudent` / `CommentForStudent` (from Offeror)
 - `RatingForOfferor` / `CommentForOfferor` (from Student)
-- `AtTime`, `GoodPresentation` (boolean flags for students only)
+- `ReviewChecklistValues` (embedded object for student evaluation):
+  - `AtTime`: boolean flag indicating if student arrived on time
+  - `GoodPresentation`: boolean flag for student's presentation quality
+  - `StudentHasRespectOfferor`: boolean flag indicating if student showed respect to offeror
 - `PublicationId` links to the offer
 - Window closes 14 days after creation (`ReviewWindowEndDate`)
 
 **Hangfire Job**: `CloseExpiredReviewsAsync()` runs hourly (configured in `Program.cs`).
+
+**Pending Reviews Limit**: Users cannot create new publications or apply to offers if they have more than 3 pending reviews. A review is considered pending when:
+- The review is not completed by both parties (`!IsCompleted`)
+- The review is not closed (`!IsClosed`)
+- The specific user has not completed their part:
+  - For students: `!IsReviewForOfferorCompleted`
+  - For offerors: `!IsReviewForStudentCompleted`
+
+This validation is enforced in:
+- `JobApplicationController.ApplyToOffer` - Students cannot apply to new offers
+- `PublicationController.CreateOffer` - Users cannot create new job offers
+- `PublicationController.CreateBuySell` - Users cannot create new buy/sell publications
+
+Service method: `IReviewService.GetPendingReviewsCountAsync(int userId)` returns the count of pending reviews for a user.
 
 ## PDF Generation
 

@@ -27,22 +27,11 @@ namespace bolsafeucn_back.src.Domain.Models
         /// Comentario del estudiante sobre su experiencia con el oferente.
         /// </summary>
         public string? CommentForOfferor { get; set; }
-
         /// <summary>
-        /// Indica si el estudiante llegó a tiempo a su lugar de trabajo.
+        /// Contiene los valores del checklist de evaluación para la reseña.
         /// </summary>
-        public bool AtTime { get; set; } = false;
-
-        /// <summary>
-        /// Indica si el estudiante tuvo una buena presentación durante la realización del trabajo.
-        /// </summary>
-        public bool GoodPresentation { get; set; } = false;
-        /// <summary>
-        /// Fecha y hora límite para completar la ventana de revisión.
-        /// Después de esta fecha, puede que no se permitan más modificaciones.
-        /// </summary>
-        public DateTime ReviewWindowEndDate { get; set; } = DateTime.UtcNow.AddDays(14);
-
+        /// <returns></returns>
+        public ReviewChecklistValues ReviewChecklistValues { get; set; } = new ReviewChecklistValues();
         /// <summary>
         /// Referencia de navegación al estudiante evaluado.
         /// </summary>

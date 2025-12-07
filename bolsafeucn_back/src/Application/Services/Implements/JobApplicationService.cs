@@ -13,18 +13,24 @@ namespace bolsafeucn_back.src.Application.Services.Implements
         private readonly IOfferRepository _offerRepository;
         private readonly IUserRepository _userRepository;
         private readonly INotificationService _notificationService;
+        private readonly IReviewService _reviewService;
+        private readonly ILogger<JobApplicationService> _logger;
 
         public JobApplicationService(
             IJobApplicationRepository jobApplicationRepository,
             IOfferRepository offerRepository,
             IUserRepository userRepository,
-            INotificationService notificationService
+            INotificationService notificationService,
+            IReviewService reviewService,
+            ILogger<JobApplicationService> logger
         )
         {
             _jobApplicationRepository = jobApplicationRepository;
             _offerRepository = offerRepository;
             _userRepository = userRepository;
             _notificationService = notificationService;
+            _reviewService = reviewService;
+            _logger = logger;
         }
 
         public async Task<JobApplicationResponseDto> CreateApplicationAsync(
@@ -37,6 +43,19 @@ namespace bolsafeucn_back.src.Application.Services.Implements
             if (offer == null || !offer.IsActive)
             {
                 throw new KeyNotFoundException("La oferta no existe o no está activa");
+            }
+            // Validar que el usuario no tenga más de 3 reseñas pendientes
+            var pendingReviewsCount = await _reviewService.GetPendingReviewsCountAsync(studentId);
+            if (pendingReviewsCount >= 3)
+            {
+                _logger.LogWarning(
+                    "Usuario {UserId} intentó crear publicación de compra/venta con {PendingCount} reseñas pendientes",
+                    studentId,
+                    pendingReviewsCount
+                );
+                throw new InvalidOperationException(
+                    "No puedes postular a nuevas ofertas hasta que completes tus reseñas pendientes"
+                );
             }
 
             // Validar elegibilidad del estudiante (incluye validación de CV si es obligatorio)
@@ -331,6 +350,10 @@ namespace bolsafeucn_back.src.Application.Services.Implements
                 Email = applicant.Student.Email,
                 PhoneNumber = applicant.Student.PhoneNumber,
                 Status = applicant.Status.ToString(),
+                CurriculumVitae = applicant.Student.Student?.CurriculumVitae,
+                Rating = (float?)applicant.Student.Rating,
+                MotivationLetter = applicant.Student.Student?.MotivationLetter,
+                Disability = applicant.Student.Student?.Disability.ToString(),
                 // TODO: falta descripcion
             };
         }

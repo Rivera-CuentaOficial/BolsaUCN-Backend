@@ -1,4 +1,3 @@
-using System;
 using bolsafeucn_back.src.Domain.Models;
 using bolsafeucn_back.src.Infrastructure.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
@@ -130,20 +129,6 @@ namespace bolsafeucn_back.src.Infrastructure.Repositories.Implements
         public async Task<IEnumerable<Review>> GetAllAsync()
         {
             return await _context.Reviews
-                .Include(r => r.Student)
-                .Include(r => r.Offeror)
-                .ToListAsync();
-        }
-
-        /// <summary>
-        /// Obtiene reseñas cuya ventana de revisión terminó (ReviewWindowEndDate <= now) y que aún no han sido cerradas.
-        /// </summary>
-        /// <param name="now">Fecha de referencia para determinar vencimiento.</param>
-        /// <returns>Lista de reseñas vencidas y abiertas.</returns>
-        public async Task<IEnumerable<Review>> GetExpiredReviewsAsync(DateTime now)
-        {
-            return await _context.Reviews
-                .Where(r => r.ReviewWindowEndDate <= now && !r.IsClosed)
                 .Include(r => r.Student)
                 .Include(r => r.Offeror)
                 .ToListAsync();

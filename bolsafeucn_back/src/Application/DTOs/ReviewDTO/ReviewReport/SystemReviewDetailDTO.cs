@@ -62,6 +62,11 @@ namespace bolsafeucn_back.src.Application.DTOs.ReviewDTO.ReviewReport
         public bool? GoodPresentation { get; set; }
 
         /// <summary>
+        /// Indica si el estudiante mostró respeto hacia el oferente
+        /// </summary>
+        public bool? StudentHasRespectOfferor { get; set; }
+
+        /// <summary>
         /// Indica si la review está completada
         /// </summary>
         public bool IsCompleted { get; set; }
