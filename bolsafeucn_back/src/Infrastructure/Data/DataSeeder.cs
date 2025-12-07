@@ -32,7 +32,7 @@ namespace bolsafeucn_back.src.Application.Infrastructure.Data
                         new Role { Name = "Admin", NormalizedName = "ADMIN" },
                         new Role { Name = "Applicant", NormalizedName = "APPLICANT" },
                         new Role { Name = "Offerent", NormalizedName = "OFFERENT" },
-                        new Role { Name = "SuperAdmin", NormalizedName = "SUPERADMIN" },
+                        new Role { Name = "IsSuperAdmin", NormalizedName = "ISSUPERADMIN" },
                     };
                     foreach (var role in roles)
                     {
@@ -363,7 +363,7 @@ namespace bolsafeucn_back.src.Application.Infrastructure.Data
                     GeneralUserId = testAdminUser.Id,
                     Name = "Admin",
                     LastName = "Admin Sistema",
-                    SuperAdmin = false,
+                    IsSuperAdmin = false,
                     GeneralUser = testAdminUser,
                 };
                 context.Admins.Add(testAdmin);

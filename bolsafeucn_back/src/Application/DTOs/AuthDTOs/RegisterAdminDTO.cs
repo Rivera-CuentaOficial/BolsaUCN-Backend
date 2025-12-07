@@ -76,6 +76,6 @@ namespace bolsafeucn_back.src.Application.DTOs.AuthDTOs
         /// Indica si el administrador es SuperAdmin.
         /// </summary>
         [Required(ErrorMessage = "Es necesario saber si el administrador es SuperAdmin.")]
-        public required bool SuperAdmin { get; set; }
+        public required bool IsSuperAdmin { get; set; }
     }
 }

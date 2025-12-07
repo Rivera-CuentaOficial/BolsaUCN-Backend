@@ -44,5 +44,15 @@ namespace bolsafeucn_back.src.API.Controllers
             var users = await _adminService.GetAllUsersAsync(adminId, searchParams);
             return Ok(new GenericResponse<UsersForAdminDTO>("Usuarios obtenidos exitosamente.", users));
         }
+
+        [HttpGet("users/{userId}")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> GetUserProfileById([FromRoute] int userId)
+        {
+            var adminId = GetUserIdFromToken();
+            Log.Information($"Obteniendo perfil de usuario con ID {userId}");
+            var userProfile = await _adminService.GetUserProfileByIdAsync(adminId, userId);
+            return Ok(new GenericResponse<UserProfileForAdminDTO>("Perfil de usuario obtenido exitosamente.", userProfile));
+        }
     }
 }

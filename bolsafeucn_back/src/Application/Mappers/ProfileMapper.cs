@@ -18,6 +18,7 @@ namespace bolsafeucn_back.src.Application.Mappers
         {
             ConfigureViewProfileMapping();
             ConfigureUpdateMappings();
+            ConfigureAdminMappings();
         }
         /// <summary>
         /// Configura el mapeo de GeneralUser a GetUserProfileDTO para ver el perfil de usuario.
@@ -149,7 +150,7 @@ namespace bolsafeucn_back.src.Application.Mappers
             .Map(dest => dest.Email, src => src.Email)
             .Map(dest => dest.AboutMe, src => src.AboutMe)
             .Map(dest => dest.PhoneNumber, src => src.PhoneNumber)
-            .Map(dest => dest.Admin!.SuperAdmin, src => src.IsSuperAdmin);
+            .Map(dest => dest.Admin!.IsSuperAdmin, src => src.IsSuperAdmin);
         }
 
         public void ConfigureAdminMappings()
@@ -160,13 +161,40 @@ namespace bolsafeucn_back.src.Application.Mappers
                 .Map(dest => dest.Email, src => src.Email)
                 .Map(dest => dest.Rut, src => src.Rut)
                 .Map(dest => dest.Rating, src => src.Rating)
-                .Map(dest => dest.UserType, src =>
-                    src.Student != null ? "Student" :
-                    src.Individual != null ? "Individual" :
-                    src.Company != null ? "Company" :
-                    src.Admin != null ? "Admin" :
-                    "Unknown")
+                .Map(dest => dest.UserType, src => src.UserType.ToString())
                 .Map(dest => dest.IsBlocked, src => src.IsBlocked);
+                
+            TypeAdapterConfig<GeneralUser, UserProfileForAdminDTO>
+                .NewConfig()
+                .Map(dest => dest.Id, src => src.Id)
+                .Map(dest => dest.Username, src => src.UserName)
+                .Map(dest => dest.Email, src => src.Email)
+                .Map(dest => dest.FirstName, src =>
+                    src.Student != null ? src.Student.Name :
+                    src.Individual != null ? src.Individual.Name :
+                    src.Company != null ? src.Company.CompanyName :
+                    src.Admin != null ? src.Admin.Name :
+                    null)
+                .Map(dest => dest.LastName, src =>
+                    src.Student != null ? src.Student.LastName :
+                    src.Individual != null ? src.Individual.LastName :
+                    src.Company != null ? src.Company.LegalName :
+                    src.Admin != null ? src.Admin.LastName :
+                    null)
+                .Map(dest => dest.PhoneNumber, src => src.PhoneNumber)
+                .Map(dest => dest.Rut, src => src.Rut)
+                .Map(dest => dest.Rating, src => (float?)src.Rating)
+                .Map(dest => dest.ProfilePictureUrl, src => src.ProfilePhoto != null ? src.ProfilePhoto.Url : null)
+                .Map(dest => dest.AboutMe, src => src.AboutMe)
+                .Map(dest => dest.UserType, src => src.UserType.ToString())
+                .Map(dest => dest.IsBlocked, src => src.IsBlocked)
+                .Map(dest => dest.CreatedAt, src => src.CreatedAt)
+                .Map(dest => dest.UpdatedAt, src => src.UpdatedAt)
+                .Map(dest => dest.LastLoginAt, src => src.LastLoginAt)
+                .Map(dest => dest.CVUrl, src => src.Student != null ? src.Student.CurriculumVitae : null)
+                .Map(dest => dest.Disability, src => src.Student != null ? src.Student.Disability.ToString() : null)
+                .Map(dest => dest.IsSuperAdmin, src => src.Admin != null ? src.Admin.IsSuperAdmin : (bool?)null);
         }
+
     }
 }

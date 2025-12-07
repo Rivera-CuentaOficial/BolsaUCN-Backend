@@ -6,5 +6,6 @@ namespace bolsafeucn_back.src.Application.Services.Interfaces
     {
         Task<bool> ToggleUserBlockedStatusAsync(int adminId, int userId);
         Task<UsersForAdminDTO> GetAllUsersAsync(int adminId, SearchParamsDTO searchParams);
+        Task<UserProfileForAdminDTO> GetUserProfileByIdAsync(int adminId, int userId);
     }
 }

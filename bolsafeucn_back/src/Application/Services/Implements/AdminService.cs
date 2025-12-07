@@ -64,7 +64,7 @@ namespace bolsafeucn_back.src.Application.Services.Implements
                 Log.Warning($"No se encontró al usuario con ID {userId}.");
                 throw new KeyNotFoundException("Usuario no encontrado.");
             }
-            if (user.UserType == UserType.Administrador && admin.Admin!.SuperAdmin) // Prevenir bloqueo de administradores si es que es el ultimo
+            if (user.UserType == UserType.Administrador && admin.Admin!.IsSuperAdmin) // Prevenir bloqueo de administradores si es que es el ultimo
             {
                 var numberOfAdmins = _userRepository.GetNumberOfAdmins();
                 if (numberOfAdmins.Result <= 1)
@@ -146,6 +146,16 @@ namespace bolsafeucn_back.src.Application.Services.Implements
                 PageSize = pageSize,
                 TotalPages = totalPages
             };
+        }
+
+        public async Task<UserProfileForAdminDTO> GetUserProfileByIdAsync(int adminId, int userId)
+        {
+            //TODO Revisar si hay que hacer algo especial con el administrador.
+
+            var user = await _userRepository.GetByIdWithRelationsAsync(userId);
+            if (user == null) throw new KeyNotFoundException();
+
+            return user.Adapt<UserProfileForAdminDTO>();
         }
     }
 }

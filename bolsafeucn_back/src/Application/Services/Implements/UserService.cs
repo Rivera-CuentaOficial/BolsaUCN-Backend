@@ -382,9 +382,9 @@ namespace bolsafeucn_back.src.Application.Services.Implements
         )
         {
             Log.Information(
-                "Iniciando registro de admin con email: {Email}, SuperAdmin: {SuperAdmin}",
+                "Iniciando registro de admin con email: {Email}, IsSuperAdmin: {IsSuperAdmin}",
                 registerAdminDTO.Email,
-                registerAdminDTO.SuperAdmin
+                registerAdminDTO.IsSuperAdmin
             );
 
             bool registrado = await _userRepository.ExistsByEmailAsync(registerAdminDTO.Email);
@@ -427,9 +427,9 @@ namespace bolsafeucn_back.src.Application.Services.Implements
             user.ProfileBannerId = banner.Id;
 
             string role = "Admin";
-            if (registerAdminDTO.SuperAdmin)
+            if (registerAdminDTO.IsSuperAdmin)
             {
-                role = "SuperAdmin";
+                role = "IsSuperAdmin";
             }
             var result = await _userRepository.CreateUserAsync(
                 user,
@@ -446,7 +446,7 @@ namespace bolsafeucn_back.src.Application.Services.Implements
             }
             var admin = registerAdminDTO.Adapt<Admin>();
             admin.GeneralUserId = user.Id;
-            result = await _userRepository.CreateAdminAsync(admin, registerAdminDTO.SuperAdmin);
+            result = await _userRepository.CreateAdminAsync(admin, registerAdminDTO.IsSuperAdmin);
             if (!result)
             {
                 Log.Error("Error al crear perfil de admin para usuario ID: {UserId}", user.Id);
@@ -723,20 +723,18 @@ namespace bolsafeucn_back.src.Application.Services.Implements
         /// <returns>Token de acceso</returns>
         public async Task<string> LoginAsync(LoginDTO loginDTO, HttpContext httpContext)
         {
-            Log.Information("Intento de login para email: {Email}", loginDTO.Email);
+            Log.Information($"Intento de login para email: {loginDTO.Email}");
 
             var user = await _userRepository.GetByEmailAsync(loginDTO.Email);
             if (user == null)
             {
-                Log.Warning("Intento de login con email no registrado: {Email}", loginDTO.Email);
+                Log.Warning($"Intento de login con email no registrado: {loginDTO.Email}");
                 throw new UnauthorizedAccessException("Credenciales inválidas.");
             }
             if (!user.EmailConfirmed)
             {
                 Log.Warning(
-                    "Intento de login con email no verificado: {Email}, UserId: {UserId}",
-                    loginDTO.Email,
-                    user.Id
+                    $"Intento de login con email no verificado: {user.Email}, UserId: {user.Id}"
                 );
                 throw new UnauthorizedAccessException(
                     "Por favor, verifica tu correo electrónico antes de iniciar sesión."
@@ -746,18 +744,14 @@ namespace bolsafeucn_back.src.Application.Services.Implements
             if (!result)
             {
                 Log.Warning(
-                    "Intento de login con contraseña incorrecta para usuario: {Email}, UserId: {UserId}",
-                    loginDTO.Email,
-                    user.Id
+                    $"Intento de login con contraseña incorrecta para usuario: {user.Email}, UserId: {user.Id}"
                 );
                 throw new UnauthorizedAccessException("Credenciales inválidas.");
             }
             if (user.IsBlocked)
             {
                 Log.Warning(
-                    "Intento de login para usuario bloqueado: {Email}, UserId: {UserId}",
-                    loginDTO.Email,
-                    user.Id
+                    $"Intento de login para usuario bloqueado: {user.Email}, UserId: {user.Id}"
                 );
                 throw new UnauthorizedAccessException(
                     "Tu cuenta ha sido bloqueada. Por favor, contacta al soporte para más información."
@@ -765,10 +759,7 @@ namespace bolsafeucn_back.src.Application.Services.Implements
             }
             var role = await _userRepository.GetRoleAsync(user);
             Log.Information(
-                "Login exitoso para usuario: {Email}, UserId: {UserId}, Role: {Role}",
-                loginDTO.Email,
-                user.Id,
-                role
+                $"Login exitoso para usuario: {user.Email}, UserId: {user.Id}, Role: {role}"
             );
             var newToken = _tokenService.CreateToken(user, role, loginDTO.RememberMe);
             var whitelist = new Whitelist
@@ -785,9 +776,15 @@ namespace bolsafeucn_back.src.Application.Services.Implements
             if (!whitelistResult)
             {
                 Log.Error(
-                    "Error al agregar token a la whitelist para usuario: {Email}, UserId: {UserId}",
-                    loginDTO.Email,
-                    user.Id
+                    $"Error al agregar token a la whitelist para usuario: {user.Email}, UserId: {user.Id}"
+                );
+                throw new Exception("Error al iniciar sesión.");
+            }
+            var updateLoginTimeResult = await _userRepository.UpdateLastLoginAsync(user);
+            if (!updateLoginTimeResult)
+            {
+                Log.Error(  
+                    $"Error al actualizar la última hora de login para usuario: {user.Email}, UserId: {user.Id}"
                 );
                 throw new Exception("Error al iniciar sesión.");
             }

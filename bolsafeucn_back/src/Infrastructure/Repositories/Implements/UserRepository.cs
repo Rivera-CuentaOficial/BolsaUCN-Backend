@@ -171,14 +171,14 @@ namespace bolsafeucn_back.src.Infrastructure.Repositories.Implements
         /// Crea un nuevo administrador en el sistema.
         /// </summary>
         /// <param name="admin">Administrador a crear</param>
-        /// <param name="superAdmin">Indica si el administrador es superadministrador</param>
+        /// <param name="IsSuperAdmin">Indica si el administrador es superadministrador</param>
         /// <returns>True si se creó el administrador, de lo contrario false.</returns>
-        public async Task<bool> CreateAdminAsync(Admin admin, bool superAdmin)
+        public async Task<bool> CreateAdminAsync(Admin admin, bool IsSuperAdmin)
         {
             Log.Information(
-                "Creando perfil de admin para usuario ID: {UserId}, SuperAdmin: {SuperAdmin}",
+                "Creando perfil de admin para usuario ID: {UserId}, IsSuperAdmin: {IsSuperAdmin}",
                 admin.GeneralUserId,
-                superAdmin
+                IsSuperAdmin
             );
             var result = await _context.Admins.AddAsync(admin);
             await _context.SaveChangesAsync();
@@ -279,6 +279,24 @@ namespace bolsafeucn_back.src.Infrastructure.Repositories.Implements
                 user.Id
             );
             return newPasswordResult.Succeeded;
+        }
+
+        public async Task<bool> UpdateLastLoginAsync(GeneralUser user)
+        {
+            Log.Information($"Actualizando último login para usuario ID: {user.Id}");
+            user.LastLoginAt = DateTime.UtcNow;
+            var result = await _userManager.UpdateAsync(user);
+            if (!result.Succeeded)
+            {
+                Log.Error(
+                    $"Error al actualizar último login para usuario ID: {user.Id}. Errores: {string.Join(", ", result.Errors.Select(e => e.Description))}"
+                );
+                return false;
+            }
+            Log.Information(
+                $"Último login actualizado exitosamente para usuario ID: {user.Id}"
+            );
+            return true;
         }
 
         /// <summary>
