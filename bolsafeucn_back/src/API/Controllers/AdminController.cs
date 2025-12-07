@@ -30,9 +30,14 @@ namespace bolsafeucn_back.src.API.Controllers
             return Ok(new GenericResponse<bool>("Estado de bloqueo del usuario actualizado.", result));
         }
 
+        /// <summary>
+        /// Obtiene todos los usuarios con parámetros de búsqueda.
+        /// </summary>
+        /// <param name="searchParams">Parámetros para filtrar y paginar la lista de usuarios.</param>
+        /// <returns>Lista paginada y filtrada de usuarios.</returns>
         [HttpGet("users")]
         [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> GetAllUsers([FromQuery] SearchParamsDTO searchParams)
+        public async Task<IActionResult> GetAllUsers([FromForm] SearchParamsDTO searchParams)
         {
             var adminId = GetUserIdFromToken();
             Log.Information("Obteniendo todos los usuarios.");

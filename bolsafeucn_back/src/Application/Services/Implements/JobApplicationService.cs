@@ -289,7 +289,7 @@ namespace bolsafeucn_back.src.Application.Services.Implements
                 return false;
 
             // Verificar que no esté bloqueado
-            if (student.Banned)
+            if (student.IsBlocked)
                 return false;
 
             // Verificar que tenga CV SOLO si es obligatorio

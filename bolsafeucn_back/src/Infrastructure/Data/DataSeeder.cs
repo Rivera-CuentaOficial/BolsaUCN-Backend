@@ -111,7 +111,7 @@ namespace bolsafeucn_back.src.Application.Infrastructure.Data
                 UserType = UserType.Estudiante,
                 Rut = "12345678-9",
                 EmailConfirmed = true,
-                Banned = false,
+                IsBlocked = false,
                 Rating = 3.3,
                 ProfilePhoto = new UserImage
                 {
@@ -150,7 +150,7 @@ namespace bolsafeucn_back.src.Application.Infrastructure.Data
                 UserType = UserType.Empresa,
                 Rut = "76543210-K",
                 EmailConfirmed = true,
-                Banned = false,
+                IsBlocked = false,
                 ProfilePhoto = new UserImage
                 {
                     Url = configuration.GetValue<string>("Images:DefaultUserImageUrl") ?? throw new InvalidOperationException("DefaultUserImageUrl no está configurado"),
@@ -182,7 +182,7 @@ namespace bolsafeucn_back.src.Application.Infrastructure.Data
                 UserType = UserType.Particular,
                 Rut = "11222333-4",
                 EmailConfirmed = true,
-                Banned = false,
+                IsBlocked = false,
                 ProfilePhoto = new UserImage
                 {
                     Url = configuration.GetValue<string>("Images:DefaultUserImageUrl") ?? throw new InvalidOperationException("DefaultUserImageUrl no está configurado"),
@@ -214,7 +214,7 @@ namespace bolsafeucn_back.src.Application.Infrastructure.Data
                 UserType = UserType.Administrador,
                 Rut = "99888777-6",
                 EmailConfirmed = true,
-                Banned = false,
+                IsBlocked = false,
                 ProfilePhoto = new UserImage
                 {
                     Url = configuration.GetValue<string>("Images:DefaultUserImageUrl") ?? throw new InvalidOperationException("DefaultUserImageUrl no está configurado"),
@@ -275,7 +275,7 @@ namespace bolsafeucn_back.src.Application.Infrastructure.Data
                     UserType = UserType.Estudiante,
                     Rut = faker.Random.Replace("##.###.###-K"),
                     EmailConfirmed = true,
-                    Banned = faker.Random.Bool(0.3f),
+                    IsBlocked = faker.Random.Bool(0.3f),
                     ProfilePhoto = new UserImage
                     {
                         Url = configuration.GetValue<string>("Images:DefaultUserImageUrl") ?? throw new InvalidOperationException("DefaultUserImageUrl no está configurado"),
@@ -309,7 +309,7 @@ namespace bolsafeucn_back.src.Application.Infrastructure.Data
                     UserType = UserType.Empresa,
                     Rut = faker.Random.Replace("##.###.###-K"),
                     EmailConfirmed = true,
-                    Banned = faker.Random.Bool(0.3f),
+                    IsBlocked = faker.Random.Bool(0.3f),
                     ProfilePhoto = new UserImage
                     {
                         Url = configuration.GetValue<string>("Images:DefaultUserImageUrl") ?? throw new InvalidOperationException("DefaultUserImageUrl no está configurado"),
@@ -340,7 +340,7 @@ namespace bolsafeucn_back.src.Application.Infrastructure.Data
                 UserType = UserType.Particular,
                 Rut = faker.Random.Replace("##.###.###-K"),
                 EmailConfirmed = true,
-                Banned = faker.Random.Bool(0.9f),
+                IsBlocked = faker.Random.Bool(0.9f),
                 ProfilePhoto = new UserImage
                 {
                     Url = configuration.GetValue<string>("Images:DefaultUserImageUrl") ?? throw new InvalidOperationException("DefaultUserImageUrl no está configurado"),

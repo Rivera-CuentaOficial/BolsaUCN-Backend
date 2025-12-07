@@ -157,19 +157,8 @@ namespace bolsafeucn_back.src.Application.Mappers
             TypeAdapterConfig<GeneralUser, UserForAdminDTO>
                 .NewConfig()
                 .Map(dest => dest.UserName, src => src.UserName)
-                .Map(dest => dest.Name, src =>
-                    src.Student != null ? src.Student.Name :
-                    src.Individual != null ? src.Individual.Name :
-                    src.Company != null ? src.Company.CompanyName :
-                    src.Admin != null ? src.Admin.Name :
-                    null)
-                .Map(dest => dest.LastName, src =>
-                    src.Student != null ? src.Student.LastName :
-                    src.Individual != null ? src.Individual.LastName :
-                    src.Company != null ? src.Company.LegalName :
-                    src.Admin != null ? src.Admin.LastName :
-                    null)
                 .Map(dest => dest.Email, src => src.Email)
+                .Map(dest => dest.Rut, src => src.Rut)
                 .Map(dest => dest.PhoneNumber, src => src.PhoneNumber)
                 .Map(dest => dest.Rating, src => src.Rating)
                 .Map(dest => dest.UserType, src =>
@@ -178,7 +167,7 @@ namespace bolsafeucn_back.src.Application.Mappers
                     src.Company != null ? "Company" :
                     src.Admin != null ? "Admin" :
                     "Unknown")
-                .Map(dest => dest.Banned, src => src.Banned);
+                .Map(dest => dest.IsBlocked, src => src.IsBlocked);
         }
     }
 }

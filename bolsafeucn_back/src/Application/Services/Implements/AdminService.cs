@@ -2,6 +2,7 @@ using bolsafeucn_back.src.Application.DTOs.UserDTOs.AdminDTOs;
 using bolsafeucn_back.src.Application.Services.Interfaces;
 using bolsafeucn_back.src.Domain.Models;
 using bolsafeucn_back.src.Infrastructure.Repositories.Interfaces;
+using Mapster;
 using Serilog;
 
 namespace bolsafeucn_back.src.Application.Services.Implements
@@ -10,11 +11,15 @@ namespace bolsafeucn_back.src.Application.Services.Implements
     {
         private readonly IUserRepository _userRepository;
         private readonly ITokenService _tokenService;
+        private readonly IConfiguration _configuration;
+        private readonly int _defaultPageSize;
 
-        public AdminService(IUserRepository userRepository, ITokenService tokenService)
+        public AdminService(IUserRepository userRepository, ITokenService tokenService, IConfiguration configuration)
         {
             _userRepository = userRepository;
             _tokenService = tokenService;
+            _configuration = configuration;
+            _defaultPageSize = _configuration.GetValue<int>("Pagination:DefaultPageSize");
         }
 
         /// <summary>
@@ -71,20 +76,20 @@ namespace bolsafeucn_back.src.Application.Services.Implements
                 throw new InvalidOperationException("No se puede bloquear o desbloquear a un administrador.");
             }
 
-            user.Banned = !user.Banned;
+            user.IsBlocked = !user.IsBlocked; // Alternar el estado de bloqueo
 
             var toggleResult = await _userRepository.UpdateAsync(user);
             if (toggleResult)
             {
-                Log.Information($"El estado de bloqueo del usuario con ID {userId} ha sido alternado a {user.Banned}.");
-                if (user.Banned)
+                Log.Information($"El estado de bloqueo del usuario con ID {userId} ha sido alternado a {user.IsBlocked}.");
+                if (user.IsBlocked)
                 {
                     var revokeResult = await _tokenService.RevokeAllActiveTokensAsync(userId);
                     Log.Information(revokeResult
                         ? $"Tokens activos revocados para el usuario con ID {userId} tras ser bloqueado."
                         : $"El usuario con ID {userId} no tenía tokens activos para revocar tras ser bloqueado.");
                 }
-                return user.Banned;
+                return user.IsBlocked;
             }
             else
             {
@@ -115,13 +120,32 @@ namespace bolsafeucn_back.src.Application.Services.Implements
                 Log.Warning($"El usuario con ID {adminId} no tiene permisos de administrador.");
                 throw new UnauthorizedAccessException("El usuario no tiene permisos de administrador.");
             }
+            // Validar y ajustar parámetros de paginación
             var (allUsers, totalCount) = await _userRepository.GetFilteredForAdminAsync(searchParams);
             if (allUsers == null)
             {
                 Log.Error("Error al obtener la lista de usuarios para el administrador.");
                 throw new ArgumentNullException("Error al obtener la lista de usuarios.");
             }
-            return null!;
+            var pageSize = searchParams.PageSize ?? _defaultPageSize;
+            var totalPages = (int)
+                Math.Ceiling((double)totalCount / pageSize);            
+            var currentPage = searchParams.PageNumber;
+            if (currentPage < 1 || currentPage > totalPages) 
+            {
+                Log.Warning($"Página solicitada {currentPage} fuera de rango. Total de páginas: {totalPages}. Se ajusta a la página 1.");
+                currentPage = 1;
+            }
+            // Aplicar paginación
+            Log.Information($"Administrador con ID {adminId} obtuvo {totalCount} usuarios (página {currentPage} de {totalPages}).");
+            return new UsersForAdminDTO
+            {
+                Users = allUsers.Adapt<List<UserForAdminDTO>>(),
+                TotalCount = totalCount,
+                CurrentPage = currentPage,
+                PageSize = pageSize,
+                TotalPages = totalPages
+            };
         }
     }
 }

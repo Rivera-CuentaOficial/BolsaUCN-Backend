@@ -11,12 +11,16 @@ namespace bolsafeucn_back.src.Infrastructure.Repositories.Implements
     public class UserRepository : IUserRepository
     {
         private readonly AppDbContext _context;
+        private readonly IConfiguration _configuration;
         private readonly UserManager<GeneralUser> _userManager;
+        private readonly int _defaultPageSize;
 
-        public UserRepository(AppDbContext context, UserManager<GeneralUser> userManager)
+        public UserRepository(AppDbContext context, UserManager<GeneralUser> userManager, IConfiguration configuration)
         {
             _context = context;
             _userManager = userManager;
+            _configuration = configuration;
+            _defaultPageSize = _configuration.GetValue<int>("Pagination:DefaultPageSize");
         }
 
         /// <summary>
@@ -56,7 +60,7 @@ namespace bolsafeucn_back.src.Infrastructure.Repositories.Implements
         /// <returns>Estado de bloqueo del usuario</returns>
         public async Task<bool> GetBlockedStatusAsync(int userId)
         {
-            return await _context.Users.AnyAsync(u => u.Id == userId && u.Banned);
+            return await _context.Users.AnyAsync(u => u.Id == userId && u.IsBlocked);
         }
 
         /// <summary>
@@ -395,14 +399,16 @@ namespace bolsafeucn_back.src.Infrastructure.Repositories.Implements
                             .FirstOrDefaultAsync(u => u.Id == userId);
         }
 
+        /// <summary>
+        /// Obtiene usuarios filtrados para administración.
+        /// </summary>
+        /// <param name="searchParams">Parámetros de búsqueda y paginación</param>
+        /// <returns>Usuarios filtrados y el conteo total</returns>
+        /// <exception cref="ArgumentNullException"></exception>
         public async Task<(IEnumerable<GeneralUser>, int TotalCount)> GetFilteredForAdminAsync(SearchParamsDTO searchParams)
         {
             var query = _context
                 .Users
-                .Include(u => u.Student)
-                .Include(u => u.Company)
-                .Include(u => u.Individual)
-                .Include(u => u.Admin)
                 .AsNoTracking()
                 .AsQueryable();
             if (query == null)
@@ -410,30 +416,42 @@ namespace bolsafeucn_back.src.Infrastructure.Repositories.Implements
                 Log.Warning("No se encontraron usuarios en la base de datos.");
                 throw new ArgumentNullException("No se encontraron usuarios.");
             }
-            // Filtros
+            // Filtro por término de búsqueda
             if (!string.IsNullOrEmpty(searchParams.SearchTerm))
             {
                 var searchTerm = searchParams.SearchTerm.ToLower();
                 query = query.Where(u =>
-                    u.Student != null ? u.Student.Name.ToLower().Contains(searchTerm) :
-                    u.Individual != null ? u.Individual.Name.ToLower().Contains(searchTerm) :
-                    u.Company != null ? u.Company.CompanyName.ToLower().Contains(searchTerm) :
-                    u.Admin != null ? u.Admin.Name.ToLower().Contains(searchTerm) : false ||
-                    u.Student != null ? u.Student.LastName.ToLower().Contains(searchTerm) :
-                    u.Individual != null ? u.Individual.LastName.ToLower().Contains(searchTerm) :
-                    u.Company != null ? u.Company.LegalName.ToLower().Contains(searchTerm) :
-                    u.Admin != null ? u.Admin.LastName.ToLower().Contains(searchTerm) : false ||
                     u.Email!.ToLower().Contains(searchTerm) ||
-                    u.UserName!.ToLower().Contains(searchTerm) ||
-                    u.UserType.ToString().ToLower().Contains(searchTerm));
+                    u.Rut!.ToLower().Contains(searchTerm) ||
+                    u.UserName!.ToLower().Contains(searchTerm));
+            }
+            // Filtro por tipo
+            if (!string.IsNullOrEmpty(searchParams.UserType))
+            {
+                var userType = searchParams.UserType.ToLower();
+                query = query.Where(u => u.UserType.ToString().ToLower() == userType);
+            }
+            //Filtro por estado
+            if (!string.IsNullOrEmpty(searchParams.BlockedStatus))
+            {
+                var status = searchParams.BlockedStatus.ToLower();
+                if (status == "Unblocked")
+                {
+                    query = query.Where(u => u.IsBlocked == false);
+                }
+                else if (status == "Blocked")
+                {
+                    query = query.Where(u => u.IsBlocked == true);
+                }
             }
             // Ordenamiento
             query = ApplySorting(query, searchParams.SortBy, searchParams.SortOrder);
             // Paginación
             var totalCount = await query.CountAsync();
+            var pageSize = searchParams.PageSize ?? _defaultPageSize;
             var users = await query
-                .Skip((searchParams.PageNumber - 1) * searchParams.PageSize)
-                .Take(searchParams.PageSize)
+                .Skip((searchParams.PageNumber - 1) * pageSize)
+                .Take(pageSize)
                 .ToListAsync();
             return (users, totalCount);
         }
@@ -444,7 +462,7 @@ namespace bolsafeucn_back.src.Infrastructure.Repositories.Implements
         /// <returns>El número de administradores activos</returns>
         public async Task<int> GetNumberOfAdmins()
         {
-            return await _context.Admins.CountAsync(a => a.GeneralUser!.Banned == false);
+            return await _context.Admins.CountAsync(a => a.GeneralUser!.IsBlocked == false);
         }
 
         /// <summary>
@@ -480,37 +498,28 @@ namespace bolsafeucn_back.src.Infrastructure.Repositories.Implements
             return true;
         }
 
+        /// <summary>
+        /// Funcion helper para aplicar ordenamiento dinámico a una consulta de usuarios.
+        /// </summary>
+        /// <param name="query"></param>
+        /// <param name="sortBy"></param>
+        /// <param name="sortOrder"></param>
+        /// <returns></returns>
         private IQueryable<GeneralUser> ApplySorting(IQueryable<GeneralUser> query, string? sortBy, string? sortOrder)
-        {
-            if (string.IsNullOrEmpty(sortBy))
-            {
-                return query.OrderBy(u => u.Id); // Ordenamiento por defecto
-            }
+        {   
+            if (string.IsNullOrEmpty(sortBy)) return query.OrderBy(u => u.Id); // Ordenamiento por defecto es por ID
+            if (string.IsNullOrEmpty(sortOrder)) sortOrder = "asc"; // Ordenamiento por defecto es ascendente
 
-            bool ascending = string.IsNullOrEmpty(sortOrder) || sortOrder.Equals("asc", StringComparison.CurrentCultureIgnoreCase);
+            bool ascending = string.Equals(sortOrder, "asc", StringComparison.OrdinalIgnoreCase);
 
             return query = sortBy.ToLower() switch
             {
+                "username" => ascending 
+                    ? query.OrderBy(u => u.UserName) 
+                    : query.OrderByDescending(u => u.UserName),
                 "email" => ascending 
                     ? query.OrderBy(u => u.Email) 
                     : query.OrderByDescending(u => u.Email),
-                "usertype" => ascending 
-                    ? query.OrderBy(u => u.UserType) 
-                    : query.OrderByDescending(u => u.UserType),
-                "name" => ascending
-                    ? query.OrderBy(u =>
-                        u.Student != null ? u.Student.Name :
-                        u.Individual != null ? u.Individual.Name :
-                        u.Company != null ? u.Company.CompanyName :
-                        u.Admin != null ? u.Admin.Name : string.Empty)
-                    : query.OrderByDescending(u =>
-                        u.Student != null ? u.Student.Name :
-                        u.Individual != null ? u.Individual.Name :
-                        u.Company != null ? u.Company.CompanyName :
-                        u.Admin != null ? u.Admin.Name : string.Empty),
-                "banned" => ascending 
-                    ? query.OrderBy(u => u.Banned) 
-                    : query.OrderByDescending(u => u.Banned),
                 "rating" => ascending 
                     ? query.OrderBy(u => u.Rating) 
                     : query.OrderByDescending(u => u.Rating),
