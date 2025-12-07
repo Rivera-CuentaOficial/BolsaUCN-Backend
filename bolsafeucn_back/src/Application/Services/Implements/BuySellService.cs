@@ -90,6 +90,7 @@ namespace bolsafeucn_back.src.Application.Services.Implements
                     UserId = buySell.UserId,
                     UserName = buySell.User.UserName ?? "Usuario",
                     UserEmail = buySell.User.Email ?? "",
+                    AboutMe = buySell.User.AboutMe
                 };
 
                 _logger.LogInformation(

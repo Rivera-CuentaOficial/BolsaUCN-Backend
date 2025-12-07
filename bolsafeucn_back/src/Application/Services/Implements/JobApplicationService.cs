@@ -354,6 +354,7 @@ namespace bolsafeucn_back.src.Application.Services.Implements
                 Rating = (float?)applicant.Student.Rating,
                 MotivationLetter = applicant.Student.Student?.MotivationLetter,
                 Disability = applicant.Student.Student?.Disability.ToString(),
+                ProfilePicture = applicant.Student.ProfilePhoto?.Url
                 // TODO: falta descripcion
             };
         }
