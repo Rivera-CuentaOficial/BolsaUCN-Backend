@@ -263,6 +263,14 @@ namespace bolsafeucn_back.src.Application.Services.Implements
             buySell.IsActive = false;
             buySell.statusValidation = StatusValidation.Closed;
             await _buySellRepository.UpdateAsync(buySell);
+
+            {
+                await _emailService.SendPublicationStatusChangeEmailAsync(
+                    buySell.User.Email,
+                    buySell.Title,
+                    "Cerrada (Finalizada)" // Estado a mostrar en el email
+                );
+            }
         }
     }
 }

@@ -143,7 +143,7 @@ public class OfferService : IOfferService
                 Location = o.Location,
                 PostDate = o.PublicationDate,
                 Remuneration = o.Remuneration,
-                OfferType = o.OfferType
+                OfferType = o.OfferType,
             })
             .ToList();
     }
@@ -204,7 +204,7 @@ public class OfferService : IOfferService
             Active = offer.IsActive,
             statusValidation = offer.statusValidation,
             Remuneration = offer.Remuneration,
-            OfferType = offer.OfferType
+            OfferType = offer.OfferType,
         };
         _logger.LogInformation("Detalles de oferta ID: {OfferId} obtenidos exitosamente", offerId);
         return result;
@@ -224,7 +224,10 @@ public class OfferService : IOfferService
         offer.IsActive = false;
         await _offerRepository.UpdateOfferAsync(offer);
 
-        _logger.LogInformation("Oferta ID: {OfferId} cerrada. Reviews se crearán automáticamente.", offerId);
+        _logger.LogInformation(
+            "Oferta ID: {OfferId} cerrada. Reviews se crearán automáticamente.",
+            offerId
+        );
     }
 
     public async Task<OfferDetailValidationDto> GetOfferDetailForOfferValidationAsync(int id)
@@ -255,7 +258,7 @@ public class OfferService : IOfferService
             DeadlineDate = offer.DeadlineDate,
             EndDate = offer.EndDate,
             Remuneration = offer.Remuneration,
-            OfferType = offer.OfferType
+            OfferType = offer.OfferType,
         };
     }
 
@@ -276,7 +279,7 @@ public class OfferService : IOfferService
         offer.statusValidation = StatusValidation.Published;
         await _offerRepository.UpdateOfferAsync(offer);
 
-        if (offer.User?.Email != null) 
+        if (offer.User?.Email != null)
         {
             await _emailService.SendPublicationStatusChangeEmailAsync(
                 offer.User.Email,
@@ -303,7 +306,7 @@ public class OfferService : IOfferService
         offer.statusValidation = StatusValidation.Rejected;
         await _offerRepository.UpdateOfferAsync(offer);
 
-        if (offer.User?.Email != null) 
+        if (offer.User?.Email != null)
         {
             await _emailService.SendPublicationStatusChangeEmailAsync(
                 offer.User.Email,
@@ -353,8 +356,18 @@ public class OfferService : IOfferService
         offer.IsActive = false;
         await _offerRepository.UpdateOfferAsync(offer);
 
-        _logger.LogInformation("Oferta ID: {OfferId} cerrada por el oferente. Reviews se crearán automáticamente.", offerId);
-    }
+        _logger.LogInformation(
+            "Oferta ID: {OfferId} cerrada por el oferente. Reviews se crearán automáticamente.",
+            offerId
+        );
 
-    
+        if (offer.User?.Email != null)
+        {
+            await _emailService.SendPublicationStatusChangeEmailAsync(
+                offer.User.Email,
+                offer.Title,
+                "Cerrada (Finalizada)" // Estado a mostrar en el email
+            );
+        }
+    }
 }
