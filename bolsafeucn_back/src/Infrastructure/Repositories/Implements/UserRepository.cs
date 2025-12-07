@@ -428,18 +428,20 @@ namespace bolsafeucn_back.src.Infrastructure.Repositories.Implements
             // Filtro por tipo
             if (!string.IsNullOrEmpty(searchParams.UserType))
             {
-                var userType = searchParams.UserType.ToLower();
-                query = query.Where(u => u.UserType.ToString().ToLower() == userType);
+                if (Enum.TryParse(searchParams.UserType, ignoreCase: true, out UserType userTypeEnum))
+                {
+                    query = query.Where(u => u.UserType == userTypeEnum);
+                }
             }
             //Filtro por estado
             if (!string.IsNullOrEmpty(searchParams.BlockedStatus))
             {
                 var status = searchParams.BlockedStatus.ToLower();
-                if (status == "Unblocked")
+                if (status == "unblocked")
                 {
                     query = query.Where(u => u.IsBlocked == false);
                 }
-                else if (status == "Blocked")
+                else if (status == "blocked")
                 {
                     query = query.Where(u => u.IsBlocked == true);
                 }
@@ -520,6 +522,12 @@ namespace bolsafeucn_back.src.Infrastructure.Repositories.Implements
                 "email" => ascending 
                     ? query.OrderBy(u => u.Email) 
                     : query.OrderByDescending(u => u.Email),
+                "rut" => ascending 
+                    ? query.OrderBy(u => u.Rut) 
+                    : query.OrderByDescending(u => u.Rut),
+                "usertype" => ascending 
+                    ? query.OrderBy(u => u.UserType) 
+                    : query.OrderByDescending(u => u.UserType),
                 "rating" => ascending 
                     ? query.OrderBy(u => u.Rating) 
                     : query.OrderByDescending(u => u.Rating),

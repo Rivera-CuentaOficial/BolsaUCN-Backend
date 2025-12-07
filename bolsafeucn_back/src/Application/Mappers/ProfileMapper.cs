@@ -159,7 +159,6 @@ namespace bolsafeucn_back.src.Application.Mappers
                 .Map(dest => dest.UserName, src => src.UserName)
                 .Map(dest => dest.Email, src => src.Email)
                 .Map(dest => dest.Rut, src => src.Rut)
-                .Map(dest => dest.PhoneNumber, src => src.PhoneNumber)
                 .Map(dest => dest.Rating, src => src.Rating)
                 .Map(dest => dest.UserType, src =>
                     src.Student != null ? "Student" :

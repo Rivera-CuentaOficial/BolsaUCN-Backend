@@ -12,7 +12,7 @@ namespace bolsafeucn_back.src.Application.DTOs.UserDTOs.AdminDTOs
         /// <summary>
         /// Tipo de usuario para filtrar (Student, Individual, Company, Admin).
         /// </summary>
-        [RegularExpression("Student|Individual|Company|Admin", ErrorMessage = "Tipo de usuario inválido.")]
+        [RegularExpression("Estudiante|Particular|Empresa|Administrador", ErrorMessage = "Tipo de usuario inválido.")]
         public string? UserType { get; set; }
         /// <summary>
         /// Estado bloqueado para filtrar (Blocked, Unblocked).
@@ -22,7 +22,7 @@ namespace bolsafeucn_back.src.Application.DTOs.UserDTOs.AdminDTOs
         /// <summary>
         /// Campo por el cual ordenar los resultados.
         /// </summary>
-        [RegularExpression("UserName|Email|Rating", ErrorMessage = "Campo de ordenamiento inválido.")]
+        [RegularExpression("UserName|Email|Rut|UserType|Rating|IsBlocked", ErrorMessage = "Campo de ordenamiento inválido.")]
         public string? SortBy { get; set; }
         /// <summary>
         /// Orden de los resultados: 'asc' para ascendente, 'desc' para descendente.
