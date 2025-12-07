@@ -159,7 +159,7 @@ namespace bolsafeucn_back.src.Application.Infrastructure.Data
                 AboutMe = "Soy estudioso jeje",
                 Rut = "12345678-9",
                 EmailConfirmed = true,
-                Banned = false,
+                IsBlocked = false,
                 Rating = 4.3,
                 ProfilePhoto = new UserImage
                 {
@@ -207,7 +207,7 @@ namespace bolsafeucn_back.src.Application.Infrastructure.Data
                 AboutMe = "Estudiante con varias evaluaciones pendientes",
                 Rut = "22334455-6",
                 EmailConfirmed = true,
-                Banned = false,
+                IsBlocked = false,
                 Rating = 0.0,
                 ProfilePhoto = new UserImage
                 {
