@@ -113,7 +113,7 @@ namespace bolsafeucn_back.src.Application.Infrastructure.Data
                 UserType = UserType.Estudiante,
                 Rut = "12345678-9",
                 EmailConfirmed = true,
-                IsBlocked = false,
+                Banned = false,
                 Rating = 3.3,
                 ProfilePhoto = new UserImage
                 {
@@ -159,7 +159,7 @@ namespace bolsafeucn_back.src.Application.Infrastructure.Data
                 AboutMe = "Soy estudioso jeje",
                 Rut = "12345678-9",
                 EmailConfirmed = true,
-                IsBlocked = false,
+                Banned = false,
                 Rating = 4.3,
                 ProfilePhoto = new UserImage
                 {
@@ -207,7 +207,7 @@ namespace bolsafeucn_back.src.Application.Infrastructure.Data
                 AboutMe = "Estudiante con varias evaluaciones pendientes",
                 Rut = "22334455-6",
                 EmailConfirmed = true,
-                IsBlocked = false,
+                Banned = false,
                 Rating = 0.0,
                 ProfilePhoto = new UserImage
                 {
@@ -255,7 +255,7 @@ namespace bolsafeucn_back.src.Application.Infrastructure.Data
                 Rut = "76543210-K",
                 EmailConfirmed = true,
                 Rating = 5.4,
-                IsBlocked = false,
+                Banned = false,
                 ProfilePhoto = new UserImage
                 {
                     Url =
@@ -297,7 +297,7 @@ namespace bolsafeucn_back.src.Application.Infrastructure.Data
                 Rut = "11222333-4",
                 EmailConfirmed = true,
                 Rating = 6.0,
-                IsBlocked = false,
+                Banned = false,
                 ProfilePhoto = new UserImage
                 {
                     Url =
@@ -338,7 +338,7 @@ namespace bolsafeucn_back.src.Application.Infrastructure.Data
                 AboutMe = "Administrador del sistema BolsaUcn",
                 Rut = "99888777-6",
                 EmailConfirmed = true,
-                IsBlocked = false,
+                Banned = false,
                 ProfilePhoto = new UserImage
                 {
                     Url =
@@ -363,7 +363,7 @@ namespace bolsafeucn_back.src.Application.Infrastructure.Data
                     GeneralUserId = testAdminUser.Id,
                     Name = "Admin",
                     LastName = "Admin Sistema",
-                    IsSuperAdmin = false,
+                    SuperAdmin = false,
                     GeneralUser = testAdminUser,
                 };
                 context.Admins.Add(testAdmin);
@@ -413,7 +413,7 @@ namespace bolsafeucn_back.src.Application.Infrastructure.Data
                     Rut = faker.Random.Replace("##.###.###-K"),
                     EmailConfirmed = true,
                     Rating = Math.Round(faker.Random.Double(1.0, 6.0), 1),
-                    IsBlocked = faker.Random.Bool(0.3f),
+                    Banned = faker.Random.Bool(0.3f),
                     ProfilePhoto = new UserImage
                     {
                         Url =
@@ -457,7 +457,7 @@ namespace bolsafeucn_back.src.Application.Infrastructure.Data
                     Rut = faker.Random.Replace("##.###.###-K"),
                     EmailConfirmed = true,
                     Rating = Math.Round(faker.Random.Double(1.0, 6.0), 1),
-                    IsBlocked = faker.Random.Bool(0.3f),
+                    Banned = faker.Random.Bool(0.3f),
                     ProfilePhoto = new UserImage
                     {
                         Url =
@@ -498,7 +498,7 @@ namespace bolsafeucn_back.src.Application.Infrastructure.Data
                 AboutMe = faker.Random.Replace("################"),
                 EmailConfirmed = true,
                 Rating = Math.Round(faker.Random.Double(1.0, 6.0), 1),
-                IsBlocked = faker.Random.Bool(0.9f),
+                Banned = faker.Random.Bool(0.9f),
                 ProfilePhoto = new UserImage
                 {
                     Url =

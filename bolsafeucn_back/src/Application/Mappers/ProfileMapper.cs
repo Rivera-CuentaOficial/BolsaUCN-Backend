@@ -150,7 +150,7 @@ namespace bolsafeucn_back.src.Application.Mappers
             .Map(dest => dest.Email, src => src.Email)
             .Map(dest => dest.AboutMe, src => src.AboutMe)
             .Map(dest => dest.PhoneNumber, src => src.PhoneNumber)
-            .Map(dest => dest.Admin!.IsSuperAdmin, src => src.IsSuperAdmin);
+            .Map(dest => dest.Admin!.SuperAdmin, src => src.SuperAdmin);
         }
 
         public void ConfigureAdminMappings()
@@ -162,7 +162,7 @@ namespace bolsafeucn_back.src.Application.Mappers
                 .Map(dest => dest.Rut, src => src.Rut)
                 .Map(dest => dest.Rating, src => src.Rating)
                 .Map(dest => dest.UserType, src => src.UserType.ToString())
-                .Map(dest => dest.IsBlocked, src => src.IsBlocked);
+                .Map(dest => dest.Banned, src => src.Banned);
                 
             TypeAdapterConfig<GeneralUser, UserProfileForAdminDTO>
                 .NewConfig()
@@ -187,13 +187,13 @@ namespace bolsafeucn_back.src.Application.Mappers
                 .Map(dest => dest.ProfilePictureUrl, src => src.ProfilePhoto != null ? src.ProfilePhoto.Url : null)
                 .Map(dest => dest.AboutMe, src => src.AboutMe)
                 .Map(dest => dest.UserType, src => src.UserType.ToString())
-                .Map(dest => dest.IsBlocked, src => src.IsBlocked)
+                .Map(dest => dest.Banned, src => src.Banned)
                 .Map(dest => dest.CreatedAt, src => src.CreatedAt)
                 .Map(dest => dest.UpdatedAt, src => src.UpdatedAt)
                 .Map(dest => dest.LastLoginAt, src => src.LastLoginAt)
                 .Map(dest => dest.CVUrl, src => src.Student != null ? src.Student.CurriculumVitae : null)
                 .Map(dest => dest.Disability, src => src.Student != null ? src.Student.Disability.ToString() : null)
-                .Map(dest => dest.IsSuperAdmin, src => src.Admin != null ? src.Admin.IsSuperAdmin : (bool?)null);
+                .Map(dest => dest.IsSuperAdmin, src => src.Admin != null ? src.Admin.SuperAdmin : (bool?)null);
         }
 
     }

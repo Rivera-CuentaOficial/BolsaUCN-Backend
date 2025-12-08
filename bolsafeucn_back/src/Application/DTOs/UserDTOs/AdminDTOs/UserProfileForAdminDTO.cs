@@ -15,7 +15,7 @@ namespace bolsafeucn_back.src.Application.DTOs.UserDTOs.AdminDTOs
         public string? ProfilePictureUrl { get; set; }
         public string? AboutMe { get; set; }
         public required string UserType { get; set; }
-        public bool IsBlocked { get; set; }
+        public bool Banned { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime UpdatedAt { get; set; }
         public DateTime? LastLoginAt { get; set; }

@@ -20,7 +20,7 @@ namespace bolsafeucn_back.src.Application.Mappers
                 .Map(dest => dest.PhoneNumber, src => src.PhoneNumber)
                 .Map(dest => dest.Rut, src => src.Rut)
                 .Map(dest => dest.UserType, src => UserType.Empresa)
-                .Map(dest => dest.IsBlocked, src => false)
+                .Map(dest => dest.Banned, src => false)
                 .Map(dest => dest.EmailConfirmed, src => false);
 
             TypeAdapterConfig<RegisterCompanyDTO, Company>

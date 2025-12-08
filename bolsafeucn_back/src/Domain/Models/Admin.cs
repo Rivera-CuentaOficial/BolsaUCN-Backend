@@ -9,6 +9,6 @@ namespace bolsafeucn_back.src.Domain.Models
         public required int GeneralUserId { get; set; }
         public required string Name { get; set; }
         public required string LastName { get; set; }
-        public bool IsSuperAdmin { get; set; } = false;
+        public bool SuperAdmin { get; set; } = false;
     }
 }

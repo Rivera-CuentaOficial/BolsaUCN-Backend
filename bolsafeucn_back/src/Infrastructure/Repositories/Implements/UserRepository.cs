@@ -60,7 +60,7 @@ namespace bolsafeucn_back.src.Infrastructure.Repositories.Implements
         /// <returns>Estado de bloqueo del usuario</returns>
         public async Task<bool> GetBlockedStatusAsync(int userId)
         {
-            return await _context.Users.AnyAsync(u => u.Id == userId && u.IsBlocked);
+            return await _context.Users.AnyAsync(u => u.Id == userId && u.Banned);
         }
 
         /// <summary>
@@ -457,11 +457,11 @@ namespace bolsafeucn_back.src.Infrastructure.Repositories.Implements
                 var status = searchParams.BlockedStatus.ToLower();
                 if (status == "unblocked")
                 {
-                    query = query.Where(u => u.IsBlocked == false);
+                    query = query.Where(u => u.Banned == false);
                 }
                 else if (status == "blocked")
                 {
-                    query = query.Where(u => u.IsBlocked == true);
+                    query = query.Where(u => u.Banned == true);
                 }
             }
             // Ordenamiento
@@ -482,7 +482,7 @@ namespace bolsafeucn_back.src.Infrastructure.Repositories.Implements
         /// <returns>El número de administradores activos</returns>
         public async Task<int> GetNumberOfAdmins()
         {
-            return await _context.Admins.CountAsync(a => a.GeneralUser!.IsBlocked == false);
+            return await _context.Admins.CountAsync(a => a.GeneralUser!.Banned == false);
         }
 
         /// <summary>

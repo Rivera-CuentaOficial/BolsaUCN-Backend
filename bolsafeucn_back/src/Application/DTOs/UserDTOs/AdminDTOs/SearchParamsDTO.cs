@@ -22,7 +22,7 @@ namespace bolsafeucn_back.src.Application.DTOs.UserDTOs.AdminDTOs
         /// <summary>
         /// Campo por el cual ordenar los resultados.
         /// </summary>
-        [RegularExpression("UserName|Email|Rut|UserType|Rating|IsBlocked", ErrorMessage = "Campo de ordenamiento inválido.")]
+        [RegularExpression("UserName|Email|Rut|UserType|Rating|Banned", ErrorMessage = "Campo de ordenamiento inválido.")]
         public string? SortBy { get; set; }
         /// <summary>
         /// Orden de los resultados: 'asc' para ascendente, 'desc' para descendente.

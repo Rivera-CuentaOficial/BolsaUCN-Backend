@@ -64,7 +64,7 @@ namespace bolsafeucn_back.src.Application.Services.Implements
                 Log.Warning($"No se encontró al usuario con ID {userId}.");
                 throw new KeyNotFoundException("Usuario no encontrado.");
             }
-            if (user.UserType == UserType.Administrador && admin.Admin!.IsSuperAdmin) // Prevenir bloqueo de administradores si es que es el ultimo
+            if (user.UserType == UserType.Administrador && admin.Admin!.SuperAdmin) // Prevenir bloqueo de administradores si es que es el ultimo
             {
                 var numberOfAdmins = _userRepository.GetNumberOfAdmins();
                 if (numberOfAdmins.Result <= 1)
@@ -76,20 +76,20 @@ namespace bolsafeucn_back.src.Application.Services.Implements
                 throw new InvalidOperationException("No se puede bloquear o desbloquear a un administrador.");
             }
 
-            user.IsBlocked = !user.IsBlocked; // Alternar el estado de bloqueo
+            user.Banned = !user.Banned; // Alternar el estado de bloqueo
 
             var toggleResult = await _userRepository.UpdateAsync(user);
             if (toggleResult)
             {
-                Log.Information($"El estado de bloqueo del usuario con ID {userId} ha sido alternado a {user.IsBlocked}.");
-                if (user.IsBlocked)
+                Log.Information($"El estado de bloqueo del usuario con ID {userId} ha sido alternado a {user.Banned}.");
+                if (user.Banned)
                 {
                     var revokeResult = await _tokenService.RevokeAllActiveTokensAsync(userId);
                     Log.Information(revokeResult
                         ? $"Tokens activos revocados para el usuario con ID {userId} tras ser bloqueado."
                         : $"El usuario con ID {userId} no tenía tokens activos para revocar tras ser bloqueado.");
                 }
-                return user.IsBlocked;
+                return user.Banned;
             }
             else
             {

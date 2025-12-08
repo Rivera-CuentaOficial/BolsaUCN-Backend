@@ -748,7 +748,7 @@ namespace bolsafeucn_back.src.Application.Services.Implements
                 );
                 throw new UnauthorizedAccessException("Credenciales inválidas.");
             }
-            if (user.IsBlocked)
+            if (user.Banned)
             {
                 Log.Warning(
                     $"Intento de login para usuario bloqueado: {user.Email}, UserId: {user.Id}"
