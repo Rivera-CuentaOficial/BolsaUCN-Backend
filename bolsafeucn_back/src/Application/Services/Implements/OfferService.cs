@@ -205,6 +205,10 @@ public class OfferService : IOfferService
             statusValidation = offer.statusValidation,
             Remuneration = offer.Remuneration,
             OfferType = offer.OfferType,
+            Location = offer.Location,
+            Requirements = offer.Requirements,
+            ContactInfo = offer.ContactInfo,
+            AboutMe = offer.User?.AboutMe
         };
         _logger.LogInformation("Detalles de oferta ID: {OfferId} obtenidos exitosamente", offerId);
         return result;
@@ -268,6 +272,9 @@ public class OfferService : IOfferService
             EndDate = offer.EndDate,
             Remuneration = offer.Remuneration,
             OfferType = offer.OfferType,
+            ContactInfo = offer.ContactInfo,
+            AboutMe = offer.User?.AboutMe,
+            Requirements = offer.Requirements
         };
     }
 
