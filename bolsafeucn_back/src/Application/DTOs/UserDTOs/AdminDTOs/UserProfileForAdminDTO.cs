@@ -24,6 +24,6 @@ namespace bolsafeucn_back.src.Application.DTOs.UserDTOs.AdminDTOs
         public string? CVUrl { get; set; }
         public string? Disability { get; set; }
         // Admin specific fields
-        public bool? IsSuperAdmin { get; set; }
+        public bool? SuperAdmin { get; set; }
     }
 }
