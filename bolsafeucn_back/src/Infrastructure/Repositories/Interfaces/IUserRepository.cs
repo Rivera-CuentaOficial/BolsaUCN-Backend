@@ -13,7 +13,7 @@ namespace bolsafeucn_back.src.Infrastructure.Repositories.Interfaces
         Task<bool> CreateStudentAsync(Student student);
         Task<bool> CreateIndividualAsync(Individual individual);
         Task<bool> CreateCompanyAsync(Company company);
-        Task<bool> CreateAdminAsync(Admin admin, bool IsSuperAdmin);
+        Task<bool> CreateAdminAsync(Admin admin, bool SuperAdmin);
         Task<bool> CheckPasswordAsync(GeneralUser user, string password);
         Task<bool> UpdateAsync(GeneralUser user);
         Task<bool> UpdatePasswordAsync(GeneralUser user, string newPassword);

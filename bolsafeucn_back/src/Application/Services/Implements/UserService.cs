@@ -382,9 +382,9 @@ namespace bolsafeucn_back.src.Application.Services.Implements
         )
         {
             Log.Information(
-                "Iniciando registro de admin con email: {Email}, IsSuperAdmin: {IsSuperAdmin}",
+                "Iniciando registro de admin con email: {Email}, SuperAdmin: {SuperAdmin}",
                 registerAdminDTO.Email,
-                registerAdminDTO.IsSuperAdmin
+                registerAdminDTO.SuperAdmin
             );
 
             bool registrado = await _userRepository.ExistsByEmailAsync(registerAdminDTO.Email);
@@ -427,9 +427,9 @@ namespace bolsafeucn_back.src.Application.Services.Implements
             user.ProfileBannerId = banner.Id;
 
             string role = "Admin";
-            if (registerAdminDTO.IsSuperAdmin)
+            if (registerAdminDTO.SuperAdmin)
             {
-                role = "IsSuperAdmin";
+                role = "SuperAdmin";
             }
             var result = await _userRepository.CreateUserAsync(
                 user,
@@ -446,7 +446,7 @@ namespace bolsafeucn_back.src.Application.Services.Implements
             }
             var admin = registerAdminDTO.Adapt<Admin>();
             admin.GeneralUserId = user.Id;
-            result = await _userRepository.CreateAdminAsync(admin, registerAdminDTO.IsSuperAdmin);
+            result = await _userRepository.CreateAdminAsync(admin, registerAdminDTO.SuperAdmin);
             if (!result)
             {
                 Log.Error("Error al crear perfil de admin para usuario ID: {UserId}", user.Id);

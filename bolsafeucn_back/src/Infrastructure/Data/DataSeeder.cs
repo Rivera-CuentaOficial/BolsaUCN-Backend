@@ -32,7 +32,7 @@ namespace bolsafeucn_back.src.Application.Infrastructure.Data
                         new Role { Name = "Admin", NormalizedName = "ADMIN" },
                         new Role { Name = "Applicant", NormalizedName = "APPLICANT" },
                         new Role { Name = "Offerent", NormalizedName = "OFFERENT" },
-                        new Role { Name = "IsSuperAdmin", NormalizedName = "ISSUPERADMIN" },
+                        new Role { Name = "SuperAdmin", NormalizedName = "SuperAdmin" },
                     };
                     foreach (var role in roles)
                     {

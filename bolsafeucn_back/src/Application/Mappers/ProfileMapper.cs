@@ -193,7 +193,7 @@ namespace bolsafeucn_back.src.Application.Mappers
                 .Map(dest => dest.LastLoginAt, src => src.LastLoginAt)
                 .Map(dest => dest.CVUrl, src => src.Student != null ? src.Student.CurriculumVitae : null)
                 .Map(dest => dest.Disability, src => src.Student != null ? src.Student.Disability.ToString() : null)
-                .Map(dest => dest.IsSuperAdmin, src => src.Admin != null ? src.Admin.SuperAdmin : (bool?)null);
+                .Map(dest => dest.SuperAdmin, src => src.Admin != null ? src.Admin.SuperAdmin : (bool?)null);
         }
 
     }

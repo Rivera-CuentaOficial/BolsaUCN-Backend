@@ -171,14 +171,14 @@ namespace bolsafeucn_back.src.Infrastructure.Repositories.Implements
         /// Crea un nuevo administrador en el sistema.
         /// </summary>
         /// <param name="admin">Administrador a crear</param>
-        /// <param name="IsSuperAdmin">Indica si el administrador es superadministrador</param>
+        /// <param name="SuperAdmin">Indica si el administrador es superadministrador</param>
         /// <returns>True si se creó el administrador, de lo contrario false.</returns>
-        public async Task<bool> CreateAdminAsync(Admin admin, bool IsSuperAdmin)
+        public async Task<bool> CreateAdminAsync(Admin admin, bool SuperAdmin)
         {
             Log.Information(
-                "Creando perfil de admin para usuario ID: {UserId}, IsSuperAdmin: {IsSuperAdmin}",
+                "Creando perfil de admin para usuario ID: {UserId}, SuperAdmin: {SuperAdmin}",
                 admin.GeneralUserId,
-                IsSuperAdmin
+                SuperAdmin
             );
             var result = await _context.Admins.AddAsync(admin);
             await _context.SaveChangesAsync();
