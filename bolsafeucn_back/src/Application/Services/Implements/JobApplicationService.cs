@@ -49,12 +49,12 @@ namespace bolsafeucn_back.src.Application.Services.Implements
             if (pendingReviewsCount >= 3)
             {
                 _logger.LogWarning(
-                    "Usuario {UserId} intentó crear publicación de compra/venta con {PendingCount} reseñas pendientes",
+                    "Usuario {UserId} intentó postular a oferta con {PendingCount} reseñas pendientes",
                     studentId,
                     pendingReviewsCount
                 );
-                throw new InvalidOperationException(
-                    "No puedes postular a nuevas ofertas hasta que completes tus reseñas pendientes"
+                throw new UnauthorizedAccessException(
+                    "No puedes postular a nuevas ofertas hasta que completes todas tus reseñas pendientes"
                 );
             }
 
