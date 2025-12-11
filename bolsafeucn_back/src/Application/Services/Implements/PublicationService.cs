@@ -51,10 +51,11 @@ namespace bolsafeucn_back.src.Application.Services.Implements
                 currentUser.UserType != UserType.Empresa
                 && currentUser.UserType != UserType.Particular
                 && currentUser.UserType != UserType.Administrador
+                && currentUser.UserType != UserType.Estudiante
             )
             {
                 throw new UnauthorizedAccessException(
-                    "Solo usuarios tipo Empresa o Particular pueden crear ofertas."
+                    "Solo usuarios tipo Empresa, Particular, Administrador o Estudiante registrado pueden crear ofertas."
                 );
             }
             if (offerDTO.EndDate <= DateTime.UtcNow)
@@ -142,10 +143,11 @@ namespace bolsafeucn_back.src.Application.Services.Implements
                 currentUser.UserType != UserType.Empresa
                 && currentUser.UserType != UserType.Particular
                 && currentUser.UserType != UserType.Administrador
+                && currentUser.UserType != UserType.Estudiante
             )
             {
                 throw new UnauthorizedAccessException(
-                    "Solo usuarios tipo Empresa o Particular pueden crear publicaciones de compra/venta."
+                    "Solo usuarios tipo Empresa, Particular, Administrador o Estudiante registrado pueden crear ofertas."
                 );
             }
             // Validar que el usuario no tenga más de 3 reseñas pendientes
