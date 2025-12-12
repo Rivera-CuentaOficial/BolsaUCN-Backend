@@ -1,4 +1,5 @@
 using bolsafeucn_back.src.Application.DTOs.JobAplicationDTO;
+using bolsafeucn_back.src.Domain.Models;
 
 namespace bolsafeucn_back.src.Application.Services.Interfaces
 {
@@ -22,15 +23,17 @@ namespace bolsafeucn_back.src.Application.Services.Interfaces
         /// </summary>
         Task<IEnumerable<JobApplicationResponseDto>> GetApplicationsByOfferIdAsync(int offerId);
 
+        Task<JobApplicationDetailDto?> GetApplicationDetailAsync(int applicationId);
+
         /// <summary>
         /// Obtiene todas las postulaciones de todas las ofertas de una empresa
         /// </summary>
         Task<IEnumerable<JobApplicationResponseDto>> GetApplicationsByCompanyIdAsync(int companyId);
 
         /// <summary>
-        /// Actualiza el estado de una postulación (Pendiente, Aceptado, Rechazado)
+        /// Actualiza el estado de una postulación (Pendiente, Aceptada, Rechazada)
         /// </summary>
-        Task<bool> UpdateApplicationStatusAsync(int applicationId, string newStatus, int companyId);
+        Task<bool> UpdateApplicationStatusAsync(int applicationId, ApplicationStatus newStatus, int companyId);
 
         /// <summary>
         /// Valida si un estudiante es elegible para postular
@@ -54,17 +57,13 @@ namespace bolsafeucn_back.src.Application.Services.Interfaces
         Task<IEnumerable<OffererApplicantViewDto>> GetApplicantsForOffererAsync(int offerId, int offererUserId);
 
         /// <summary>
-<<<<<<< HEAD
         /// Obtiene los detalles de un postulante para una oferta específica, validando que el oferente sea el dueño.
         /// </summary>
         Task<ViewApplicantUserDetailDto> GetApplicantDetailForOfferer(int studentId, int offerId, int offererUserId);
 
 
-=======
-        /// Obtiene los detalles de un postulante para un oferente, validando que el oferente sea el dueño.
-        /// </summary>      
-        Task<JobApplicationDetailDto> GetApplicationDetailAsync(int applicationId);
->>>>>>> origin/dev
+
+
 
 
     }

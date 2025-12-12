@@ -10,14 +10,11 @@ namespace bolsafeucn_back.src.Application.DTOs.UserDTOs.UserProfileDTOs
         public required string LastName { get; set; }
         public required string Rut { get; set; }
         public required string Email { get; set; }
-        public required string PhoneNumber { get; set; } 
+        public required string PhoneNumber { get; set; }
         public required float Rating { get; set; }
         public required string AboutMe { get; set; }
         public required string CurriculumVitae { get; set; }
-
-        public void ApplyTo(GeneralUser user)
-        {
-            user.Adapt(this);
-        }
+        public string? ProfilePhoto { get; set; }
+        public string? ProfileBanner { get; set; }
     }
 }

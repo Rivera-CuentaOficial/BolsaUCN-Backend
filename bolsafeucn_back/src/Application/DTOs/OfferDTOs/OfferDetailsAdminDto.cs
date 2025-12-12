@@ -54,6 +54,15 @@ namespace bolsafeucn_back.src.Application.DTOs.OfferDTOs
         public DateTime EndDate { get; set; }
         public DateTime DeadlineDate { get; set; }
         public int Remuneration { get; set; }
-        
+
+        /// <summary>
+        /// Offer type enum from the domain model.
+        /// </summary>
+        public OfferTypes OfferType { get; set; }
+        public string Location { get; set; }
+        public string Requirements { get; set; }
+        public string ContactInfo { get; set; }
+        public string AboutMe { get; set; }
+
     }
 }

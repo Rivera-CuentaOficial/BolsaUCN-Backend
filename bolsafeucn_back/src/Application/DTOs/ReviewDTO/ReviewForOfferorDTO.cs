@@ -12,6 +12,6 @@ namespace bolsafeucn_back.src.Application.DTOs.ReviewDTO
         public string CommentForOfferor { get; set; } = string.Empty;
         [Required(ErrorMessage = "La fecha de envío es obligatoria.")]
         public DateTime SendedAt { get; set; }
-        public required int PublicationId { get; set; }
+        public required int ReviewId { get; set; }
     }
 }

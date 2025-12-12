@@ -208,6 +208,12 @@ namespace bolsafeucn_back.src.Infrastructure.Repositories.Implements
             return await _userManager.CheckPasswordAsync(user, password);
         }
 
+        /// <summary>
+        /// Actualiza la información de un usuario.
+        /// </summary>
+        /// <param name="user">Usuario a actualizar</param>
+        /// <returns>True si la actualización fue exitosa, de lo contrario false.</returns>
+        /// <exception cref="InvalidOperationException"></exception>
         public async Task<bool> UpdateAsync(GeneralUser user)
         {
             Log.Information($"Actualizando informacion para el usuario Id: {user.Id}");
@@ -292,6 +298,33 @@ namespace bolsafeucn_back.src.Infrastructure.Repositories.Implements
             return await _context.Users.FindAsync(id);
         }
 
+        // TODO: Revisar si combiana implementar estas funciones genéricas.
+        // public async Task<GeneralUser?> GetBy(int id, // ReadOne, ReadAll
+        //     bool includeStudent = false,
+        //     bool includeCompany = false,
+        //     bool includeIndividual = false,
+        //     bool includeAdmin = false,
+        //     bool AsNoTracking = false,
+        //     Func<GeneralUser, bool>? filter = null // u.Id == id, u.Name == "test", etc
+        // )
+        // {
+        //     var query = _context.Users.AsQueryable();
+        //     if (includeStudent)
+        //         query = query.Include(u => u.Student);
+        //     if (includeCompany)
+        //         query = query.Include(u => u.Company);
+        //     if (includeIndividual)  
+        //         query = query.Include(u => u.Individual);
+        //     if (includeAdmin)
+        //         query = query.Include(u => u.Admin);
+        //     if (AsNoTracking)
+        //         query = query.AsNoTracking();
+
+        //     return await query.FirstOrDefaultAsync(filter != null
+        //         ? u => u.Id == id && filter(u)
+        //         : u => u.Id == id);
+        // }
+
         public async Task<GeneralUser?> GetByIdWithRelationsAsync(int userId)
         {
             return await _context
@@ -308,7 +341,7 @@ namespace bolsafeucn_back.src.Infrastructure.Repositories.Implements
         /// <param name="userId">ID del usuario</param>
         /// <param name="userType">Tipo de usuario</param>
         /// <returns>Usuario general con las relaciones correspondientes</returns>
-        public async Task<GeneralUser?> GetUntrackedWithTypeAsync(int userId, UserType userType)
+        public async Task<GeneralUser?> GetUntrackedWithTypeAsync(int userId, UserType? userType)
         {
             var query = _context.Users.AsNoTracking().AsQueryable();
             switch (userType)
@@ -317,9 +350,13 @@ namespace bolsafeucn_back.src.Infrastructure.Repositories.Implements
                 case UserType.Particular: query = query.Include(u => u.Individual); break;
                 case UserType.Empresa: query = query.Include(u => u.Company); break;
                 case UserType.Administrador: query = query.Include(u => u.Admin); break;
-                default: return null;
-            };
-            return await query.FirstOrDefaultAsync(u => u.Id == userId);
+                default: break;
+            }
+            ;
+            return await query
+                            .Include(u => u.ProfilePhoto)
+                            .Include(u => u.ProfileBanner)
+                            .FirstOrDefaultAsync(u => u.Id == userId);
         }
 
         /// <summary>
@@ -328,7 +365,7 @@ namespace bolsafeucn_back.src.Infrastructure.Repositories.Implements
         /// <param name="userId">ID del usuario</param>
         /// <param name="userType">Tipo de usuario</param>
         /// <returns>Usuario general con las relaciones correspondientes</returns>
-        public async Task<GeneralUser?> GetTrackedWithTypeAsync(int userId, UserType userType)
+        public async Task<GeneralUser?> GetTrackedWithTypeAsync(int userId, UserType? userType)
         {
             var query = _context.Users.AsQueryable();
             switch (userType)
@@ -337,9 +374,14 @@ namespace bolsafeucn_back.src.Infrastructure.Repositories.Implements
                 case UserType.Particular: query = query.Include(u => u.Individual); break;
                 case UserType.Empresa: query = query.Include(u => u.Company); break;
                 case UserType.Administrador: query = query.Include(u => u.Admin); break;
-                default: return null;
-            };
-            return await query.FirstOrDefaultAsync(u => u.Id == userId);
+                default: break;
+            }
+            ;
+            return await query
+                            .Include(u => u.ProfilePhoto)
+                            .Include(u => u.ProfileBanner)
+                            .Include(u => u.CV)
+                            .FirstOrDefaultAsync(u => u.Id == userId);
         }
 
         public async Task<GeneralUser> AddAsync(GeneralUser user)

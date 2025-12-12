@@ -15,7 +15,7 @@ namespace bolsafeucn_back.src.Application.Mappers
         {
             TypeAdapterConfig<RegisterCompanyDTO, GeneralUser>
                 .NewConfig()
-                .Map(dest => dest.UserName, src => src.Email)
+                .Map(dest => dest.UserName, src => src.Email != null && src.Email.Contains("@") ? src.Email.Substring(0, src.Email.IndexOf("@")) : src.Email)
                 .Map(dest => dest.Email, src => src.Email)
                 .Map(dest => dest.PhoneNumber, src => src.PhoneNumber)
                 .Map(dest => dest.Rut, src => src.Rut)
@@ -26,8 +26,7 @@ namespace bolsafeucn_back.src.Application.Mappers
             TypeAdapterConfig<RegisterCompanyDTO, Company>
                 .NewConfig()
                 .Map(dest => dest.CompanyName, src => src.CompanyName)
-                .Map(dest => dest.LegalName, src => src.LegalName)
-                .Map(dest => dest.Rating, src => 0.0f);
+                .Map(dest => dest.LegalName, src => src.LegalName);
         }
     }
 }

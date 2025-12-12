@@ -1,3 +1,4 @@
+using bolsafeucn_back.src.Application.DTOs.BaseResponse;
 using bolsafeucn_back.src.Application.DTOs.PublicationDTO;
 
 namespace bolsafeucn_back.src.Application.Services.Interfaces
@@ -28,5 +29,20 @@ namespace bolsafeucn_back.src.Application.Services.Interfaces
         Task<IEnumerable<BuySellBasicAdminDto>> GetPublishedBuysellsAsync();
 
         Task<BuySellDetailDto> GetBuySellDetailForOfferer(int id, string userId);
+
+        /// <summary>
+        /// Metodo que aprueba y publica la compra/venta, (lo utiliza el admin)
+        /// </summary>
+        /// <param name="buySellId"></param>
+        /// <returns></returns>
+        Task GetBuySellForAdminToPublish(int buySellId);
+
+        /// <summary>
+        /// Meotdo que rechaza la compra/venta, (lo utiliza el admin)
+        /// </summary>
+        /// <param name="buySellId"></param>
+        /// <returns></returns>
+        Task GetBuySellForAdminToReject(int buySellId);
+        Task ClosePublishedBuySellAsync(int buySellId);
     }
 }

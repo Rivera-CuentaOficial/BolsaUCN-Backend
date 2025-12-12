@@ -1,6 +1,7 @@
 using Bogus.Bson;
 using bolsafeucn_back.src.Application.DTOs.PublicationDTO;
 using bolsafeucn_back.src.Application.Services.Interfaces;
+using bolsafeucn_back.src.Domain.Models;
 using bolsafeucn_back.src.Infrastructure.Repositories.Interfaces;
 using Mapster;
 using Microsoft.Extensions.Logging;
@@ -14,11 +15,17 @@ namespace bolsafeucn_back.src.Application.Services.Implements
     {
         private readonly IBuySellRepository _buySellRepository;
         private readonly ILogger<BuySellService> _logger;
+        private readonly IEmailService _emailService;
 
-        public BuySellService(IBuySellRepository buySellRepository, ILogger<BuySellService> logger)
+        public BuySellService(
+            IBuySellRepository buySellRepository,
+            ILogger<BuySellService> logger,
+            IEmailService emailService
+        )
         {
             _buySellRepository = buySellRepository;
             _logger = logger;
+            _emailService = emailService;
         }
 
         public async Task<IEnumerable<BuySellSummaryDto>> GetActiveBuySellsAsync()
@@ -83,6 +90,7 @@ namespace bolsafeucn_back.src.Application.Services.Implements
                     UserId = buySell.UserId,
                     UserName = buySell.User.UserName ?? "Usuario",
                     UserEmail = buySell.User.Email ?? "",
+                    AboutMe = buySell.User.AboutMe
                 };
 
                 _logger.LogInformation(
@@ -150,7 +158,7 @@ namespace bolsafeucn_back.src.Application.Services.Implements
             return result;
         }
 
-        public async Task<BuySellDetailDto> GetBuySellDetailForOfferer(int id,string userId)
+        public async Task<BuySellDetailDto> GetBuySellDetailForOfferer(int id, string userId)
         {
             // 1. Llamar al repositorio
             // (Tu BuySellRepository.cs ya incluye User e Images en GetByIdAsync, ¡perfecto!)
@@ -159,7 +167,6 @@ namespace bolsafeucn_back.src.Application.Services.Implements
             // 2. Verificar si se encontró
             if (buySell == null)
             {
-
                 throw new KeyNotFoundException($"La oferta con id {id} no fue encontrada.");
             }
 
@@ -174,7 +181,7 @@ namespace bolsafeucn_back.src.Application.Services.Implements
                 throw new KeyNotFoundException(
                     $"La oferta con id {id} no fue encontrada o no pertenece al usuario."
                 );
-                
+
                 // throw new UnauthorizedAccessException("No tienes permiso para ver esta oferta.");
             }
 
@@ -183,6 +190,88 @@ namespace bolsafeucn_back.src.Application.Services.Implements
 
             // 4. Retornar el DTO
             return buySellDetailDto;
+        }
+
+        public async Task GetBuySellForAdminToPublish(int id)
+        {
+            var buySell = await _buySellRepository.GetByIdAsync(id);
+            if (buySell == null)
+            {
+                throw new KeyNotFoundException($"La compra/venta con id {id} no fue encontrada.");
+            }
+            if (buySell.statusValidation != StatusValidation.InProcess)
+            {
+                throw new InvalidOperationException(
+                    $"La compra/venta con ID {id} ya fue {buySell.statusValidation}. No se puede publicar."
+                );
+            }
+            buySell.IsActive = true;
+            buySell.statusValidation = StatusValidation.Published;
+            await _buySellRepository.UpdateAsync(buySell);
+
+            if (buySell.User?.Email != null)
+            {
+                await _emailService.SendPublicationStatusChangeEmailAsync(
+                    buySell.User.Email,
+                    buySell.Title,
+                    "Publicada"
+                );
+            }
+        }
+
+        public async Task GetBuySellForAdminToReject(int id)
+        {
+            var buySell = await _buySellRepository.GetByIdAsync(id);
+            if (buySell == null)
+            {
+                throw new KeyNotFoundException($"La compra/venta con id {id} no fue encontrada.");
+            }
+            if (buySell.statusValidation != StatusValidation.InProcess)
+            {
+                throw new InvalidOperationException(
+                    $"La compra/venta con ID {id} ya fue {buySell.statusValidation}. No se puede rechazar."
+                );
+            }
+            buySell.IsActive = false;
+            buySell.statusValidation = StatusValidation.Rejected;
+            await _buySellRepository.UpdateAsync(buySell);
+
+            if (buySell.User?.Email != null)
+            {
+                await _emailService.SendPublicationStatusChangeEmailAsync(
+                    buySell.User.Email,
+                    buySell.Title,
+                    "Rechazada"
+                );
+            }
+        }
+
+        public async Task ClosePublishedBuySellAsync(int buySellId)
+        {
+            var buySell = await _buySellRepository.GetByIdAsync(buySellId);
+            if (buySell == null)
+            {
+                throw new KeyNotFoundException(
+                    $"La compra/venta con id {buySellId} no fue encontrada."
+                );
+            }
+            if (buySell.statusValidation != StatusValidation.Published)
+            {
+                throw new InvalidOperationException(
+                    $"La compra/venta con ID {buySellId} está {buySell.statusValidation}. No se puede cerrar."
+                );
+            }
+            buySell.IsActive = false;
+            buySell.statusValidation = StatusValidation.Closed;
+            await _buySellRepository.UpdateAsync(buySell);
+
+            {
+                await _emailService.SendPublicationStatusChangeEmailAsync(
+                    buySell.User.Email,
+                    buySell.Title,
+                    "Cerrada (Finalizada)" // Estado a mostrar en el email
+                );
+            }
         }
     }
 }

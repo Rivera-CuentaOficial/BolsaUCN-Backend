@@ -42,6 +42,7 @@ namespace bolsafeucn_back.src.Application.Services.Implements
                 {
                     new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
                     new Claim(ClaimTypes.Role, roleName),
+                    new Claim("userName", user.UserName!.ToString()),
                     new Claim("userType", user.UserType.ToString()),
                     new Claim(ClaimTypes.Email, user.Email!),
                 };

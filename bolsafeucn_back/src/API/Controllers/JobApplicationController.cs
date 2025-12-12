@@ -2,6 +2,7 @@ using System.Security.Claims;
 using bolsafeucn_back.src.Application.DTOs.BaseResponse;
 using bolsafeucn_back.src.Application.DTOs.JobAplicationDTO;
 using bolsafeucn_back.src.Application.Services.Interfaces;
+using bolsafeucn_back.src.Domain.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -135,7 +136,7 @@ namespace bolsafeucn_back.src.API.Controllers
                 );
             }
 
-        
+
         }
 
         [HttpGet("{applicationId}/details")]
@@ -145,7 +146,7 @@ namespace bolsafeucn_back.src.API.Controllers
             var application = await _jobApplicationService.GetApplicationDetailAsync(applicationId);
             if (application == null)
                 return NotFound("Postulación no encontrada");
-            
+
             return Ok(application);
         }
 
@@ -332,6 +333,6 @@ namespace bolsafeucn_back.src.API.Controllers
     /// </summary>
     public class UpdateApplicationStatusDto
     {
-        public string NewStatus { get; set; } = null!;
+        public ApplicationStatus NewStatus { get; set; }
     }
 }

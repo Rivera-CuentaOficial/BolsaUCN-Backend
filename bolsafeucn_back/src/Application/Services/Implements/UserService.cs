@@ -1,10 +1,12 @@
 using bolsafe_ucn.src.Application.Services.Interfaces;
 using bolsafeucn_back.src.Application.DTOs.AuthDTOs;
 using bolsafeucn_back.src.Application.DTOs.AuthDTOs.ResetPasswordDTOs;
+using bolsafeucn_back.src.Application.DTOs.UserDTOs;
 using bolsafeucn_back.src.Application.DTOs.UserDTOs.UserProfileDTOs;
 using bolsafeucn_back.src.Application.Services.Interfaces;
 using bolsafeucn_back.src.Domain.Models;
 using bolsafeucn_back.src.Infrastructure.Repositories.Interfaces;
+using CloudinaryDotNet;
 using Mapster;
 using Serilog;
 
@@ -14,23 +16,32 @@ namespace bolsafeucn_back.src.Application.Services.Implements
     {
         private readonly IConfiguration _configuration;
         private readonly IUserRepository _userRepository;
+        private readonly IFileRepository _fileRepository;
         private readonly IEmailService _emailService;
         private readonly ITokenService _tokenService;
+        private readonly IFileService _fileService;
+        private readonly IDocumentStorageProvider _documentService;
         private readonly IVerificationCodeRepository _verificationCodeRepository;
 
         public UserService(
             IConfiguration configuration,
             IUserRepository userRepository,
+            IFileRepository fileRepository,
             IVerificationCodeRepository verificationCodeRepository,
             IEmailService emailService,
-            ITokenService tokenService
+            ITokenService tokenService,
+            IFileService fileService,
+            IDocumentStorageProvider documentService
         )
         {
             _configuration = configuration;
             _userRepository = userRepository;
+            _fileRepository = fileRepository;
             _emailService = emailService;
             _verificationCodeRepository = verificationCodeRepository;
             _tokenService = tokenService;
+            _fileService = fileService;
+            _documentService = documentService;
         }
 
         /// <summary>
@@ -64,8 +75,29 @@ namespace bolsafeucn_back.src.Application.Services.Implements
                 Log.Warning("Intento de registro con RUT duplicado: {Rut}", registerStudentDTO.Rut);
                 throw new InvalidOperationException("El RUT ya está en uso.");
             }
+
             var user = registerStudentDTO.Adapt<GeneralUser>();
             user.PhoneNumber = NormalizePhoneNumber(registerStudentDTO.PhoneNumber);
+
+            var profile = new UserImage()
+            {
+                Url = _configuration.GetValue<string>("Images:DefaultUserImageUrl")!,
+                PublicId = _configuration.GetValue<string>("Images:DefaultUserImagePublicId")!,
+                ImageType = UserImageType.Banner
+            };
+            var banner = new UserImage()
+            {
+                Url = _configuration.GetValue<string>("Images:DefaultBannerImageUrl")!,
+                PublicId = _configuration.GetValue<string>("Images:DefaultBannerImagePublicId")!,
+                ImageType = UserImageType.Perfil
+            };
+            await _fileRepository.CreateUserImageAsync(profile);
+            await _fileRepository.CreateUserImageAsync(banner);
+            user.ProfilePhoto = profile;
+            user.ProfilePhotoId = profile.Id;
+            user.ProfileBanner = banner;
+            user.ProfileBannerId = banner.Id;
+
             var result = await _userRepository.CreateUserAsync(
                 user,
                 registerStudentDTO.Password,
@@ -79,6 +111,8 @@ namespace bolsafeucn_back.src.Application.Services.Implements
                 );
                 throw new Exception("Error al crear el usuario.");
             }
+
+
             var student = registerStudentDTO.Adapt<Student>();
             student.GeneralUserId = user.Id;
             result = await _userRepository.CreateStudentAsync(student);
@@ -156,6 +190,24 @@ namespace bolsafeucn_back.src.Application.Services.Implements
             }
             var user = registerIndividualDTO.Adapt<GeneralUser>();
             user.PhoneNumber = NormalizePhoneNumber(registerIndividualDTO.PhoneNumber);
+            var profile = new UserImage()
+            {
+                Url = _configuration.GetValue<string>("Images:DefaultUserImageUrl")!,
+                PublicId = _configuration.GetValue<string>("Images:DefaultUserImagePublicId")!,
+                ImageType = UserImageType.Banner
+            };
+            var banner = new UserImage()
+            {
+                Url = _configuration.GetValue<string>("Images:DefaultBannerImageUrl")!,
+                PublicId = _configuration.GetValue<string>("Images:DefaultBannerImagePublicId")!,
+                ImageType = UserImageType.Perfil
+            };
+            await _fileRepository.CreateUserImageAsync(profile);
+            await _fileRepository.CreateUserImageAsync(banner);
+            user.ProfilePhoto = profile;
+            user.ProfilePhotoId = profile.Id;
+            user.ProfileBanner = banner;
+            user.ProfileBannerId = banner.Id;
             var result = await _userRepository.CreateUserAsync(
                 user,
                 registerIndividualDTO.Password,
@@ -200,7 +252,8 @@ namespace bolsafeucn_back.src.Application.Services.Implements
             Log.Information("Enviando email de verificación a: {Email}", user.Email);
             var emailResult = await _emailService.SendVerificationEmailAsync(user.Email!, newCode.Code);
             if (emailResult)
-            {   Log.Information(
+            {
+                Log.Information(
                     "Particular registrado exitosamente con ID: {UserId}, Email: {Email}",
                     user.Id,
                     user.Email
@@ -246,6 +299,24 @@ namespace bolsafeucn_back.src.Application.Services.Implements
             }
             var user = registerCompanyDTO.Adapt<GeneralUser>();
             user.PhoneNumber = NormalizePhoneNumber(registerCompanyDTO.PhoneNumber);
+            var profile = new UserImage()
+            {
+                Url = _configuration.GetValue<string>("Images:DefaultUserImageUrl")!,
+                PublicId = _configuration.GetValue<string>("Images:DefaultUserImagePublicId")!,
+                ImageType = UserImageType.Banner
+            };
+            var banner = new UserImage()
+            {
+                Url = _configuration.GetValue<string>("Images:DefaultBannerImageUrl")!,
+                PublicId = _configuration.GetValue<string>("Images:DefaultBannerImagePublicId")!,
+                ImageType = UserImageType.Perfil
+            };
+            await _fileRepository.CreateUserImageAsync(profile);
+            await _fileRepository.CreateUserImageAsync(banner);
+            user.ProfilePhoto = profile;
+            user.ProfilePhotoId = profile.Id;
+            user.ProfileBanner = banner;
+            user.ProfileBannerId = banner.Id;
             var result = await _userRepository.CreateUserAsync(
                 user,
                 registerCompanyDTO.Password,
@@ -337,6 +408,25 @@ namespace bolsafeucn_back.src.Application.Services.Implements
             }
             var user = registerAdminDTO.Adapt<GeneralUser>();
             user.PhoneNumber = NormalizePhoneNumber(registerAdminDTO.PhoneNumber);
+            var profile = new UserImage()
+            {
+                Url = _configuration.GetValue<string>("Images:DefaultUserImageUrl")!,
+                PublicId = _configuration.GetValue<string>("Images:DefaultUserImagePublicId")!,
+                ImageType = UserImageType.Banner
+            };
+            var banner = new UserImage()
+            {
+                Url = _configuration.GetValue<string>("Images:DefaultBannerImageUrl")!,
+                PublicId = _configuration.GetValue<string>("Images:DefaultBannerImagePublicId")!,
+                ImageType = UserImageType.Perfil
+            };
+            await _fileRepository.CreateUserImageAsync(profile);
+            await _fileRepository.CreateUserImageAsync(banner);
+            user.ProfilePhoto = profile;
+            user.ProfilePhotoId = profile.Id;
+            user.ProfileBanner = banner;
+            user.ProfileBannerId = banner.Id;
+
             string role = "Admin";
             if (registerAdminDTO.SuperAdmin)
             {
@@ -409,7 +499,6 @@ namespace bolsafeucn_back.src.Application.Services.Implements
         )
         {
             Log.Information("Intentando verificar email: {Email}", verifyEmailDTO.Email);
-
             var user = await _userRepository.GetByEmailAsync(verifyEmailDTO.Email);
             if (user == null)
             {
@@ -431,7 +520,7 @@ namespace bolsafeucn_back.src.Application.Services.Implements
             var verificationCode = testing
                 ? new VerificationCode
                 {
-                    Code = _configuration.GetValue<string>("Testing:FixedVerificationCode")! ?? "000000",
+                    Code = _configuration.GetValue<string>("Testing:FixedVerificationCode") ?? "000000",
                     CodeType = type,
                     GeneralUserId = user.Id,
                     Expiration = DateTime.UtcNow.AddHours(1)
@@ -714,8 +803,8 @@ namespace bolsafeucn_back.src.Application.Services.Implements
 
             VerificationCode verificationCode = new VerificationCode
             {
-                Code = testing 
-                    ? _configuration.GetValue<string>("Testing:FixedVerificationCode")! 
+                Code = testing
+                    ? _configuration.GetValue<string>("Testing:FixedVerificationCode")!
                     : code,
                 CodeType = CodeType.PasswordReset,
                 GeneralUserId = user.Id,
@@ -868,16 +957,17 @@ namespace bolsafeucn_back.src.Application.Services.Implements
         {
             Log.Information($"Buscando usuario con la ID: {userId}");
             GeneralUser? user = await _userRepository.
-                GetUntrackedWithTypeAsync(userId,userType)
+                GetUntrackedWithTypeAsync(userId, userType)
                 ?? throw new KeyNotFoundException("No existe usuario con ese ID");
 
             Log.Information("Buscando detalles relevantes");
-            return userType switch {
+            return userType switch
+            {
                 UserType.Estudiante => user.Adapt<GetStudentProfileDTO>(),
                 UserType.Particular => user.Adapt<GetIndividualProfileDTO>(),
                 UserType.Empresa => user.Adapt<GetCompanyProfileDTO>(),
                 _ => user.Adapt<GetAdminProfileDTO>(), //UserType.Administrador
-                };
+            };
         }
 
         /// <summary>
@@ -889,21 +979,156 @@ namespace bolsafeucn_back.src.Application.Services.Implements
         /// <returns>Mensaje de exito</returns>
         /// <exception cref="KeyNotFoundException"></exception>
         /// <exception cref="Exception"></exception>
-        public async Task<string> UpdateUserProfile(IUpdateParamsDTO updateParamsDTO, int userId, UserType userType)
+        public async Task<string> UpdateUserProfileByIdAsync(IUpdateParamsDTO updateParamsDTO, int userId, UserType userType)
         {
-            Log.Information("Buscando usuario con la ID: ", userId.ToString());
+            Log.Information("Buscando usuario con la ID: {UserId}", userId);
             GeneralUser? user = await _userRepository.
-                GetTrackedWithTypeAsync(userId,userType)
+                GetTrackedWithTypeAsync(userId, userType)
                 ?? throw new KeyNotFoundException("No existe usuario con ese ID");
             updateParamsDTO.ApplyTo(user);
+
+            // Validar que los campos requeridos por el sistema estén presentes después de aplicar los cambios
+            if (string.IsNullOrWhiteSpace(user.Email) || string.IsNullOrWhiteSpace(user.Rut))
+            {
+                Log.Error("El usuario actualizado no tiene todos los campos requeridos. UserId: {UserId}", userId);
+                throw new Exception("El usuario actualizado no tiene todos los campos requeridos.");
+            }
+
             var result = await _userRepository.UpdateAsync(user);
             if (!result)
             {
+                Log.Error("Error al actualizar los datos del usuario con ID: {UserId}", userId);
                 throw new Exception("Error al actualizar los datos del usuario");
             }
             return "Datos del usuario actualizados correctamente";
         }
 
+        public async Task<GetPhotoDTO> GetUserProfilePhotoByIdAsync(int userId)
+        {
+            Log.Information("Buscando usuario con la ID: {UserId}", userId);
+            GeneralUser? user = await _userRepository.
+                GetUntrackedWithTypeAsync(userId, null) // El tipo de usuario no importa aquí
+                ?? throw new KeyNotFoundException("No existe usuario con ese ID");
+
+            var photoDto = new GetPhotoDTO
+            {
+                PhotoUrl = user.ProfilePhoto?.Url ?? string.Empty,
+            };
+
+            return photoDto;
+        }
+
+        /// <summary>
+        /// Actualiza la foto de perfil de un usuario por su ID.
+        /// </summary>
+        /// <param name="updatePhotoDTO">Parámetros para actualizar la foto de perfil del usuario.</param>
+        /// <param name="userId">ID del usuario</param>
+        /// <returns>Mensaje de éxito</returns>
+        /// <exception cref="KeyNotFoundException"></exception>
+        /// <exception cref="Exception"></exception>
+        public async Task<string> UpdateUserProfilePhotoByIdAsync(UpdatePhotoDTO updatePhotoDTO, int userId)
+        {
+            Log.Information("Buscando usuario con la ID: {UserId}", userId);
+            GeneralUser? user = await _userRepository.
+                GetTrackedWithTypeAsync(userId, null) // El tipo de usuario no importa aquí
+                ?? throw new KeyNotFoundException("No existe usuario con ese ID");
+
+            await _fileService.UploadUserImageAsync(
+                updatePhotoDTO.Photo,
+                user,
+                UserImageType.Perfil);
+
+            var result = await _userRepository.UpdateAsync(user);
+            if (!result)
+            {
+                Log.Error("Error al actualizar la foto de perfil del usuario con ID: {UserId}", userId);
+                throw new Exception("Error al actualizar la foto de perfil del usuario");
+            }
+            return "Foto de perfil del usuario actualizada correctamente";
+        }
+
+        /// <summary>
+        /// Cambia la contraseña de un usuario por su ID.
+        /// </summary>
+        /// <param name="changeUserPasswordDTO">Parámetros para cambiar la contraseña del usuario.</param>
+        /// <param name="userId">ID del usuario</param>
+        /// <returns>Mensaje de éxito</returns>
+        /// <exception cref="KeyNotFoundException"></exception>
+        /// <exception cref="UnauthorizedAccessException"></exception>
+        /// <exception cref="Exception"></exception>
+        public async Task<string> ChangeUserPasswordById(ChangeUserPasswordDTO changeUserPasswordDTO, int userId)
+        {
+            Log.Information("Buscando usuario con la Id: {UserId}", userId.ToString());
+            GeneralUser? user = await _userRepository.GetByIdAsync(userId)
+                ?? throw new KeyNotFoundException("No existe usuario con ese Id");
+            var passwordValid = await _userRepository.CheckPasswordAsync(user, changeUserPasswordDTO.CurrentPassword);
+            if (!passwordValid)
+            {
+                Log.Warning("Intento de cambio de contraseña fallido para usuario ID: {UserId} debido a contraseña actual incorrecta", userId.ToString());
+                throw new UnauthorizedAccessException("La contraseña actual es incorrecta.");
+            }
+            var result = await _userRepository.UpdatePasswordAsync(user, changeUserPasswordDTO.NewPassword);
+            if (!result)
+            {
+                Log.Error("Error al actualizar la contraseña para usuario ID: {UserId}", userId.ToString());
+                throw new Exception("Error al actualizar la contraseña.");
+            }
+            return "Contraseña actualizada exitosamente.";
+        }
+
+        #endregion
+        #region Documents Management
+        public async Task<string> UploadCVByIdAsync(UploadCVDTO uploadCVDTO, int userId)
+        {
+            Log.Information("Buscando usuario con la ID: {UserId}", userId);
+            GeneralUser? user = await _userRepository.
+                GetTrackedWithTypeAsync(userId, UserType.Estudiante)
+                ?? throw new KeyNotFoundException("No existe estudiante con ese ID");
+            if (user.CV != null)
+            {
+                Log.Information("El usuario con ID: {UserId} ya tiene un CV, se reemplazará el existente.", user.Id);
+                var deleteResult = await _documentService.DeleteCVAsync(user);
+                if (!deleteResult)
+                {
+                    Log.Error("Error al eliminar el CV existente del estudiante con ID: {UserId}", user.Id);
+                    throw new Exception("Error al eliminar el CV existente del estudiante");
+                }
+            }
+            var uploadResult = await _documentService.UploadCVAsync(
+                uploadCVDTO.CVFile,
+                user
+            );
+            if (!uploadResult)
+            {
+                Log.Error("Error al subir el CV del estudiante con ID: {UserId}", user.Id);
+                throw new Exception("Error al subir el CV del estudiante");
+            }
+           
+            return "CV del usuario actualizado correctamente";
+        }
+        public async Task<GetCVDTO> DownloadCVByIdAsync(int userId)
+        {
+            Log.Information("Buscando usuario con la ID: {UserId}", userId);
+            GeneralUser? user = await _userRepository.
+                GetTrackedWithTypeAsync(userId, UserType.Estudiante)
+                ?? throw new KeyNotFoundException("No existe estudiante con ese ID");
+            if (user.CV == null)
+            {
+                Log.Warning("El usuario con ID: {UserId} no tiene un CV para descargar.", user.Id);
+                throw new KeyNotFoundException("El usuario no tiene un CV para descargar");
+            }
+            return new GetCVDTO
+            {
+                Url = user.CV.Url,
+                OriginalFileName = user.CV.OriginalFileName,
+                FileSizeBytes = user.CV.FileSizeBytes,
+                UploadDate = user.CV.CreatedAt,
+            };
+        }
+        public async Task<string> DeleteCVByIdAsync(int userId)
+        {
+            throw new NotImplementedException();
+        }
         #endregion
 
         /*public async Task<IEnumerable<GeneralUser>> GetUsuariosAsync()
@@ -926,6 +1151,7 @@ namespace bolsafeucn_back.src.Application.Services.Implements
             return await _repo.DeleteAsync(id);
         }*/
 
+        #region Helper Functions
         /// <summary>
         /// Funcion helper para normalizar el numero de telefono.
         /// </summary>
@@ -936,5 +1162,7 @@ namespace bolsafeucn_back.src.Application.Services.Implements
             var digits = new string(phoneNumber.Where(char.IsDigit).ToArray());
             return "+56" + digits;
         }
+
+        #endregion
     }
 }

@@ -1,3 +1,4 @@
+using System;
 using bolsafeucn_back.src.Domain.Models;
 
 namespace bolsafeucn_back.src.Infrastructure.Repositories.Interfaces
@@ -27,21 +28,27 @@ namespace bolsafeucn_back.src.Infrastructure.Repositories.Interfaces
         /// <param name="studentId">El identificador del estudiante.</param>
         /// <returns>Una colección de reseñas del estudiante.</returns>
         Task<IEnumerable<Review>> GetByStudentIdAsync(int studentId);
-        
+
         /// <summary>
         /// Calcula el promedio de calificaciones recibidas por un oferente.
         /// </summary>
         /// <param name="providerId">El identificador del oferente.</param>
         /// <returns>El promedio de calificaciones, o null si no hay reseñas.</returns>
-        Task<double?> GetAverageRatingAsync(int providerId);
-        
+        Task<double?> GetOfferorAverageRatingAsync(int providerId);
+        /// <summary>
+        /// Calcula el promedio de calificaciones de un estudiante.
+        /// </summary>
+        /// <param name="studentId">El identificador del estudiante.</param>
+        /// <returns>El promedio de calificaciones, o null si no hay reseñas.</returns>
+        Task<double?> GetStudentAverageRatingAsync(int studentId);
+
         /// <summary>
         /// Obtiene una reseña asociada a una publicación específica.
         /// </summary>
         /// <param name="publicationId">El identificador de la publicación.</param>
         /// <returns>La reseña asociada a la publicación, o null si no existe.</returns>
         Task<Review?> GetByPublicationIdAsync(int publicationId);
-        
+
         /// <summary>
         /// Obtiene una reseña por su identificador único.
         /// </summary>

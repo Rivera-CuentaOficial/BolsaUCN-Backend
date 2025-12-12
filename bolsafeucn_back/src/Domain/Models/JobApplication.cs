@@ -1,6 +1,16 @@
 namespace bolsafeucn_back.src.Domain.Models
 {
     /// <summary>
+    /// Enum that defines the possible statuses of a job application.
+    /// </summary>
+    public enum ApplicationStatus
+    {
+        Pendiente,
+        Aceptada,
+        Rechazada
+    }
+
+    /// <summary>
     /// Represents an application submitted by a student to a job offer.
     /// </summary>
     public class JobApplication
@@ -31,9 +41,9 @@ namespace bolsafeucn_back.src.Domain.Models
         public required int JobOfferId { get; set; }
 
         /// <summary>
-        /// Current status of the application (e.g., Pending, Accepted, Rejected).
+        /// Current status of the application (Pendiente, Aceptada, Rechazada).
         /// </summary>
-        public required string Status { get; set; }
+        public required ApplicationStatus Status { get; set; }
 
         /// <summary>
         /// Date and time when the application was submitted (UTC).

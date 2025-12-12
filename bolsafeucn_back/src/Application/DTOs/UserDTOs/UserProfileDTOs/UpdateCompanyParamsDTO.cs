@@ -29,7 +29,7 @@ namespace bolsafeucn_back.src.Application.DTOs.UserDTOs.UserProfileDTOs
             @"^\d{7,8}-[0-9kK]$",
             ErrorMessage = "El Rut debe tener formato XXXXXXXX-X"
         )]
-        [RutValidation(ErrorMessage = "El RUT no es válido.")]      
+        [RutValidation(ErrorMessage = "El RUT no es válido.")]
         public string? Rut { get; set; }
 
         /// <summary>
@@ -41,35 +41,13 @@ namespace bolsafeucn_back.src.Application.DTOs.UserDTOs.UserProfileDTOs
         /// <summary>
         /// Número de teléfono del usuario.
         /// </summary>
-        public string? PhoneNumber { get; set; } 
+        public string? PhoneNumber { get; set; }
 
         /// <summary>
         /// Información sobre el usuario.
         /// </summary>
-        [MaxLength(200, ErrorMessage = "La información sobre el usuario debe tener como máximo 200 caracteres")]
+        [MaxLength(500, ErrorMessage = "La información sobre el usuario debe tener como máximo 500 caracteres")]
         public string? AboutMe { get; set; }
-
-        /// <summary>
-        /// Contraseña del usuario.
-        /// </summary>
-        [RegularExpression(
-            @"^(?=.*[A-Z])(?=.*[0-9])(?=.*[a-zA-ZáéíóúÁÉÍÓÚüÜñÑ])(?=.*[!@#$%^&*()_+\[\]{};':""\\|,.<>/?]).*$",
-            ErrorMessage = "La contraseña debe ser alfanumérica y contener al menos una mayúscula y al menos un caracter especial."
-        )]
-        [MinLength(8, ErrorMessage = "La contraseña debe tener al menos 8 caracteres")]
-        [MaxLength(20, ErrorMessage = "La contraseña debe tener como máximo 20 caracteres")]
-        public string? Password { get; set; }
-
-        /// <summary>
-        /// Confirmación de la contraseña del usuario.
-        /// </summary>
-        [Compare("Password", ErrorMessage = "Las contraseñas no coinciden.")]
-        public string? ConfirmPassword { get; set; } 
-
-        /*TODO
-        public string? ProfilePicture { get; set; }
-        public string? ProfileBanner { get; set; }
-        */
 
         public void ApplyTo(GeneralUser user)
         {

@@ -11,9 +11,15 @@ namespace bolsafeucn_back.src.Application.DTOs.JobAplicationDTO
     /// TODO: Falta agregar descripcion la cual no esta agregada en el modelo
     public class ViewApplicantDetailAdminDto
     {
+        public int Id { get; set; }
         public string StudentName { get; set; } = string.Empty;
         public string Email { get; set; }
         public string PhoneNumber { get; set; }
         public string Status { get; set; }
+        public required float? Rating { get; set; }
+        public required string MotivationLetter { get; set; }
+        public required string Disability { get; set; }
+        public required string CurriculumVitae { get; set; }
+        public string? ProfilePicture { get; set; }
     }
 }

@@ -8,12 +8,16 @@ using bolsafeucn_back.src.Infrastructure.Data;
 using bolsafeucn_back.src.Infrastructure.Repositories.Implements;
 using bolsafeucn_back.src.Infrastructure.Repositories.Interfaces;
 using Mapster;
+using Hangfire;
+using Hangfire.MemoryStorage;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Net.Http.Headers; // <<-- para CORS (HeaderNames)
 using Resend;
 using Serilog;
+using bolsafeucn_back.src.Infrastructure.Extensions;
+using Microsoft.Extensions.FileProviders;
 
 Log.Logger = new LoggerConfiguration()
     .ReadFrom.Configuration(
@@ -38,6 +42,7 @@ try
     builder.Services.AddEndpointsApiExplorer();
     builder.Services.AddSwaggerGen();
 
+    #region Identity
     // =========================
     // 1) Identity
     // =========================
@@ -57,6 +62,9 @@ try
         .AddEntityFrameworkStores<AppDbContext>()
         .AddDefaultTokenProviders();
 
+    #endregion
+
+    #region Auth
     // =========================
     // 2) Auth (JWT)
     // =========================
@@ -88,6 +96,8 @@ try
                 };
         });
 
+    #endregion
+    #region CORS
     // =========================
     // 3) CORS (permitimos el front en 3000)
     // =========================
@@ -100,8 +110,8 @@ try
                 policy
                     .WithOrigins(
                         "http://localhost:3000" // Next.js dev
-                    // ,"https://localhost:3000"  // agrega si usas https en front
-                    // ,"https://localhost:7129"  // agrega si llamas al backend en https y navegas desde https
+                                                // ,"https://localhost:3000"  // agrega si usas https en front
+                                                // ,"https://localhost:7129"  // agrega si llamas al backend en https y navegas desde https
                     )
                     .WithHeaders(HeaderNames.ContentType, HeaderNames.Authorization, "Accept")
                     .WithMethods("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS")
@@ -109,7 +119,9 @@ try
             }
         );
     });
+    #endregion
 
+    #region Resend
     // =========================
     // 4) Resend (emails)
     // =========================
@@ -121,13 +133,26 @@ try
     });
     builder.Services.AddTransient<IResend, ResendClient>();
 
+    #endregion
+    #region PostgreSQL
     // =========================
     // 5) PostgreSQL
     // =========================
     builder.Services.AddDbContext<AppDbContext>(options =>
         options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"))
     );
+    #endregion
 
+    #region Hangfire
+    // Hangfire - usa MemoryStorage por simplicidad
+    builder.Services.AddHangfire(configuration =>
+        configuration.UseMemoryStorage()
+    );
+    builder.Services.AddHangfireServer();
+    #endregion
+
+
+    #region DI
     // =========================
     // 6) DI (repos/services/mappers)
     // =========================
@@ -144,30 +169,54 @@ try
     builder.Services.AddScoped<IVerificationCodeRepository, VerificationCodeRepository>();
     builder.Services.AddScoped<IJobApplicationRepository, JobApplicationRepository>();
     builder.Services.AddScoped<INotificationRepository, NotificationRepository>();
-    builder.Services.AddScoped<INotificationService, NotificationService>();
+    builder.Services.AddScoped<IAdminNotificationRepository, AdminNotificationRepository>();
+    builder.Services.AddScoped<IFileRepository, FileRepository>();
+    builder.Services.AddScoped<IPublicationRepository, PublicationRepository>();
+    builder.Services.AddScoped<IReviewRepository, ReviewRepository>();
 
     builder.Services.AddScoped<IUserService, UserService>();
     builder.Services.AddScoped<IEmailService, EmailService>();
     builder.Services.AddScoped<ITokenService, TokenService>();
     builder.Services.AddScoped<IOfferService, OfferService>();
     builder.Services.AddScoped<IJobApplicationService, JobApplicationService>();
-    builder.Services.AddScoped<INotificationRepository, NotificationRepository>();
     builder.Services.AddScoped<IPublicationService, PublicationService>();
     builder.Services.AddScoped<IBuySellService, BuySellService>();
-    builder.Services.AddScoped<IPublicationRepository, PublicationRepository>();
-    builder.Services.AddScoped<IReviewRepository, ReviewRepository>();
     builder.Services.AddScoped<IReviewService, ReviewService>();
+    builder.Services.AddScoped<IPdfGeneratorService, PdfGeneratorService>();
+    builder.Services.AddScoped<IFileService, FileService>();
+    builder.Services.AddScoped<INotificationService, NotificationService>();
+    builder.Services.AddDocumentStorageProvider(builder.Configuration);
+    
 
     builder.Services.AddMapster();
 
     var app = builder.Build();
 
+    #endregion
+    #region Pipeline
     // =========================
     // Pipeline
     // =========================
+    #endregion
+    #region Hangfire Dashboard + Recurring Jobs
+    // Hangfire dashboard (solo en desarrollo)
+    if (app.Environment.IsDevelopment())
+    {
+        app.UseHangfireDashboard();
+        // Registrar job recurrente cada hora para cerrar reviews vencidas
+        RecurringJob.AddOrUpdate<IReviewService>(
+            "CloseExpiredReviews",
+            service => service.CloseExpiredReviewsAsync(),
+            Cron.Hourly
+        );
+        Log.Information("Hangfire dashboard habilitado y job recurrente para cierre de reviews programado. Servidor en: http://localhost:5185/hangfire");
+    }
 
+    #endregion
+    #region Middleware
     // Middleware global de errores (antes de todo)
     app.UseMiddleware<bolsafeucn_back.src.API.Middlewares.ErrorHandlingMiddleware.ErrorHandlingMiddleware>();
+    #endregion
 
     // Seed DB + Mapster (al inicio)
     await SeedAndMapDatabase(app);
@@ -192,6 +241,11 @@ try
     app.MapControllers();
 
     Log.Information("Aplicación iniciada correctamente");
+    app.Lifetime.ApplicationStarted.Register(() =>
+    {
+        Console.WriteLine("🔥 SERVIDOR ASP.NET ARRANCÓ CORRECTAMENTE 🔥");
+    });
+
     app.Run();
 }
 catch (Exception ex)

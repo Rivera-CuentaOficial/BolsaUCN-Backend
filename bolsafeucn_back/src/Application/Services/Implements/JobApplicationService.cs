@@ -1,4 +1,5 @@
 using bolsafeucn_back.src.Application.DTOs.JobAplicationDTO;
+using bolsafeucn_back.src.Application.Events;
 using bolsafeucn_back.src.Application.Services.Interfaces;
 using bolsafeucn_back.src.Domain.Models;
 using bolsafeucn_back.src.Infrastructure.Repositories.Interfaces;
@@ -11,16 +12,25 @@ namespace bolsafeucn_back.src.Application.Services.Implements
         private readonly IJobApplicationRepository _jobApplicationRepository;
         private readonly IOfferRepository _offerRepository;
         private readonly IUserRepository _userRepository;
+        private readonly INotificationService _notificationService;
+        private readonly IReviewService _reviewService;
+        private readonly ILogger<JobApplicationService> _logger;
 
         public JobApplicationService(
             IJobApplicationRepository jobApplicationRepository,
             IOfferRepository offerRepository,
-            IUserRepository userRepository
+            IUserRepository userRepository,
+            INotificationService notificationService,
+            IReviewService reviewService,
+            ILogger<JobApplicationService> logger
         )
         {
             _jobApplicationRepository = jobApplicationRepository;
             _offerRepository = offerRepository;
             _userRepository = userRepository;
+            _notificationService = notificationService;
+            _reviewService = reviewService;
+            _logger = logger;
         }
 
         public async Task<JobApplicationResponseDto> CreateApplicationAsync(
@@ -33,6 +43,19 @@ namespace bolsafeucn_back.src.Application.Services.Implements
             if (offer == null || !offer.IsActive)
             {
                 throw new KeyNotFoundException("La oferta no existe o no está activa");
+            }
+            // Validar que el usuario no tenga más de 3 reseñas pendientes
+            var pendingReviewsCount = await _reviewService.GetPendingReviewsCountAsync(studentId);
+            if (pendingReviewsCount >= 3)
+            {
+                _logger.LogWarning(
+                    "Usuario {UserId} intentó postular a oferta con {PendingCount} reseñas pendientes",
+                    studentId,
+                    pendingReviewsCount
+                );
+                throw new UnauthorizedAccessException(
+                    "No puedes postular a nuevas ofertas hasta que completes todas tus reseñas pendientes"
+                );
             }
 
             // Validar elegibilidad del estudiante (incluye validación de CV si es obligatorio)
@@ -90,7 +113,7 @@ namespace bolsafeucn_back.src.Application.Services.Implements
                 JobOfferId = offerId,
                 Student = null!,
                 JobOffer = null!,
-                Status = "Pendiente",
+                Status = ApplicationStatus.Pendiente,
                 ApplicationDate = DateTime.UtcNow,
             };
 
@@ -102,7 +125,7 @@ namespace bolsafeucn_back.src.Application.Services.Implements
                 StudentName = $"{student.Student.Name} {student.Student.LastName}",
                 StudentEmail = student.Email!,
                 OfferTitle = offer.Title,
-                Status = createdApplication.Status,
+                Status = createdApplication.Status.ToString(),
                 ApplicationDate = createdApplication.ApplicationDate,
                 CurriculumVitae = student.Student.CurriculumVitae,
                 MotivationLetter = student.Student.MotivationLetter, // Carta opcional del perfil
@@ -121,7 +144,7 @@ namespace bolsafeucn_back.src.Application.Services.Implements
                 StudentName = $"{app.Student.Student?.Name} {app.Student.Student?.LastName}",
                 StudentEmail = app.Student.Email!,
                 OfferTitle = app.JobOffer.Title,
-                Status = app.Status,
+                Status = app.Status.ToString(),
                 ApplicationDate = app.ApplicationDate,
                 CurriculumVitae = app.Student.Student?.CurriculumVitae,
                 MotivationLetter = app.Student.Student?.MotivationLetter,
@@ -131,17 +154,17 @@ namespace bolsafeucn_back.src.Application.Services.Implements
         {
             // Obtener la postulación
             var application = await _jobApplicationRepository.GetByIdAsync(applicationId);
-            
+
             if (application == null)
                 return null;
 
-            
+
             var offer = await _offerRepository.GetByIdAsync(application.JobOfferId);
-            
+
             if (offer == null)
                 return null;
 
-           
+
             var user = await _userRepository.GetByIdWithRelationsAsync(offer.UserId);
 
             var authorName = user?.UserType == UserType.Empresa
@@ -151,9 +174,9 @@ namespace bolsafeucn_back.src.Application.Services.Implements
             : (user?.UserName ?? "UCN");
             var statusMessage = application.Status switch
             {
-                "Pendiente" => "Su solicitud fue enviada con éxito; será contactado a la brevedad.",
-                "Seleccionado" => "¡Felicidades! Tu solicitud ha sido aceptada.",
-                "No seleccionado" => "Lamentablemente, tu solicitud ha sido rechazado.",
+                ApplicationStatus.Pendiente => "Su solicitud fue enviada con éxito; será contactado a la brevedad.",
+                ApplicationStatus.Aceptada => "¡Felicidades! Tu solicitud ha sido aceptada.",
+                ApplicationStatus.Rechazada => "Lamentablemente, tu solicitud ha sido rechazada.",
                 _ => ""
             };
 
@@ -169,7 +192,7 @@ namespace bolsafeucn_back.src.Application.Services.Implements
                 Description = offer.Description,
                 Requirements = offer.Requirements,
                 ContactInfo = offer.ContactInfo,
-                Status = application.Status,
+                Status = application.Status.ToString(),
                 StatusMessage = statusMessage
             };
         }
@@ -186,7 +209,7 @@ namespace bolsafeucn_back.src.Application.Services.Implements
                 StudentName = $"{app.Student.Student?.Name} {app.Student.Student?.LastName}",
                 StudentEmail = app.Student.Email!,
                 OfferTitle = app.JobOffer.Title,
-                Status = app.Status,
+                Status = app.Status.ToString(),
                 ApplicationDate = app.ApplicationDate,
                 CurriculumVitae = app.Student.Student?.CurriculumVitae,
                 MotivationLetter = app.Student.Student?.MotivationLetter,
@@ -215,16 +238,15 @@ namespace bolsafeucn_back.src.Application.Services.Implements
 
         public async Task<bool> UpdateApplicationStatusAsync(
             int applicationId,
-            string newStatus,
-            int companyId
+            ApplicationStatus newStatus,
+            int OwnnerUserId
         )
         {
-            // Validar que el estado sea válido
-            var validStatuses = new[] { "Pendiente", "Aceptado", "Rechazado" };
-            if (!validStatuses.Contains(newStatus))
+            // La validación del enum se hace automáticamente al recibir el parámetro
+            if (!Enum.IsDefined(typeof(ApplicationStatus), newStatus))
             {
                 throw new ArgumentException(
-                    $"Estado inválido. Debe ser uno de: {string.Join(", ", validStatuses)}"
+                    $"Estado inválido. Debe ser uno de: {string.Join(", ", Enum.GetNames(typeof(ApplicationStatus)))}"
                 );
             }
 
@@ -237,7 +259,7 @@ namespace bolsafeucn_back.src.Application.Services.Implements
 
             // Verificar que la oferta pertenece a la empresa
             var offer = await _offerRepository.GetByIdAsync(application.JobOfferId);
-            if (offer == null || offer.UserId != companyId)
+            if (offer == null || offer.UserId != OwnnerUserId)
             {
                 throw new UnauthorizedAccessException(
                     "No tienes permiso para modificar esta postulación"
@@ -247,6 +269,26 @@ namespace bolsafeucn_back.src.Application.Services.Implements
             // Actualizar el estado
             application.Status = newStatus;
             await _jobApplicationRepository.UpdateAsync(application);
+
+            // Obtener información del oferente para el email
+            var offererUser = await _userRepository.GetByIdWithRelationsAsync(OwnnerUserId);
+            var companyName = offererUser?.UserType == UserType.Empresa
+                ? (offererUser.Company?.CompanyName ?? "Empresa desconocida")
+                : offererUser?.UserType == UserType.Particular
+                    ? $"{offererUser.Individual?.Name ?? ""} {offererUser.Individual?.LastName ?? ""}".Trim()
+                    : "UCN";
+
+            // Enviar notificación y email al estudiante
+            var statusEvent = new PostulationStatusChangedEvent
+            {
+                PostulationId = applicationId,
+                NewStatus = newStatus,
+                OfferName = offer.Title,
+                CompanyName = companyName,
+                StudentEmail = application.Student.Email!
+            };
+
+            await _notificationService.SendPostulationStatusChangeAsync(statusEvent);
 
             return true;
         }
@@ -290,8 +332,9 @@ namespace bolsafeucn_back.src.Application.Services.Implements
             return applicant
                 .Select(app => new ViewApplicantsDto
                 {
+                    Id = app.Id,
                     Applicant = $"{app.Student.Student?.Name} {app.Student.Student?.LastName}",
-                    Status = app.Status,
+                    Status = app.Status.ToString(),
                 })
                 .ToList();
         }
@@ -301,11 +344,17 @@ namespace bolsafeucn_back.src.Application.Services.Implements
             var applicant = await _jobApplicationRepository.GetByIdAsync(studentId);
             return new ViewApplicantDetailAdminDto
             {
+                Id = applicant.Id,
                 StudentName =
                     $"{applicant.Student.Student?.Name} {applicant.Student.Student?.LastName}",
                 Email = applicant.Student.Email,
                 PhoneNumber = applicant.Student.PhoneNumber,
-                Status = applicant.Status,
+                Status = applicant.Status.ToString(),
+                CurriculumVitae = applicant.Student.Student?.CurriculumVitae,
+                Rating = (float?)applicant.Student.Rating,
+                MotivationLetter = applicant.Student.Student?.MotivationLetter,
+                Disability = applicant.Student.Student?.Disability.ToString(),
+                ProfilePicture = applicant.Student.ProfilePhoto?.Url
                 // TODO: falta descripcion
             };
         }
@@ -340,7 +389,7 @@ namespace bolsafeucn_back.src.Application.Services.Implements
                     ApplicationId = app.Id,
                     StudentId = app.StudentId,
                     ApplicantName = $"{app.Student.Student?.Name} {app.Student.Student?.LastName}",
-                    Status = app.Status,
+                    Status = app.Status.ToString(),
                     ApplicationDate = app.ApplicationDate,
                     // Enviamos el link del CV directamente
                     CurriculumVitaeUrl = app.Student.Student?.CurriculumVitae,
@@ -349,6 +398,8 @@ namespace bolsafeucn_back.src.Application.Services.Implements
 
             return applicantDtos;
         }
+
+
 
         public async Task<ViewApplicantUserDetailDto> GetApplicantDetailForOfferer(
             int studentId,
@@ -361,7 +412,7 @@ namespace bolsafeucn_back.src.Application.Services.Implements
             {
                 throw new KeyNotFoundException($"La oferta con id {offerId} no fue encontrada.");
             }
-        
+
 
 
             // Comprueba que el ID del usuario de la oferta (offer.UserId)
@@ -381,7 +432,7 @@ namespace bolsafeucn_back.src.Application.Services.Implements
                 Email = applicant.First().Student.Email,
                 Phone = applicant.First().Student.PhoneNumber,
                 Rut = applicant.First().Student.Rut,
-                Rating = applicant.First().Student.Student?.Rating,
+                Rating = (float?)applicant.First().Student.Rating, // hola soy matias cambie el rating a generaluser
                 MotivationLetter = applicant.First().Student.Student?.MotivationLetter,
                 Disability = applicant.First().Student.Student?.Disability.ToString(),
                 CurriculumVitae = applicant.First().Student.Student?.CurriculumVitae,

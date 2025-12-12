@@ -28,35 +28,41 @@ namespace bolsafeucn_back.src.Application.Mappers
                 .Map(dest => dest.UserName, src => src.UserName)
                 .Map(dest => dest.Name, src => src.Student!.Name)
                 .Map(dest => dest.LastName, src => src.Student!.LastName)
-                .Map(dest => dest.Rating, src => src.Student!.Rating)
+                //.Map(dest => dest.Rating, src => src.Student!.Rating)
                 .Map(dest => dest.CurriculumVitae, src => src.Student!.CurriculumVitae)
                 .Map(dest => dest.Rut, src => src.Rut)
                 .Map(dest => dest.Email, src => src.Email)
                 .Map(dest => dest.PhoneNumber, src => src.PhoneNumber)
-                .Map(dest => dest.AboutMe, src => src.AboutMe);
+                .Map(dest => dest.AboutMe, src => src.AboutMe)
+                .Map(dest => dest.ProfilePhoto, src => src.ProfilePhoto!.Url)
+                .Map(dest => dest.ProfileBanner, src => src.ProfileBanner!.Url);
 
             TypeAdapterConfig<GeneralUser, GetIndividualProfileDTO>
                 .NewConfig()
                 .Map(dest => dest.UserName, src => src.UserName)
                 .Map(dest => dest.Name, src => src.Individual!.Name)
                 .Map(dest => dest.LastName, src => src.Individual!.LastName)
-                .Map(dest => dest.Rating, src => src.Individual!.Rating)
+                //.Map(dest => dest.Rating, src => src.Individual!.Rating)
                 .Map(dest => dest.Rut, src => src.Rut)
                 .Map(dest => dest.Email, src => src.Email)
                 .Map(dest => dest.PhoneNumber, src => src.PhoneNumber)
-                .Map(dest => dest.AboutMe, src => src.AboutMe);
+                .Map(dest => dest.AboutMe, src => src.AboutMe)
+                .Map(dest => dest.ProfilePhoto, src => src.ProfilePhoto!.Url)
+                .Map(dest => dest.ProfileBanner, src => src.ProfileBanner!.Url);
 
             TypeAdapterConfig<GeneralUser, GetCompanyProfileDTO>
                 .NewConfig()
                 .Map(dest => dest.UserName, src => src.UserName)
                 .Map(dest => dest.CompanyName, src => src.Company!.CompanyName)
                 .Map(dest => dest.LegalName, src => src.Company!.LegalName)
-                .Map(dest => dest.Rating, src => src.Company!.Rating)
+                //.Map(dest => dest.Rating, src => src.Company!.Rating)
                 .Map(dest => dest.Rut, src => src.Rut)
                 .Map(dest => dest.Email, src => src.Email)
                 .Map(dest => dest.PhoneNumber, src => src.PhoneNumber)
-                .Map(dest => dest.AboutMe, src => src.AboutMe);
-                
+                .Map(dest => dest.AboutMe, src => src.AboutMe)
+                .Map(dest => dest.ProfilePhoto, src => src.ProfilePhoto!.Url)
+                .Map(dest => dest.ProfileBanner, src => src.ProfileBanner!.Url);
+
             TypeAdapterConfig<GeneralUser, GetAdminProfileDTO>
                 .NewConfig()
                 .Map(dest => dest.UserName, src => src.UserName)
@@ -65,7 +71,9 @@ namespace bolsafeucn_back.src.Application.Mappers
                 .Map(dest => dest.Rut, src => src.Rut)
                 .Map(dest => dest.Email, src => src.Email)
                 .Map(dest => dest.PhoneNumber, src => src.PhoneNumber)
-                .Map(dest => dest.AboutMe, src => src.AboutMe);
+                .Map(dest => dest.AboutMe, src => src.AboutMe)
+                .Map(dest => dest.ProfilePhoto, src => src.ProfilePhoto!.Url)
+                .Map(dest => dest.ProfileBanner, src => src.ProfileBanner!.Url);
 
             /*TypeAdapterConfig<GeneralUser, GetUserProfileDTO>
                 .NewConfig()
@@ -102,6 +110,8 @@ namespace bolsafeucn_back.src.Application.Mappers
             TypeAdapterConfig<UpdateStudentParamsDTO, GeneralUser>
             .NewConfig()
             .IgnoreNullValues(true)
+            .Ignore(src => src.ProfilePhoto!)
+            .Ignore(src => src.ProfileBanner!)
             .Map(dest => dest.UserName, src => src.UserName)
             .Map(dest => dest.Student!.Name, src => src.Name)
             .Map(dest => dest.Student!.LastName, src => src.LastName)
@@ -142,7 +152,7 @@ namespace bolsafeucn_back.src.Application.Mappers
             .Map(dest => dest.Email, src => src.Email)
             .Map(dest => dest.AboutMe, src => src.AboutMe)
             .Map(dest => dest.PhoneNumber, src => src.PhoneNumber)
-            .Map(dest => dest.Admin!.SuperAdmin , src => src.IsSuperAdmin);
+            .Map(dest => dest.Admin!.SuperAdmin, src => src.IsSuperAdmin);
         }
     }
 }
