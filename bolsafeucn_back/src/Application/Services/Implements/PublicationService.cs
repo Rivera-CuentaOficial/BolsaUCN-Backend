@@ -70,7 +70,9 @@ namespace bolsafeucn_back.src.Application.Services.Implements
                 );
             }
             // Validar que el usuario no tenga más de 3 reseñas pendientes
-            var pendingReviewsCount = await _reviewService.GetPendingReviewsCountAsync(currentUser.Id);
+            var pendingReviewsCount = await _reviewService.GetPendingReviewsCountAsync(
+                currentUser.Id
+            );
             if (pendingReviewsCount >= 3)
             {
                 _logger.LogWarning(
@@ -149,7 +151,9 @@ namespace bolsafeucn_back.src.Application.Services.Implements
                 );
             }
             // Validar que el usuario no tenga más de 3 reseñas pendientes
-            var pendingReviewsCount = await _reviewService.GetPendingReviewsCountAsync(currentUser.Id);
+            var pendingReviewsCount = await _reviewService.GetPendingReviewsCountAsync(
+                currentUser.Id
+            );
             if (pendingReviewsCount >= 3)
             {
                 _logger.LogWarning(
@@ -258,16 +262,33 @@ namespace bolsafeucn_back.src.Application.Services.Implements
         }
 
         // --- IMPLEMENTACIÓN PENDING ("InProcess") ---
+        // --- IMPLEMENTACIÓN PENDING ("InProcess") CORREGIDA ---
         public async Task<IEnumerable<PublicationsDTO>> GetMyPendingPublicationsAsync(string userId)
         {
             // 1. Llama al repositorio
             var publications = await _publicationRepository.GetPendingPublicationsByUserIdAsync(
                 userId
             );
-            // 2. Mapea y devuelve el DTO
-            return _mapper.Adapt<IEnumerable<PublicationsDTO>>((TypeAdapterConfig)publications);
-<<<<<<< HEAD
-        }    
+
+            // 2. Mapea y devuelve el DTO MANUALMENTE (Para asegurar el ID)
+            var publicationsDto = publications.Select(p => new PublicationsDTO
+            {
+                // ✅ AQUÍ ASIGNAMOS EL ID CORRECTAMENTE
+                IdPublication = p.Id,
+
+                Title = p.Title,
+                Description = p.Description, // ¡No olvides la descripción!
+                PublicationDate = p.PublicationDate,
+                statusValidation = p.statusValidation,
+                UserId = p.UserId,
+                Images = p.Images,
+                types = p.Type,
+                IsActive = p.IsActive,
+            });
+
+            return publicationsDto;
+        }
+
         /// <summary>
         /// Maximum number of times a user can appeal a rejection for a single publication.
         /// </summary>
@@ -285,17 +306,17 @@ namespace bolsafeucn_back.src.Application.Services.Implements
         {
             // 1. Search for publication
             var publication = await _publicationRepository.GetByIdAsync(publicationId);
-            
+
             // 2. Validation: Use Exception to trigger Middleware 404
-            if (publication == null) 
+            if (publication == null)
                 throw new KeyNotFoundException("La publicación no existe.");
 
             // 3. Update logic
             publication.statusValidation = StatusValidation.Published;
-            publication.IsActive = true; 
-            
+            publication.IsActive = true;
+
             await _publicationRepository.UpdateAsync(publication);
-            
+
             // 4. Return success only
             return new GenericResponse<string>("Publicación aprobada y publicada exitosamente.");
         }
@@ -303,40 +324,51 @@ namespace bolsafeucn_back.src.Application.Services.Implements
         /// <summary>
         /// Rejects a publication with a reason and hides it.
         /// </summary>
-        public async Task<GenericResponse<string>> AdminRejectPublicationAsync(int publicationId, AdminRejectDto dto)
+        public async Task<GenericResponse<string>> AdminRejectPublicationAsync(
+            int publicationId,
+            AdminRejectDto dto
+        )
         {
             var publication = await _publicationRepository.GetByIdAsync(publicationId);
-            
-            if (publication == null) 
+
+            if (publication == null)
                 throw new KeyNotFoundException("La publicación no existe.");
 
             publication.statusValidation = StatusValidation.Rejected;
             publication.IsActive = false;
-            publication.AdminRejectionReason = dto.Reason; 
+            publication.AdminRejectionReason = dto.Reason;
 
             await _publicationRepository.UpdateAsync(publication);
-            
+
             return new GenericResponse<string>("Publicación rechazada. Se ha guardado el motivo.");
         }
 
         /// <summary>
         /// Allows a user to appeal a rejection if limits allow.
         /// </summary>
-        public async Task<GenericResponse<string>> AppealPublicationAsync(int publicationId, int userId, UserAppealDto dto)
+        public async Task<GenericResponse<string>> AppealPublicationAsync(
+            int publicationId,
+            int userId,
+            UserAppealDto dto
+        )
         {
             var publication = await _publicationRepository.GetByIdAsync(publicationId);
-            
+
             // 1. Validate existence -> 404 Not Found
-            if (publication == null) 
+            if (publication == null)
                 throw new KeyNotFoundException("La publicación no existe.");
-            
+
             // 2. Validate ownership -> 401 Unauthorized (Based on JobApplicationService pattern)
-            if (publication.UserId != userId) 
-                throw new UnauthorizedAccessException("No tienes permiso para apelar esta publicación.");
+            if (publication.UserId != userId)
+                throw new UnauthorizedAccessException(
+                    "No tienes permiso para apelar esta publicación."
+                );
 
             // 3. Validate status -> 409 Conflict (InvalidOperationException maps to 409 in your middleware)
             if (publication.statusValidation != StatusValidation.Rejected)
-                throw new InvalidOperationException("Solo se pueden apelar publicaciones que han sido rechazadas.");
+                throw new InvalidOperationException(
+                    "Solo se pueden apelar publicaciones que han sido rechazadas."
+                );
 
             // 4. Validate limits -> 409 Conflict
             if (publication.AppealCount >= MAX_APPEALS)
@@ -347,17 +379,15 @@ namespace bolsafeucn_back.src.Application.Services.Implements
             }
 
             // 5. Process appeal
-            publication.statusValidation = StatusValidation.InProcess; 
+            publication.statusValidation = StatusValidation.InProcess;
             publication.UserAppealJustification = dto.Justification;
-            publication.AppealCount++; 
+            publication.AppealCount++;
 
             await _publicationRepository.UpdateAsync(publication);
 
             return new GenericResponse<string>(
                 $"Apelación enviada exitosamente. Intento {publication.AppealCount} de {MAX_APPEALS}. Un administrador revisará tu caso."
             );
-=======
->>>>>>> dev
         }
     }
 }
