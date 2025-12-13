@@ -276,6 +276,8 @@ namespace bolsafeucn_back.src.Application.Services.Implements
                     recipientEmail
                 );
 
+                bool isRejected = newStatus.Equals("Rechazada", StringComparison.OrdinalIgnoreCase);
+
                 var htmlBody = await LoadPublicationStatusTemplateAsync(
                     publicationTitle,
                     newStatus
@@ -285,7 +287,9 @@ namespace bolsafeucn_back.src.Application.Services.Implements
                 {
                     To = recipientEmail,
                     From = _configuration["EmailConfiguration:From"]!,
-                    Subject = "Actualización en tu publicación",
+                    Subject = isRejected
+                        ? "Tu publicación fue rechazada"
+                        : "Actualización en tu publicación",
                     HtmlBody = htmlBody,
                 };
 
@@ -337,6 +341,35 @@ namespace bolsafeucn_back.src.Application.Services.Implements
 
                 html = html.Replace("{{PUBLICATION_TITLE}}", publicationTitle);
                 html = html.Replace("{{NEW_STATUS}}", newStatus);
+
+                bool isRejected = newStatus.Equals("Rechazada", StringComparison.OrdinalIgnoreCase);
+
+                if (isRejected)
+                {
+                    string appealLink = _configuration["FrontendUrls:AppealPublication"]!;
+
+                    var rejectedBlock =
+                        $@"
+                <hr />
+                <p style='color:#c0392b;'>
+                    Tu publicación fue rechazada tras la revisión.
+                </p>
+                <p>
+                    Si consideras que esto fue un error, puedes apelar en el siguiente enlace:
+                </p>
+                <p>
+                    <a href='{appealLink}' style='color:#2980b9;'>
+                        Apelar decisión
+                    </a>
+                </p>
+            ";
+
+                    html = html.Replace("{{REJECTED_BLOCK}}", rejectedBlock);
+                }
+                else
+                {
+                    html = html.Replace("{{REJECTED_BLOCK}}", string.Empty);
+                }
 
                 return html;
             }
