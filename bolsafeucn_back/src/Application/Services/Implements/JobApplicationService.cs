@@ -49,12 +49,12 @@ namespace bolsafeucn_back.src.Application.Services.Implements
             if (pendingReviewsCount >= 3)
             {
                 _logger.LogWarning(
-                    "Usuario {UserId} intentó crear publicación de compra/venta con {PendingCount} reseñas pendientes",
+                    "Usuario {UserId} intentó postular a oferta con {PendingCount} reseñas pendientes",
                     studentId,
                     pendingReviewsCount
                 );
-                throw new InvalidOperationException(
-                    "No puedes postular a nuevas ofertas hasta que completes tus reseñas pendientes"
+                throw new UnauthorizedAccessException(
+                    "No puedes postular a nuevas ofertas hasta que completes todas tus reseñas pendientes"
                 );
             }
 
@@ -354,6 +354,7 @@ namespace bolsafeucn_back.src.Application.Services.Implements
                 Rating = (float?)applicant.Student.Rating,
                 MotivationLetter = applicant.Student.Student?.MotivationLetter,
                 Disability = applicant.Student.Student?.Disability.ToString(),
+                ProfilePicture = applicant.Student.ProfilePhoto?.Url
                 // TODO: falta descripcion
             };
         }

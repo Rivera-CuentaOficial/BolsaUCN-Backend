@@ -20,5 +20,6 @@ namespace bolsafeucn_back.src.Application.DTOs.JobAplicationDTO
         public required string MotivationLetter { get; set; }
         public required string Disability { get; set; }
         public required string CurriculumVitae { get; set; }
+        public string? ProfilePicture { get; set; }
     }
 }

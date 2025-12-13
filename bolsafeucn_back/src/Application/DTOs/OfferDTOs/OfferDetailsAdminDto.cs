@@ -59,6 +59,10 @@ namespace bolsafeucn_back.src.Application.DTOs.OfferDTOs
         /// Offer type enum from the domain model.
         /// </summary>
         public OfferTypes OfferType { get; set; }
-        
+        public string Location { get; set; }
+        public string Requirements { get; set; }
+        public string ContactInfo { get; set; }
+        public string AboutMe { get; set; }
+
     }
 }
