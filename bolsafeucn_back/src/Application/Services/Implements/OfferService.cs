@@ -236,6 +236,7 @@ public class OfferService : IOfferService
         if (offer.User?.Email != null)
         {
             await _emailService.SendPublicationStatusChangeEmailAsync(
+                offer.Id,
                 offer.User.Email,
                 offer.Title,
                 "Cerrada (Finalizada)" // Estado a mostrar en el email
@@ -298,6 +299,7 @@ public class OfferService : IOfferService
         if (offer.User?.Email != null)
         {
             await _emailService.SendPublicationStatusChangeEmailAsync(
+                offer.Id,
                 offer.User.Email,
                 offer.Title,
                 "Publicada"
@@ -325,6 +327,7 @@ public class OfferService : IOfferService
         if (offer.User?.Email != null)
         {
             await _emailService.SendPublicationStatusChangeEmailAsync(
+                offer.Id,
                 offer.User.Email,
                 offer.Title,
                 "Rechazada"
@@ -380,6 +383,7 @@ public class OfferService : IOfferService
         if (offer.User?.Email != null)
         {
             await _emailService.SendPublicationStatusChangeEmailAsync(
+                offer.Id,
                 offer.User.Email,
                 offer.Title,
                 "Cerrada (Finalizada)" // Estado a mostrar en el email
