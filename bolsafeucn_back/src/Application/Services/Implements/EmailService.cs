@@ -264,6 +264,7 @@ namespace bolsafeucn_back.src.Application.Services.Implements
         }
 
         public async Task<bool> SendPublicationStatusChangeEmailAsync(
+            int? publicationId,
             string recipientEmail,
             string publicationTitle,
             string newStatus
@@ -279,6 +280,7 @@ namespace bolsafeucn_back.src.Application.Services.Implements
                 bool isRejected = newStatus.Equals("Rechazada", StringComparison.OrdinalIgnoreCase);
 
                 var htmlBody = await LoadPublicationStatusTemplateAsync(
+                    publicationId,
                     publicationTitle,
                     newStatus
                 );
@@ -322,6 +324,7 @@ namespace bolsafeucn_back.src.Application.Services.Implements
         }
 
         private async Task<string> LoadPublicationStatusTemplateAsync(
+            int? publicationId,
             string publicationTitle,
             string newStatus
         )
@@ -344,9 +347,10 @@ namespace bolsafeucn_back.src.Application.Services.Implements
 
                 bool isRejected = newStatus.Equals("Rechazada", StringComparison.OrdinalIgnoreCase);
 
-                if (isRejected)
+                if (isRejected && publicationId.HasValue)
                 {
-                    string appealLink = _configuration["FrontendUrls:AppealPublication"]!;
+                    string appealLink =
+                        $"https://bolsafeucn.cl/publications/{publicationId}/appeal";
 
                     var rejectedBlock =
                         $@"
