@@ -212,6 +212,7 @@ namespace bolsafeucn_back.src.Application.Services.Implements
             if (buySell.User?.Email != null)
             {
                 await _emailService.SendPublicationStatusChangeEmailAsync(
+                    buySell.Id,
                     buySell.User.Email,
                     buySell.Title,
                     "Publicada"
@@ -239,6 +240,7 @@ namespace bolsafeucn_back.src.Application.Services.Implements
             if (buySell.User?.Email != null)
             {
                 await _emailService.SendPublicationStatusChangeEmailAsync(
+                    buySell.Id,
                     buySell.User.Email,
                     buySell.Title,
                     "Rechazada"
@@ -267,6 +269,7 @@ namespace bolsafeucn_back.src.Application.Services.Implements
 
             {
                 await _emailService.SendPublicationStatusChangeEmailAsync(
+                    buySell.Id,
                     buySell.User.Email,
                     buySell.Title,
                     "Cerrada (Finalizada)" // Estado a mostrar en el email
