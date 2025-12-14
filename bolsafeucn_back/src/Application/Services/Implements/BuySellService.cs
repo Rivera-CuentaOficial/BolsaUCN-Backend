@@ -91,7 +91,8 @@ namespace bolsafeucn_back.src.Application.Services.Implements
                     UserName = buySell.User.UserName ?? "Usuario",
                     UserEmail = buySell.User.Email ?? "",
                     AboutMe = buySell.User.AboutMe,
-                    Rating = buySell.User.Rating
+                    Rating = buySell.User.Rating,
+                    statusValidation = buySell.statusValidation,
                 };
 
                 _logger.LogInformation(
@@ -268,6 +269,52 @@ namespace bolsafeucn_back.src.Application.Services.Implements
             buySell.statusValidation = StatusValidation.Closed;
             await _buySellRepository.UpdateAsync(buySell);
 
+            {
+                await _emailService.SendPublicationStatusChangeEmailAsync(
+                    buySell.Id,
+                    buySell.User.Email,
+                    buySell.Title,
+                    "Cerrada (Finalizada)" // Estado a mostrar en el email
+                );
+            }
+        }
+
+        public async Task ClosePublishedBuySellForOffererAsync(int buySellId, int offererUserId)
+        {
+            var buySell = await _buySellRepository.GetByIdAsync(buySellId);
+            if (buySell == null)
+            {
+                throw new KeyNotFoundException(
+                    $"La compra/venta con id {buySellId} no fue encontrada."
+                );
+            }
+            // Validar propiedad: lanzar 404 para no revelar la existencia
+            if (buySell.UserId != offererUserId)
+            {
+                throw new KeyNotFoundException(
+                    $"La compra/venta con id {buySellId} no fue encontrada."
+                );
+            }
+
+            if (!buySell.IsActive)
+            {
+                throw new InvalidOperationException(
+                    $"La compra/venta con id {buySellId} ya ha sido cerrada."
+                );
+            }
+
+            if (buySell.statusValidation != StatusValidation.Published)
+            {
+                throw new InvalidOperationException(
+                    $"La compra/venta con ID {buySellId} está {buySell.statusValidation}. Solo las publicaciones activas pueden ser cerradas."
+                );
+            }
+
+            buySell.IsActive = false;
+            buySell.statusValidation = StatusValidation.Closed;
+            await _buySellRepository.UpdateAsync(buySell);
+
+            if (buySell.User?.Email != null)
             {
                 await _emailService.SendPublicationStatusChangeEmailAsync(
                     buySell.Id,

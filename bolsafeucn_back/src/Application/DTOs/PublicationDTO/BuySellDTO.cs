@@ -1,3 +1,5 @@
+using bolsafeucn_back.src.Domain.Models;
+
 namespace bolsafeucn_back.src.Application.DTOs.PublicationDTO
 {
     /// <summary>
@@ -33,6 +35,7 @@ namespace bolsafeucn_back.src.Application.DTOs.PublicationDTO
         public DateTime PublicationDate { get; set; }
         public bool IsActive { get; set; }
         public List<string> ImageUrls { get; set; } = new();
+        public required StatusValidation statusValidation{ get; set; }
 
         // Información del usuario
         public int UserId { get; set; }
