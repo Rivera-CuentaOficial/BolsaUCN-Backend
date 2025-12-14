@@ -39,5 +39,6 @@ namespace bolsafeucn_back.src.Application.DTOs.PublicationDTO
         public string UserName { get; set; } = null!;
         public string UserEmail { get; set; } = null!;
         public string AboutMe { get; set; }
+        public double Rating { get; set; }
     }
 }

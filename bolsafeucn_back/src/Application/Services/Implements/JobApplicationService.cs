@@ -335,6 +335,7 @@ namespace bolsafeucn_back.src.Application.Services.Implements
                     Id = app.Id,
                     Applicant = $"{app.Student.Student?.Name} {app.Student.Student?.LastName}",
                     Status = app.Status.ToString(),
+                    Rating = app.Student.Rating
                 })
                 .ToList();
         }
@@ -393,6 +394,7 @@ namespace bolsafeucn_back.src.Application.Services.Implements
                     ApplicationDate = app.ApplicationDate,
                     // Enviamos el link del CV directamente
                     CurriculumVitaeUrl = app.Student.Student?.CurriculumVitae,
+                    Rating = app.Student.Rating
                 })
                 .ToList();
 

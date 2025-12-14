@@ -208,7 +208,8 @@ public class OfferService : IOfferService
             Location = offer.Location,
             Requirements = offer.Requirements,
             ContactInfo = offer.ContactInfo,
-            AboutMe = offer.User?.AboutMe
+            AboutMe = offer.User?.AboutMe,
+            Rating = offer.User.Rating
         };
         _logger.LogInformation("Detalles de oferta ID: {OfferId} obtenidos exitosamente", offerId);
         return result;
@@ -275,7 +276,8 @@ public class OfferService : IOfferService
             OfferType = offer.OfferType,
             ContactInfo = offer.ContactInfo,
             AboutMe = offer.User?.AboutMe,
-            Requirements = offer.Requirements
+            Requirements = offer.Requirements,
+            Rating = offer.User.Rating
         };
     }
 
