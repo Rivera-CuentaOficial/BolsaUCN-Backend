@@ -100,4 +100,6 @@ public class OfferDetailDto
     /// Offer type as a string (e.g., "Trabajo", "Voluntariado").
     /// </summary>
     public required string OfferType { get; set; }
+
+    public required StatusValidation statusValidation{ get; set; }
 }
