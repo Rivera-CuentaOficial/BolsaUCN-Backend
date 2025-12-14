@@ -18,6 +18,7 @@ namespace bolsafeucn_back.src.Application.DTOs.PublicationDTO
         // Información del usuario
         public int UserId { get; set; }
         public string UserName { get; set; } = null!;
+        public double UserRating { get; set; }
     }
 
     /// <summary>
@@ -35,7 +36,7 @@ namespace bolsafeucn_back.src.Application.DTOs.PublicationDTO
         public DateTime PublicationDate { get; set; }
         public bool IsActive { get; set; }
         public List<string> ImageUrls { get; set; } = new();
-        public required StatusValidation statusValidation{ get; set; }
+        public required StatusValidation statusValidation { get; set; }
 
         // Información del usuario
         public int UserId { get; set; }

@@ -45,6 +45,7 @@ namespace bolsafeucn_back.src.Application.Services.Implements
                     FirstImageUrl = bs.Images.FirstOrDefault()?.Url,
                     UserId = bs.UserId,
                     UserName = bs.User.UserName ?? "Usuario",
+                    UserRating = bs.User.Rating,
                 });
 
                 _logger.LogInformation(
@@ -131,6 +132,7 @@ namespace bolsafeucn_back.src.Application.Services.Implements
                     FirstImageUrl = bs.Images.FirstOrDefault()?.Url,
                     UserId = bs.UserId,
                     UserName = bs.User.UserName ?? "Usuario",
+                    UserRating = bs.User.Rating,
                 })
                 .ToList();
             _logger.LogInformation(

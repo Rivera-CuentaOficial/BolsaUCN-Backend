@@ -50,12 +50,14 @@ public class OfferService : IOfferService
                         ? $"{(o.User.Individual?.Name ?? "").Trim()} {(o.User.Individual?.LastName ?? "").Trim()}".Trim()
                     : (o.User?.UserName ?? "UCN");
 
+                var ownerRating = o.User?.Rating ?? 0.0f;
                 return new OfferSummaryDto
                 {
                     Id = o.Id,
                     Title = o.Title,
                     CompanyName = ownerName, // si lo sigues usando en otros lados
                     OwnerName = ownerName, // lo que consume el front para “oferente”
+                    OwnerRating = ownerRating,
 
                     Location = "Campus Antofagasta",
 
@@ -411,13 +413,13 @@ public class OfferService : IOfferService
         {
             throw new InvalidOperationException($"La oferta con id {offerId} ya ha sido cerrada.");
         }
-        
+
         // El estado de publicación debe ser Publicado para poder cerrarse
         if (offer.statusValidation != StatusValidation.Published)
         {
             throw new InvalidOperationException($"La oferta con ID {offerId} está {offer.statusValidation}. Solo las publicaciones activas pueden ser cerradas.");
         }
-        
+
         offer.IsActive = false;
         offer.statusValidation = StatusValidation.Closed;
         await _offerRepository.UpdateOfferAsync(offer);
