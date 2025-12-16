@@ -1181,6 +1181,7 @@ namespace bolsafeucn_back.src.Application.Infrastructure.Data
                 CommentForOfferor = "Buena experiencia en general. Me permitió aplicar conocimientos universitarios.",
                 IsReviewForOfferorCompleted = true,
                 IsCompleted = true,
+                IsClosed = true,
                 HasReviewForStudentBeenDeleted = false,
                 HasReviewForOfferorBeenDeleted = false,
             });
@@ -1201,6 +1202,7 @@ namespace bolsafeucn_back.src.Application.Infrastructure.Data
                 CommentForOfferor = "Ambiente profesional y buena coordinación. Aprendí nuevas habilidades.",
                 IsReviewForOfferorCompleted = true,
                 IsCompleted = true,
+                IsClosed = true,
                 HasReviewForStudentBeenDeleted = false,
                 HasReviewForOfferorBeenDeleted = false,
             });
@@ -1221,6 +1223,7 @@ namespace bolsafeucn_back.src.Application.Infrastructure.Data
                 CommentForOfferor = "Experiencia positiva. Instrucciones claras y buen trato del equipo.",
                 IsReviewForOfferorCompleted = true,
                 IsCompleted = true,
+                IsClosed = true,
                 HasReviewForStudentBeenDeleted = false,
                 HasReviewForOfferorBeenDeleted = false,
             });
@@ -1241,6 +1244,7 @@ namespace bolsafeucn_back.src.Application.Infrastructure.Data
                 CommentForOfferor = "Experiencia formativa increíble. Excelente mentoría y ambiente de aprendizaje.",
                 IsReviewForOfferorCompleted = true,
                 IsCompleted = true,
+                IsClosed = true,
                 HasReviewForStudentBeenDeleted = false,
                 HasReviewForOfferorBeenDeleted = false,
             });
@@ -1261,6 +1265,7 @@ namespace bolsafeucn_back.src.Application.Infrastructure.Data
                 CommentForOfferor = "Excelente oportunidad de aprendizaje. Supervisión clara y buen ambiente.",
                 IsReviewForOfferorCompleted = true,
                 IsCompleted = true,
+                IsClosed = true,
                 HasReviewForStudentBeenDeleted = false,
                 HasReviewForOfferorBeenDeleted = false,
             });
@@ -1281,6 +1286,7 @@ namespace bolsafeucn_back.src.Application.Infrastructure.Data
                 CommentForOfferor = "Experiencia aceptable, pero faltó claridad en las instrucciones iniciales.",
                 IsReviewForOfferorCompleted = true,
                 IsCompleted = true,
+                IsClosed = true,
                 HasReviewForStudentBeenDeleted = false,
                 HasReviewForOfferorBeenDeleted = false,
             });
@@ -1301,6 +1307,7 @@ namespace bolsafeucn_back.src.Application.Infrastructure.Data
                 CommentForOfferor = "Experiencia excepcional. Organización impecable y excelente mentoría.",
                 IsReviewForOfferorCompleted = true,
                 IsCompleted = true,
+                IsClosed = true,
                 HasReviewForStudentBeenDeleted = false,
                 HasReviewForOfferorBeenDeleted = false,
             });
@@ -1321,6 +1328,7 @@ namespace bolsafeucn_back.src.Application.Infrastructure.Data
                 CommentForOfferor = "Buena experiencia. Proyecto interesante y ambiente colaborativo.",
                 IsReviewForOfferorCompleted = true,
                 IsCompleted = true,
+                IsClosed = true,
                 HasReviewForStudentBeenDeleted = false,
                 HasReviewForOfferorBeenDeleted = false,
             });
