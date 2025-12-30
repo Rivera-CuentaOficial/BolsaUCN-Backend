@@ -26,8 +26,8 @@ Incluye una arquitectura limpia basada en capas (Controllers, Services, Reposito
 ### 1️⃣ Clonar el repositorio
 
 ```bash
-git clone https://github.com/ProMDFK123/backend-PIS.git
-cd backend-PIS
+git clone https://github.com/Rivera-CuentaOficial/BolsaUCN-Backend.git
+cd BolsaUCN-Backend
 ```
 
 ### 2️⃣ Configurar la base de datos con Docker
@@ -75,7 +75,7 @@ cd bolsafeucn_back
 cp appsettings.Example.json appsettings.Production.json
 # Edita appsettings.Production.json con tus credenciales
 ```
-Configuracion para la subida de archivos
+Configuracion para la subida de archivos.
 ```bash
 "Storage":{
 		"Provider": "Local",
