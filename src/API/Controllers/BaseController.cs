@@ -15,7 +15,7 @@ namespace bolsafeucn_back.src.API.Controllers
         /// <returns>Tupla con el ID y tipo de usuario.</returns>
         /// <exception cref="UnauthorizedAccessException"></exception>
         /// <exception cref="ArgumentException"></exception>
-        public (int, UserType) GetIdAndTypeFromToken()
+        protected (int, UserType) GetIdAndTypeFromToken()
         {
             Log.Information("Verificando token de autenticacion");
             if (User.Identity?.IsAuthenticated != true)
@@ -39,7 +39,7 @@ namespace bolsafeucn_back.src.API.Controllers
         /// </summary>
         /// <returns>ID del usuario.</returns>
         /// <exception cref="UnauthorizedAccessException"></exception>
-        public int GetUserIdFromToken()
+        protected int GetUserIdFromToken()
         {
             if (User.Identity?.IsAuthenticated != true)
                 throw new UnauthorizedAccessException("Usuario no autenticado.");
@@ -51,7 +51,7 @@ namespace bolsafeucn_back.src.API.Controllers
             return parsedUserId;
         }
 
-        public string GetEmailFromToken()
+        protected string GetEmailFromToken()
         {
             if (User.Identity?.IsAuthenticated != true)
                 throw new UnauthorizedAccessException("Usuario no autenticado.");
@@ -68,7 +68,7 @@ namespace bolsafeucn_back.src.API.Controllers
         /// <returns>Tipo de usuario.</returns>
         /// <exception cref="UnauthorizedAccessException"></exception>
         /// <exception cref="ArgumentException"></exception>
-        public UserType GetTypeFromToken()
+        protected UserType GetTypeFromToken()
         {
             if (User.Identity?.IsAuthenticated != true)
                 throw new UnauthorizedAccessException("Usuario no autenticado.");
