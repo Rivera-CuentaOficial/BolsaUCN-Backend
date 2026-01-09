@@ -1,17 +1,14 @@
 namespace bolsafeucn_back.src.Domain.Models
 {
-    public class Curriculum
+    public class Curriculum : ModelBase
     {
-        public int Id { get; set; }
-        // Metadata del archivo
+        // === METADATA DEL ARCHIVO ===
         public required string OriginalFileName { get; set; }
         public long FileSizeBytes { get; set; }
-        // Storage
+        // === STORAGE ===
         public required string Url { get; set; }
         public required string PublicId { get; set; }
-        // Audit
-        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-        public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
+        // === AUDITORÍA ===
         public bool IsActive { get; set; } = true;
     }
 }
