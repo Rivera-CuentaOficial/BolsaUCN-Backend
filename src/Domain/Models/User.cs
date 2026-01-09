@@ -36,7 +36,7 @@ namespace bolsafeucn_back.src.Domain.Models
         public Disability? Disability { get; set; }
 
         // === PROPIEDADES DE AUDITORIA ===
-        public required bool IsBanned { get; set; } = false;
+        public required bool Banned { get; set; } = false;
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
         public DateTime? LastLoginAt { get; set; }
