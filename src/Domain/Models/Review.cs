@@ -35,7 +35,7 @@ namespace bolsafeucn_back.src.Domain.Models
         /// <summary>
         /// Referencia de navegación al estudiante evaluado.
         /// </summary>
-        public GeneralUser? Student { get; set; }
+        public User? Student { get; set; }
 
         /// <summary>
         /// Identificador del estudiante evaluado.
@@ -45,7 +45,7 @@ namespace bolsafeucn_back.src.Domain.Models
         /// <summary>
         /// Referencia de navegación al oferente evaluado.
         /// </summary>
-        public GeneralUser? Offeror { get; set; }
+        public User? Offeror { get; set; }
 
         /// <summary>
         /// Identificador del oferente evaluado.

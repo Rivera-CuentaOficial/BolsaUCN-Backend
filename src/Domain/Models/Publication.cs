@@ -24,17 +24,12 @@ namespace bolsafeucn_back.src.Domain.Models
     /// Abstract base class for all publication entities in the system.
     /// Derived types include <see cref="Offer"/> and <see cref="BuySell"/>.
     /// </summary>
-    public abstract class Publication
+    public abstract class Publication : ModelBase
     {
-        /// <summary>
-        /// Unique identifier for the publication.
-        /// </summary>
-        public int Id { get; set; }
-
         /// <summary>
         /// The user who created the publication.
         /// </summary>
-        public required GeneralUser User { get; set; }
+        public required User User { get; set; }
 
         /// <summary>
         /// Identifier of the user who created the publication.
@@ -75,7 +70,8 @@ namespace bolsafeucn_back.src.Domain.Models
         /// Administrative validation status for the publication.
         /// </summary>
         public StatusValidation statusValidation { get; set; }
-/// <summary>
+        
+        /// <summary>
         /// Reason provided by the administrator when rejecting the publication.
         /// This feedback allows the user to correct their publication.
         /// </summary>
