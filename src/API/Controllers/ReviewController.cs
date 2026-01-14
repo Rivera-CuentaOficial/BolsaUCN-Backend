@@ -1,8 +1,8 @@
+using System.Security.Claims;
 using bolsafeucn_back.src.Application.DTOs.ReviewDTO;
 using bolsafeucn_back.src.Application.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Security.Claims;
 
 namespace bolsafeucn_back.src.API.Controllers
 {
@@ -11,7 +11,10 @@ namespace bolsafeucn_back.src.API.Controllers
     /// <summary>
     /// Controlador para gestionar las reseñas entre oferentes y estudiantes.
     /// </summary>
-    public class ReviewController(IReviewService reviewService, IPdfGeneratorService pdfGeneratorService) : BaseController
+    public class ReviewController(
+        IReviewService reviewService,
+        IPdfGeneratorService pdfGeneratorService
+    ) : BaseController
     {
         private readonly IReviewService _reviewService = reviewService;
         private readonly IPdfGeneratorService _pdfGeneratorService = pdfGeneratorService;
@@ -29,7 +32,10 @@ namespace bolsafeucn_back.src.API.Controllers
         public async Task<IActionResult> GetMyReviews()
         {
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out int currentUserId))
+            if (
+                string.IsNullOrEmpty(userIdClaim)
+                || !int.TryParse(userIdClaim, out int currentUserId)
+            )
             {
                 return Unauthorized("No se pudo identificar al usuario autenticado.");
             }
@@ -60,15 +66,24 @@ namespace bolsafeucn_back.src.API.Controllers
         public async Task<IActionResult> GetMyReviewsPdf()
         {
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out int currentUserId))
+            if (
+                string.IsNullOrEmpty(userIdClaim)
+                || !int.TryParse(userIdClaim, out int currentUserId)
+            )
             {
                 return Unauthorized("No se pudo identificar al usuario autenticado.");
             }
 
             try
             {
-                var pdfBytes = await _pdfGeneratorService.GenerateUserReviewsPdfAsync(currentUserId);
-                return File(pdfBytes, "application/pdf", $"reviews_{currentUserId}_{DateTime.Now:yyyyMMdd}.pdf");
+                var pdfBytes = await _pdfGeneratorService.GenerateUserReviewsPdfAsync(
+                    currentUserId
+                );
+                return File(
+                    pdfBytes,
+                    "application/pdf",
+                    $"reviews_{currentUserId}_{DateTime.Now:yyyyMMdd}.pdf"
+                );
             }
             catch (KeyNotFoundException ex)
             {
@@ -109,7 +124,10 @@ namespace bolsafeucn_back.src.API.Controllers
         public async Task<IActionResult> AddStudentReview([FromBody] ReviewForStudentDTO dto)
         {
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out int currentUserId))
+            if (
+                string.IsNullOrEmpty(userIdClaim)
+                || !int.TryParse(userIdClaim, out int currentUserId)
+            )
             {
                 return Unauthorized("No se pudo identificar al usuario autenticado.");
             }
@@ -128,7 +146,10 @@ namespace bolsafeucn_back.src.API.Controllers
         public async Task<IActionResult> AddOfferorReview([FromBody] ReviewForOfferorDTO dto)
         {
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out int currentUserId))
+            if (
+                string.IsNullOrEmpty(userIdClaim)
+                || !int.TryParse(userIdClaim, out int currentUserId)
+            )
             {
                 return Unauthorized("No se pudo identificar al usuario autenticado.");
             }
@@ -244,7 +265,11 @@ namespace bolsafeucn_back.src.API.Controllers
             try
             {
                 var pdfBytes = await _pdfGeneratorService.GenerateUserReviewsPdfAsync(userId);
-                return File(pdfBytes, "application/pdf", $"reviews_{userId}_{DateTime.Now:yyyyMMdd}.pdf");
+                return File(
+                    pdfBytes,
+                    "application/pdf",
+                    $"reviews_{userId}_{DateTime.Now:yyyyMMdd}.pdf"
+                );
             }
             catch (KeyNotFoundException ex)
             {
@@ -269,7 +294,11 @@ namespace bolsafeucn_back.src.API.Controllers
             try
             {
                 var pdfBytes = await _pdfGeneratorService.GenerateSystemReviewsPdfAsync();
-                return File(pdfBytes, "application/pdf", $"system_reviews_{DateTime.Now:yyyyMMdd}.pdf");
+                return File(
+                    pdfBytes,
+                    "application/pdf",
+                    $"system_reviews_{DateTime.Now:yyyyMMdd}.pdf"
+                );
             }
             catch (Exception ex)
             {

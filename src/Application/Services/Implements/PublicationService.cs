@@ -17,7 +17,7 @@ namespace bolsafeucn_back.src.Application.Services.Implements
         private readonly IOfferRepository _offerRepository;
         private readonly IBuySellRepository _buySellRepository;
         private readonly ILogger<PublicationService> _logger;
-
+        private const int MAX_APPEALS = 3;
         private readonly IPublicationRepository _publicationRepository;
         private readonly IMapper _mapper;
         private readonly IReviewService _reviewService;
@@ -44,7 +44,7 @@ namespace bolsafeucn_back.src.Application.Services.Implements
         /// </summary>
         public async Task<GenericResponse<string>> CreateOfferAsync(
             CreateOfferDTO offerDTO,
-            GeneralUser currentUser
+            User currentUser
         )
         {
             if (
@@ -84,7 +84,9 @@ namespace bolsafeucn_back.src.Application.Services.Implements
                     currentUser.Id,
                     pendingReviewsCount
                 );
-                throw new InvalidOperationException("No puedes crear una oferta mientras tengas 3 o más reseñas pendientes de revisión.");
+                throw new InvalidOperationException(
+                    "No puedes crear una oferta mientras tengas 3 o más reseñas pendientes de revisión."
+                );
             }
             try
             {
@@ -154,7 +156,7 @@ namespace bolsafeucn_back.src.Application.Services.Implements
         /// </summary>
         public async Task<GenericResponse<string>> CreateBuySellAsync(
             CreateBuySellDTO buySellDTO,
-            GeneralUser currentUser
+            User currentUser
         )
         {
             if (
@@ -179,7 +181,9 @@ namespace bolsafeucn_back.src.Application.Services.Implements
                     currentUser.Id,
                     pendingReviewsCount
                 );
-                throw new InvalidOperationException("No puedes crear una publicación de compra/venta mientras tengas 3 o más reseñas pendientes de revisión.");
+                throw new InvalidOperationException(
+                    "No puedes crear una publicación de compra/venta mientras tengas 3 o más reseñas pendientes de revisión."
+                );
             }
             try
             {
@@ -321,16 +325,6 @@ namespace bolsafeucn_back.src.Application.Services.Implements
             });
 
             return publicationsDto;
-        }
-
-        /// <summary>
-        /// Maximum number of times a user can appeal a rejection for a single publication.
-        /// </summary>
-        private const int MAX_APPEALS = 3;
-
-        public PublicationService(IPublicationRepository publicationRepository)
-        {
-            _publicationRepository = publicationRepository;
         }
 
         /// <summary>

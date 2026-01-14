@@ -5,7 +5,7 @@ using Mapster;
 
 namespace bolsafeucn_back.src.Application.DTOs.UserDTOs.UserProfileDTOs
 {
-    public class UpdateAdminParamsDTO : IUpdateParamsDTO
+    public class UpdateCompanyParamsDTO : IUpdateParamsDTO
     {
         /// <summary>
         /// Nombre de usuario.
@@ -15,7 +15,7 @@ namespace bolsafeucn_back.src.Application.DTOs.UserDTOs.UserProfileDTOs
         /// <summary>
         /// Primer nombre del usuario.
         /// </summary>
-        public string? Name { get; set; }
+        public string? FirstName { get; set; }
 
         /// <summary>
         /// Segundo nombre del usuario.
@@ -46,12 +46,13 @@ namespace bolsafeucn_back.src.Application.DTOs.UserDTOs.UserProfileDTOs
         /// <summary>
         /// Información sobre el usuario.
         /// </summary>
-        [MaxLength(500, ErrorMessage = "La información sobre el usuario debe tener como máximo 500 caracteres")]
+        [MaxLength(
+            500,
+            ErrorMessage = "La información sobre el usuario debe tener como máximo 500 caracteres"
+        )]
         public string? AboutMe { get; set; }
 
-        public bool SuperAdmin { get; set; }
-
-        public void ApplyTo(GeneralUser user)
+        public void ApplyTo(User user)
         {
             this.Adapt(user);
         }

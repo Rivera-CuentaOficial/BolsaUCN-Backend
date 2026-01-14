@@ -1,6 +1,6 @@
-using Mapster;
 using bolsafeucn_back.src.Application.DTOs.UserDTOs;
 using bolsafeucn_back.src.Domain.Models;
+using Mapster;
 
 namespace bolsafeucn_back.src.Application.Mappers
 {
@@ -10,6 +10,7 @@ namespace bolsafeucn_back.src.Application.Mappers
         {
             ConfigureCVMappings();
         }
+
         public void ConfigureCVMappings()
         {
             TypeAdapterConfig<UploadCVDTO, Curriculum>

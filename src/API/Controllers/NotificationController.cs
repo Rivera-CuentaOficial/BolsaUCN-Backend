@@ -21,7 +21,9 @@ namespace bolsafeucn_back.src.API.Controllers
         /// <param name="evt">Event payload describing the status change.</param>
         /// <returns>HTTP 200 OK when processing completes.</returns>
         [HttpPost("test-status-change")]
-        public async Task<IActionResult> TestStatusChange([FromBody] PostulationStatusChangedEvent evt)
+        public async Task<IActionResult> TestStatusChange(
+            [FromBody] PostulationStatusChangedEvent evt
+        )
         {
             await _notificationService.SendPostulationStatusChangeAsync(evt);
             return Ok(new { message = "Notificación procesada correctamente." });

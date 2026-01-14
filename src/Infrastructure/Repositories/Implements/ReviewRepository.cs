@@ -1,7 +1,7 @@
 using bolsafeucn_back.src.Domain.Models;
+using bolsafeucn_back.src.Infrastructure.Data;
 using bolsafeucn_back.src.Infrastructure.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
-using bolsafeucn_back.src.Infrastructure.Data;
 
 namespace bolsafeucn_back.src.Infrastructure.Repositories.Implements
 {
@@ -41,11 +41,12 @@ namespace bolsafeucn_back.src.Infrastructure.Repositories.Implements
         /// <returns>Una colección de reseñas del oferente con información del estudiante.</returns>
         public async Task<IEnumerable<Review>> GetByOfferorIdAsync(int offerorId)
         {
-            return await _context.Reviews
-                .Where(r => r.OfferorId == offerorId)
+            return await _context
+                .Reviews.Where(r => r.OfferorId == offerorId)
                 .Include(r => r.Student)
                 .ToListAsync();
         }
+
         /// <summary>
         /// Obtiene todas las reseñas asociadas a un estudiante específico.
         /// </summary>
@@ -53,8 +54,8 @@ namespace bolsafeucn_back.src.Infrastructure.Repositories.Implements
         /// <returns>Una colección de reseñas del estudiante.</returns>
         public async Task<IEnumerable<Review>> GetByStudentIdAsync(int studentId)
         {
-            return await _context.Reviews
-                .Where(r => r.StudentId == studentId)
+            return await _context
+                .Reviews.Where(r => r.StudentId == studentId)
                 .Include(r => r.Offeror)
                 .ToListAsync();
         }
@@ -67,10 +68,11 @@ namespace bolsafeucn_back.src.Infrastructure.Repositories.Implements
         /// <returns>El promedio de calificaciones, o null si no hay reseñas.</returns>
         public async Task<double?> GetOfferorAverageRatingAsync(int offerorId)
         {
-            return await _context.Reviews
-                .Where(r => r.OfferorId == offerorId)
+            return await _context
+                .Reviews.Where(r => r.OfferorId == offerorId)
                 .AverageAsync(r => (double?)r.RatingForOfferor);
         }
+
         /// <summary>
         /// Calcula el promedio de calificaciones de un estudiante.
         /// Solo considera las calificaciones completadas (RatingForStudent no null).
@@ -79,8 +81,8 @@ namespace bolsafeucn_back.src.Infrastructure.Repositories.Implements
         /// <returns>El promedio de calificaciones, o null si no hay reseñas.</returns>
         public async Task<double?> GetStudentAverageRatingAsync(int studentId)
         {
-            return await _context.Reviews
-                .Where(r => r.StudentId == studentId)
+            return await _context
+                .Reviews.Where(r => r.StudentId == studentId)
                 .AverageAsync(r => (double?)r.RatingForStudent);
         }
 
@@ -91,8 +93,8 @@ namespace bolsafeucn_back.src.Infrastructure.Repositories.Implements
         /// <returns>La reseña asociada a la publicación, o null si no existe.</returns>
         public async Task<Review?> GetByPublicationIdAsync(int publicationId)
         {
-            return await _context.Reviews
-                .Include(r => r.Student)
+            return await _context
+                .Reviews.Include(r => r.Student)
                 .Include(r => r.Offeror)
                 .Where(r => r.PublicationId == publicationId)
                 .FirstOrDefaultAsync();
@@ -105,8 +107,8 @@ namespace bolsafeucn_back.src.Infrastructure.Repositories.Implements
         /// <returns>La reseña solicitada, o null si no existe.</returns>
         public async Task<Review?> GetByIdAsync(int reviewId)
         {
-            return await _context.Reviews
-                .Include(r => r.Student)
+            return await _context
+                .Reviews.Include(r => r.Student)
                 .Include(r => r.Offeror)
                 .Where(r => r.Id == reviewId)
                 .FirstOrDefaultAsync();
@@ -122,23 +124,24 @@ namespace bolsafeucn_back.src.Infrastructure.Repositories.Implements
             _context.Reviews.Update(review);
             await _context.SaveChangesAsync();
         }
+
         /// <summary>
         /// Obtiene todas las reseñas del sistema.
         /// </summary>
         /// <returns></returns>
         public async Task<IEnumerable<Review>> GetAllAsync()
         {
-            return await _context.Reviews
-                .Include(r => r.Student)
+            return await _context
+                .Reviews.Include(r => r.Student)
                 .Include(r => r.Offeror)
                 .ToListAsync();
         }
 
-        public async Task<IEnumerable<Publication>> GetPublicationInformationAsync(int publicationId)
+        public async Task<IEnumerable<Publication>> GetPublicationInformationAsync(
+            int publicationId
+        )
         {
-            return await _context.Publications
-                .Where(p => p.Id == publicationId)
-                .ToListAsync();
+            return await _context.Publications.Where(p => p.Id == publicationId).ToListAsync();
         }
     }
 }

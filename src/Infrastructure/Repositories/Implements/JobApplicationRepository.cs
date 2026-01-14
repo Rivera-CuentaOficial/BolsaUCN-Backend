@@ -25,7 +25,6 @@ namespace bolsafeucn_back.src.Infrastructure.Repositories.Implements
         {
             return await _context
                 .JobApplications.Include(ja => ja.Student)
-                .ThenInclude(s => s.Student)
                 .Include(ja => ja.JobOffer)
                 .FirstOrDefaultAsync(ja => ja.Id == applicationId);
         }
@@ -43,7 +42,6 @@ namespace bolsafeucn_back.src.Infrastructure.Repositories.Implements
             return await _context
                 .JobApplications.Include(ja => ja.JobOffer)
                 .Include(ja => ja.Student)
-                .ThenInclude(s => s.Student)
                 .Where(ja => ja.StudentId == studentId)
                 .OrderByDescending(ja => ja.ApplicationDate)
                 .ToListAsync();
@@ -53,7 +51,6 @@ namespace bolsafeucn_back.src.Infrastructure.Repositories.Implements
         {
             return await _context
                 .JobApplications.Include(ja => ja.Student)
-                .ThenInclude(s => s.Student)
                 .Include(ja => ja.JobOffer)
                 .Where(ja => ja.JobOfferId == offerId)
                 .OrderByDescending(ja => ja.ApplicationDate)
@@ -66,6 +63,5 @@ namespace bolsafeucn_back.src.Infrastructure.Repositories.Implements
             var result = await _context.SaveChangesAsync();
             return result > 0;
         }
-
     }
 }

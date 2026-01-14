@@ -28,7 +28,7 @@ namespace bolsafeucn_back.src.Application.Services.Implements
         /// <param name="roleName">Nombre del rol</param>
         /// <param name="rememberMe">Indica si se debe recordar al usuario</param>
         /// <returns>Token JWT</returns>
-        public string CreateToken(GeneralUser user, string roleName, bool rememberMe)
+        public string CreateToken(User user, string roleName, bool rememberMe)
         {
             try
             {
@@ -83,10 +83,12 @@ namespace bolsafeucn_back.src.Application.Services.Implements
         /// <returns>Indica si la operación fue exitosa</returns>
         public async Task<bool> AddToWhitelistAsync(Whitelist token)
         {
-            var result = await _tokenRepository.AddToWhitelistAsync(token) ;
+            var result = await _tokenRepository.AddToWhitelistAsync(token);
             if (result == null)
             {
-                Log.Error($"Error al agregar token a la whitelist para el usuario ID: {token.UserId}");
+                Log.Error(
+                    $"Error al agregar token a la whitelist para el usuario ID: {token.UserId}"
+                );
                 return false;
             }
             Log.Information($"Token agregado a la whitelist para el usuario ID: {token.UserId}");
@@ -114,4 +116,3 @@ namespace bolsafeucn_back.src.Application.Services.Implements
         }
     }
 }
-            

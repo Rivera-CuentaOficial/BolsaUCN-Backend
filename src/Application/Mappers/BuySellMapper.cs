@@ -1,6 +1,6 @@
-using Mapster;
-using bolsafeucn_back.src.Domain.Models;
 using bolsafeucn_back.src.Application.DTOs.PublicationDTO;
+using bolsafeucn_back.src.Domain.Models;
+using Mapster;
 
 /// <summary>
 /// Configuración de mapeos entre entidades Offer y sus DTOs usando Mapster
@@ -22,7 +22,6 @@ namespace bolsafeucn_back.src.Application.Mappers
                 .Map(dest => dest.Location, src => src.Location)
                 .Map(dest => dest.PublicationDate, src => src.PublicationDate)
                 .Map(dest => dest.UserName, src => src.User.UserName);
-
 
             TypeAdapterConfig<BuySell, BuySellDetailDto>
                 .NewConfig()

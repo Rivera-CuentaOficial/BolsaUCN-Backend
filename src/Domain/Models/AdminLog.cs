@@ -6,8 +6,9 @@ namespace bolsafeucn_back.src.Domain.Models
         Unblocked,
         Deleted,
         UpdatedProfile,
-        Other
+        Other,
     }
+
     public class AdminLog : ModelBase
     {
         public User? User { get; set; }

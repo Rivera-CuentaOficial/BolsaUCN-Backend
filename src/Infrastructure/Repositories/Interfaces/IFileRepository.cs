@@ -21,6 +21,7 @@ namespace bolsafeucn_back.src.Infrastructure.Repositories.Interfaces
         /// <param name="file">El archivo de imagen a crear.</param>
         /// <returns>True si el archivo se creó correctamente, de lo contrario false y null en caso de que la imagen ya existe.</returns>
         Task<bool?> CreateUserImageAsync(UserImage file);
+
         /// <summary>
         /// Crea un archivo de CV en la base de datos.
         /// </summary>

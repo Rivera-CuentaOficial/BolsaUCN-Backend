@@ -23,7 +23,7 @@ namespace bolsafeucn_back.src.Application.Services.Interfaces
         /// <param name="userId">El ID del usuario al que pertenece la imagen.</param>
         /// <param name="imageType">El tipo de imagen de usuario.</param>
         /// <returns>True si la carga fue exitosa, de lo contrario False.</returns>
-        Task<bool> UploadUserImageAsync(IFormFile file, GeneralUser generalUser, UserImageType imageType);
+        Task<bool> UploadUserImageAsync(IFormFile file, User generalUser);
 
         /// <summary>
         /// Elimina un archivo de Cloudinary.
@@ -32,5 +32,4 @@ namespace bolsafeucn_back.src.Application.Services.Interfaces
         /// <returns>True si la eliminación fue exitosa, de lo contrario false.</returns>
         Task<bool> DeleteAsync(string publicId);
     }
-
 }

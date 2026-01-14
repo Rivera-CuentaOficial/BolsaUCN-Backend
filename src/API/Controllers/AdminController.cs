@@ -25,9 +25,13 @@ namespace bolsafeucn_back.src.API.Controllers
         public async Task<IActionResult> ToggleUserBlockedStatus(int userId)
         {
             var adminId = GetUserIdFromToken();
-            Log.Information($"Intentando alternar el estado de bloqueo del usuario con ID {userId}");
+            Log.Information(
+                $"Intentando alternar el estado de bloqueo del usuario con ID {userId}"
+            );
             var result = await _adminService.ToggleUserBlockedStatusAsync(adminId, userId);
-            return Ok(new GenericResponse<bool>("Estado de bloqueo del usuario actualizado.", result));
+            return Ok(
+                new GenericResponse<bool>("Estado de bloqueo del usuario actualizado.", result)
+            );
         }
 
         /// <summary>
@@ -42,9 +46,16 @@ namespace bolsafeucn_back.src.API.Controllers
             var adminId = GetUserIdFromToken();
             Log.Information("Obteniendo todos los usuarios.");
             var users = await _adminService.GetAllUsersAsync(adminId, searchParams);
-            return Ok(new GenericResponse<UsersForAdminDTO>("Usuarios obtenidos exitosamente.", users));
+            return Ok(
+                new GenericResponse<UsersForAdminDTO>("Usuarios obtenidos exitosamente.", users)
+            );
         }
 
+        /// <summary>
+        /// Obtiene el perfil de un usuario por su ID.
+        /// </summary>
+        /// <param name="userId">ID del usuario cuyo perfil se desea obtener.</param>
+        /// <returns>Perfil del usuario.</returns>
         [HttpGet("users/{userId}")]
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> GetUserProfileById(int userId)
@@ -52,7 +63,27 @@ namespace bolsafeucn_back.src.API.Controllers
             var adminId = GetUserIdFromToken();
             Log.Information($"Obteniendo perfil de usuario con ID {userId}");
             var userProfile = await _adminService.GetUserProfileByIdAsync(adminId, userId);
-            return Ok(new GenericResponse<UserProfileForAdminDTO>("Perfil de usuario obtenido exitosamente.", userProfile));
+            return Ok(
+                new GenericResponse<UserProfileForAdminDTO>(
+                    "Perfil de usuario obtenido exitosamente.",
+                    userProfile
+                )
+            );
+        }
+
+        /// <summary>
+        /// Elimina un administrador por su ID.
+        /// </summary>
+        /// <param name="userId">ID del administrador a eliminar.</param>
+        /// <returns>Resultado de la operación de eliminación.</returns>
+        [HttpDelete("users/{userId}")]
+        [Authorize(Roles = "SuperAdmin")]
+        public async Task<IActionResult> DeleteAdminById(int userId)
+        {
+            var superAdminId = GetUserIdFromToken();
+            Log.Information($"Intentando eliminar admin con ID: {userId}");
+            var result = await _adminService.DeleteAdminByIdAsync(superAdminId, userId);
+            return Ok(new GenericResponse<string>("Admin eliminado exitosamente.", result));
         }
     }
 }

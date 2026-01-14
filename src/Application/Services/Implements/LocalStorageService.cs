@@ -1,7 +1,7 @@
-using bolsafeucn_back.src.Domain.Models;
 using bolsafeucn_back.src.Application.Services.Interfaces;
-using Serilog;
+using bolsafeucn_back.src.Domain.Models;
 using bolsafeucn_back.src.Infrastructure.Repositories.Interfaces;
+using Serilog;
 
 namespace bolsafeucn_back.src.Application.Services.Implements
 {
@@ -21,7 +21,8 @@ namespace bolsafeucn_back.src.Application.Services.Implements
             IWebHostEnvironment environment,
             IConfiguration configuration,
             IFileRepository fileRepository,
-            IUserRepository userRepository)
+            IUserRepository userRepository
+        )
         {
             _environment = environment;
             _configuration = configuration;
@@ -32,16 +33,23 @@ namespace bolsafeucn_back.src.Application.Services.Implements
             if (!Directory.Exists(_basePath))
             {
                 Directory.CreateDirectory(_basePath);
-                Log.Information("Directorio de almacenamiento local creado en: {BasePath}", _basePath);
+                Log.Information(
+                    "Directorio de almacenamiento local creado en: {BasePath}",
+                    _basePath
+                );
             }
         }
-        public async Task<bool> UploadCVAsync(IFormFile cvFile, GeneralUser user)
+
+        public async Task<bool> UploadCVAsync(IFormFile cvFile, User user)
         {
             if (user.CV != null)
             {
-                Log.Warning("El usuario {UserId} ya tiene un CV asociado. Se sobrescribirá el existente.", user.Id);
+                Log.Warning(
+                    "El usuario {UserId} ya tiene un CV asociado. Se sobrescribirá el existente.",
+                    user.Id
+                );
                 user.CV.IsActive = false;
-            }   
+            }
             if (cvFile == null || cvFile.Length == 0)
             {
                 throw new ArgumentException("File is empty or null");
@@ -50,7 +58,9 @@ namespace bolsafeucn_back.src.Application.Services.Implements
             const long maxSize = 10 * 1024 * 1024; // 10MB
             if (cvFile.Length > maxSize)
             {
-                throw new ArgumentException($"File size exceeds maximum allowed ({maxSize / 1024 / 1024}MB)");
+                throw new ArgumentException(
+                    $"File size exceeds maximum allowed ({maxSize / 1024 / 1024}MB)"
+                );
             }
             var now = DateTime.UtcNow;
             var folder = $"{now:yyyy/MM/dd}";
@@ -76,11 +86,11 @@ namespace bolsafeucn_back.src.Application.Services.Implements
                 OriginalFileName = cvFile.FileName,
                 Url = relativeUrl,
                 PublicId = uniqueFileName,
-                FileSizeBytes = cvFile.Length
+                FileSizeBytes = cvFile.Length,
             };
 
             var result = await _fileRepository.CreateCVAsync(newFile);
-            if (result == false) 
+            if (result == false)
             {
                 throw new Exception("Error al guardar el CV en la base de datos.");
             }
@@ -88,14 +98,15 @@ namespace bolsafeucn_back.src.Application.Services.Implements
             user.CV = newFile;
 
             var updateResult = await _userRepository.UpdateAsync(user);
-            if (!updateResult) 
+            if (!updateResult)
             {
                 Log.Error("Error al asociar el CV al usuario {UserId}", user.Id);
                 throw new Exception("Error al asociar el CV al usuario.");
-            }     
+            }
             return true;
         }
-        public async Task<bool> DeleteCVAsync(GeneralUser user)
+
+        public async Task<bool> DeleteCVAsync(User user)
         {
             if (user.CV == null)
             {
@@ -123,7 +134,8 @@ namespace bolsafeucn_back.src.Application.Services.Implements
             }*/
             return true;
         }
-        public async Task<Curriculum?> DownloadCVAsync(GeneralUser user)
+
+        public async Task<Curriculum?> DownloadCVAsync(User user)
         {
             if (user.CV == null)
             {
@@ -132,7 +144,8 @@ namespace bolsafeucn_back.src.Application.Services.Implements
             }
             return user.CV;
         }
-        public async Task<bool> CVExistsAsync(GeneralUser user)
+
+        public async Task<bool> CVExistsAsync(User user)
         {
             // Implementación para verificar si el CV existe en el almacenamiento local
             throw new NotImplementedException();

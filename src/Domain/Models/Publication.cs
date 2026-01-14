@@ -70,7 +70,7 @@ namespace bolsafeucn_back.src.Domain.Models
         /// Administrative validation status for the publication.
         /// </summary>
         public StatusValidation statusValidation { get; set; }
-        
+
         /// <summary>
         /// Reason provided by the administrator when rejecting the publication.
         /// This feedback allows the user to correct their publication.

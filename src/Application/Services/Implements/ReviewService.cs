@@ -5,6 +5,7 @@ using bolsafeucn_back.src.Application.Services.Interfaces;
 using bolsafeucn_back.src.Domain.Models;
 using bolsafeucn_back.src.Infrastructure.Repositories.Interfaces;
 using Serilog;
+
 // Este codigo funciona en base a sueños y esperanzas, y mucho Claude Sonnet 4.5
 // lo lamento para la pobre alma que tenga que mantener esto en el futuro.
 namespace bolsafeucn_back.src.Application.Services.Implements
@@ -21,19 +22,17 @@ namespace bolsafeucn_back.src.Application.Services.Implements
         private readonly IAdminNotificationRepository _adminNotificationRepository;
         private readonly IEmailService _emailService;
 
-
-
         /// <summary>
         /// Inicializa una nueva instancia del servicio de reseñas.
         /// </summary>
         /// <param name="repository">El repositorio de reseñas para acceso a datos.</param>
         /// <param name="userRepository">El repositorio de usuarios para validación.</param>
         public ReviewService(
-             IReviewRepository repository,
-             IUserRepository userRepository,
-             IAdminNotificationRepository adminNotificationRepository,
-             IEmailService emailService)
-
+            IReviewRepository repository,
+            IUserRepository userRepository,
+            IAdminNotificationRepository adminNotificationRepository,
+            IEmailService emailService
+        )
         {
             _repository = repository;
             _userRepository = userRepository;
@@ -59,23 +58,37 @@ namespace bolsafeucn_back.src.Application.Services.Implements
         /// </summary>
         /// <param name="offerorId">El identificador del oferente.</param>
         /// <returns>Una colección de DTOs de reseñas del oferente.</returns>
-        public async Task<IEnumerable<PublicationAndReviewInfoDTO>> GetReviewsByOfferorAsync(int offerorId)
+        public async Task<IEnumerable<PublicationAndReviewInfoDTO>> GetReviewsByOfferorAsync(
+            int offerorId
+        )
         {
             var reviews = await _repository.GetByOfferorIdAsync(offerorId);
             if (reviews == null || !reviews.Any())
-                throw new KeyNotFoundException($"No se encontraron reseñas para el oferente con ID {offerorId}.");
+                throw new KeyNotFoundException(
+                    $"No se encontraron reseñas para el oferente con ID {offerorId}."
+                );
 
-            var user = await _userRepository.GetByIdAsync(offerorId) ?? throw new KeyNotFoundException($"No se encontró el usuario con ID {offerorId}.");
+            var user =
+                await _userRepository.GetUserByIdAsync(offerorId)
+                ?? throw new KeyNotFoundException($"No se encontró el usuario con ID {offerorId}.");
 
             var result = new List<PublicationAndReviewInfoDTO>();
             foreach (var review in reviews)
             {
-                var publications = await _repository.GetPublicationInformationAsync(review.PublicationId);
+                var publications = await _repository.GetPublicationInformationAsync(
+                    review.PublicationId
+                );
                 if (publications != null)
                 {
                     foreach (var publication in publications)
                     {
-                        result.Add(ReviewMapper.MapToPublicationAndReviewInfoDTO(review, publication, user.UserType));
+                        result.Add(
+                            ReviewMapper.MapToPublicationAndReviewInfoDTO(
+                                review,
+                                publication,
+                                user.UserType
+                            )
+                        );
                     }
                 }
             }
@@ -91,48 +104,73 @@ namespace bolsafeucn_back.src.Application.Services.Implements
         {
             return await _repository.GetOfferorAverageRatingAsync(offerorId);
         }
+
         public async Task<double?> GetStudentAverageRatingAsync(int studentId)
         {
             return await _repository.GetStudentAverageRatingAsync(studentId);
         }
+
         public async Task<ShowReviewDTO> GetReviewAsync(int id)
         {
-            var review = await _repository.GetByIdAsync(id) ?? throw new KeyNotFoundException($"No se encontró una review con ID {id}.");
+            var review =
+                await _repository.GetByIdAsync(id)
+                ?? throw new KeyNotFoundException($"No se encontró una review con ID {id}.");
             return ReviewMapper.ShowReviewDTO(review);
         }
 
-        public async Task<IEnumerable<PublicationAndReviewInfoDTO>> GetReviewsByStudentAsync(int studentId)
+        public async Task<IEnumerable<PublicationAndReviewInfoDTO>> GetReviewsByStudentAsync(
+            int studentId
+        )
         {
             var reviews = await _repository.GetByStudentIdAsync(studentId);
             if (reviews == null || !reviews.Any())
-                throw new KeyNotFoundException($"No se encontraron reseñas para el estudiante con ID {studentId}.");
+                throw new KeyNotFoundException(
+                    $"No se encontraron reseñas para el estudiante con ID {studentId}."
+                );
 
             var result = new List<PublicationAndReviewInfoDTO>();
             foreach (var review in reviews)
             {
-                var publications = await _repository.GetPublicationInformationAsync(review.PublicationId);
+                var publications = await _repository.GetPublicationInformationAsync(
+                    review.PublicationId
+                );
                 if (publications != null)
                 {
                     foreach (var publication in publications)
                     {
-                        result.Add(ReviewMapper.MapToPublicationAndReviewInfoDTO(review, publication, UserType.Estudiante));
+                        result.Add(
+                            ReviewMapper.MapToPublicationAndReviewInfoDTO(
+                                review,
+                                publication,
+                                UserType.Estudiante
+                            )
+                        );
                     }
                 }
             }
             return result;
         }
+
         public async Task<IEnumerable<PublicationAndReviewInfoDTO>> GetAllReviewsAsync()
         {
             var reviews = await _repository.GetAllAsync();
             var result = new List<PublicationAndReviewInfoDTO>();
             foreach (var review in reviews)
             {
-                var publications = await _repository.GetPublicationInformationAsync(review.PublicationId);
+                var publications = await _repository.GetPublicationInformationAsync(
+                    review.PublicationId
+                );
                 if (publications != null)
                 {
                     foreach (var publication in publications)
                     {
-                        result.Add(ReviewMapper.MapToPublicationAndReviewInfoDTO(review, publication, UserType.Administrador));
+                        result.Add(
+                            ReviewMapper.MapToPublicationAndReviewInfoDTO(
+                                review,
+                                publication,
+                                UserType.Administrador
+                            )
+                        );
                     }
                 }
             }
@@ -152,46 +190,67 @@ namespace bolsafeucn_back.src.Application.Services.Implements
         /// <exception cref="InvalidOperationException">Lanzada si el oferente ya completó su evaluación.</exception>
         public async Task AddStudentReviewAsync(ReviewForStudentDTO dto, int currentUserId)
         {
-            var review = await _repository.GetByIdAsync(dto.ReviewId) ?? throw new KeyNotFoundException("No se ha encontrado una reseña para el ID de publicación dado.");
+            var review =
+                await _repository.GetByIdAsync(dto.ReviewId)
+                ?? throw new KeyNotFoundException(
+                    "No se ha encontrado una reseña para el ID de publicación dado."
+                );
 
             // Validar que el usuario actual sea el OFERENTE (quien califica al estudiante)
             if (review.OfferorId != currentUserId)
             {
-                throw new UnauthorizedAccessException("Solo el oferente de esta publicación puede dejar una review hacia el estudiante.");
+                throw new UnauthorizedAccessException(
+                    "Solo el oferente de esta publicación puede dejar una review hacia el estudiante."
+                );
             }
             // Validar que el oferente no haya completado ya su review hacia el estudiante
             if (review.IsReviewForStudentCompleted)
             {
-                throw new InvalidOperationException("Ya has completado tu review para este estudiante.");
+                throw new InvalidOperationException(
+                    "Ya has completado tu review para este estudiante."
+                );
             }
             // Validar que la review no esté cerrada por el proceso automático
             if (review.IsClosed)
             {
-                throw new InvalidOperationException("No se puede modificar esta review porque ha sido cerrada.");
+                throw new InvalidOperationException(
+                    "No se puede modificar esta review porque ha sido cerrada."
+                );
             }
             if (review.HasReviewForStudentBeenDeleted)
             {
-                throw new InvalidOperationException("No se puede agregar la Review hacia el estudiante, ya que esta ya ha sido eliminada.");
+                throw new InvalidOperationException(
+                    "No se puede agregar la Review hacia el estudiante, ya que esta ya ha sido eliminada."
+                );
             }
             ReviewMapper.StudentUpdateReview(dto, review);
-            if (review.IsCompleted) await BothReviewsCompletedAsync(review);
+            if (review.IsCompleted)
+                await BothReviewsCompletedAsync(review);
             await _repository.UpdateAsync(review);
-            Log.Information("Offeror {OfferorId} added review for student in review {ReviewId}", currentUserId, dto.ReviewId);
+            Log.Information(
+                "Offeror {OfferorId} added review for student in review {ReviewId}",
+                currentUserId,
+                dto.ReviewId
+            );
 
             if (review.RatingForStudent.HasValue && review.RatingForStudent <= 3)
             {
-                await _emailService.SendLowRatingReviewAlertAsync(new ReviewDTO
-                {
-                    IdReview = review.Id,
-                    RatingForStudent = review.RatingForStudent,
-                    CommentForStudent = review.CommentForStudent,
-                    IdStudent = review.StudentId,
-                    IdOfferor = review.OfferorId,
-                    IdPublication = review.PublicationId,
-                    AtTime = review.ReviewChecklistValues.AtTime,
-                    GoodPresentation = review.ReviewChecklistValues.GoodPresentation,
-                    StudentHasRespectOfferor = review.ReviewChecklistValues.StudentHasRespectOfferor,
-                });
+                await _emailService.SendLowRatingReviewAlertAsync(
+                    new ReviewDTO
+                    {
+                        IdReview = review.Id,
+                        RatingForStudent = review.RatingForStudent,
+                        CommentForStudent = review.CommentForStudent,
+                        IdStudent = review.StudentId,
+                        IdOfferor = review.OfferorId,
+                        IdPublication = review.PublicationId,
+                        AtTime = review.ReviewChecklistValues.AtTime,
+                        GoodPresentation = review.ReviewChecklistValues.GoodPresentation,
+                        StudentHasRespectOfferor = review
+                            .ReviewChecklistValues
+                            .StudentHasRespectOfferor,
+                    }
+                );
             }
         }
 
@@ -207,45 +266,66 @@ namespace bolsafeucn_back.src.Application.Services.Implements
         /// <exception cref="InvalidOperationException">Lanzada si el estudiante ya completó su evaluación.</exception>
         public async Task AddOfferorReviewAsync(ReviewForOfferorDTO dto, int currentUserId)
         {
-            var review = await _repository.GetByIdAsync(dto.ReviewId) ?? throw new KeyNotFoundException("No se ha encontrado una reseña para el ID de publicación dado.");
+            var review =
+                await _repository.GetByIdAsync(dto.ReviewId)
+                ?? throw new KeyNotFoundException(
+                    "No se ha encontrado una reseña para el ID de publicación dado."
+                );
             // Validar que el usuario actual sea el ESTUDIANTE (quien califica al oferente)
             if (review.StudentId != currentUserId)
             {
-                throw new UnauthorizedAccessException("Solo el estudiante de esta publicación puede dejar una review hacia el oferente.");
+                throw new UnauthorizedAccessException(
+                    "Solo el estudiante de esta publicación puede dejar una review hacia el oferente."
+                );
             }
             // Validar que el estudiante no haya completado ya su review hacia el oferente
             if (review.IsReviewForOfferorCompleted)
             {
-                throw new InvalidOperationException("Ya has completado tu review para este oferente.");
+                throw new InvalidOperationException(
+                    "Ya has completado tu review para este oferente."
+                );
             }
             // Validar que la review no esté cerrada por el proceso automático
             if (review.IsClosed)
             {
-                throw new InvalidOperationException("No se puede modificar esta review porque ha sido cerrada.");
+                throw new InvalidOperationException(
+                    "No se puede modificar esta review porque ha sido cerrada."
+                );
             }
             if (review.HasReviewForOfferorBeenDeleted)
             {
-                throw new InvalidOperationException("No se puede agregar la Review hacia el oferente, ya que esta ya ha sido eliminada.");
+                throw new InvalidOperationException(
+                    "No se puede agregar la Review hacia el oferente, ya que esta ya ha sido eliminada."
+                );
             }
             ReviewMapper.OfferorUpdateReview(dto, review);
-            if (review.IsCompleted) await BothReviewsCompletedAsync(review);
+            if (review.IsCompleted)
+                await BothReviewsCompletedAsync(review);
             await _repository.UpdateAsync(review);
-            Log.Information("Student {StudentId} added review for offeror in Review {ReviewId}", currentUserId, dto.ReviewId);
+            Log.Information(
+                "Student {StudentId} added review for offeror in Review {ReviewId}",
+                currentUserId,
+                dto.ReviewId
+            );
 
             if (review.RatingForOfferor.HasValue && review.RatingForOfferor <= 3)
             {
-                await _emailService.SendLowRatingReviewAlertAsync(new ReviewDTO
-                {
-                    IdReview = review.Id,
-                    RatingForOfferor = review.RatingForOfferor,
-                    CommentForOfferor = review.CommentForOfferor,
-                    IdStudent = review.StudentId,
-                    IdOfferor = review.OfferorId,
-                    IdPublication = review.PublicationId,
-                    AtTime = review.ReviewChecklistValues.AtTime,
-                    GoodPresentation = review.ReviewChecklistValues.GoodPresentation,
-                    StudentHasRespectOfferor = review.ReviewChecklistValues.StudentHasRespectOfferor,
-                });
+                await _emailService.SendLowRatingReviewAlertAsync(
+                    new ReviewDTO
+                    {
+                        IdReview = review.Id,
+                        RatingForOfferor = review.RatingForOfferor,
+                        CommentForOfferor = review.CommentForOfferor,
+                        IdStudent = review.StudentId,
+                        IdOfferor = review.OfferorId,
+                        IdPublication = review.PublicationId,
+                        AtTime = review.ReviewChecklistValues.AtTime,
+                        GoodPresentation = review.ReviewChecklistValues.GoodPresentation,
+                        StudentHasRespectOfferor = review
+                            .ReviewChecklistValues
+                            .StudentHasRespectOfferor,
+                    }
+                );
             }
         }
 
@@ -260,8 +340,11 @@ namespace bolsafeucn_back.src.Application.Services.Implements
             // Actualizar el Rating del oferente y del estudiante
             await UpdateUserRatingAsync(review.OfferorId);
             await UpdateUserRatingAsync(review.StudentId);
-            Log.Information("Se actualizan rating para el oferente: {OfferorId} y el estudiante {StudentId} despues de completar la Review",
-                review.OfferorId, review.StudentId);
+            Log.Information(
+                "Se actualizan rating para el oferente: {OfferorId} y el estudiante {StudentId} despues de completar la Review",
+                review.OfferorId,
+                review.StudentId
+            );
         }
 
         /// <summary>
@@ -276,19 +359,25 @@ namespace bolsafeucn_back.src.Application.Services.Implements
         public async Task<Review> CreateInitialReviewAsync(InitialReviewDTO dto)
         {
             // Validar que existan el estudiante y el oferente
-            var student = await _userRepository.GetByIdAsync(dto.StudentId) ?? throw new ArgumentException($"El estudiante con ID {dto.StudentId} no existe.");
-            var offeror = await _userRepository.GetByIdAsync(dto.OfferorId) ?? throw new ArgumentException($"El oferente con ID {dto.OfferorId} no existe.");
+            var student =
+                await _userRepository.GetUserByIdAsync(dto.StudentId)
+                ?? throw new ArgumentException($"El estudiante con ID {dto.StudentId} no existe.");
+            var offeror =
+                await _userRepository.GetUserByIdAsync(dto.OfferorId)
+                ?? throw new ArgumentException($"El oferente con ID {dto.OfferorId} no existe.");
             // Validar que no exista ya una review para esta publicación
             var existingReview = await _repository.GetByPublicationIdAsync(dto.PublicationId);
             if (existingReview != null)
             {
-                throw new InvalidOperationException($"Ya existe una review para la publicación con ID {dto.PublicationId}.");
+                throw new InvalidOperationException(
+                    $"Ya existe una review para la publicación con ID {dto.PublicationId}."
+                );
             }
             var review = ReviewMapper.CreateInitialReviewAsync(dto, student, offeror);
             await _repository.AddAsync(review);
             return review;
         }
-        #endregion 
+        #endregion
         #region Eliminar Reviews
         /// <summary>
         /// Elimina parcial o completamente una reseña.
@@ -303,43 +392,63 @@ namespace bolsafeucn_back.src.Application.Services.Implements
             // Validar que se solicite eliminar al menos una parte
             if (!dto.DeleteReviewForOfferor && !dto.DeleteReviewForStudent)
             {
-                throw new InvalidOperationException("Debe especificar al menos una parte de la review para eliminar.");
+                throw new InvalidOperationException(
+                    "Debe especificar al menos una parte de la review para eliminar."
+                );
             }
             // Obtener la review
-            var review = await _repository.GetByIdAsync(dto.ReviewId) ?? throw new KeyNotFoundException($"No se encontró una review con ID {dto.ReviewId}.");
+            var review =
+                await _repository.GetByIdAsync(dto.ReviewId)
+                ?? throw new KeyNotFoundException(
+                    $"No se encontró una review con ID {dto.ReviewId}."
+                );
             // Si la review fue cerrada automáticamente, no se permiten cambios
             if (review.IsClosed)
             {
-                throw new InvalidOperationException("No se puede eliminar parte de esta review porque ha sido cerrada.");
+                throw new InvalidOperationException(
+                    "No se puede eliminar parte de esta review porque ha sido cerrada."
+                );
             }
             // Eliminar la parte del estudiante si se solicita
-            if (dto.DeleteReviewForStudent) ReviewMapper.DeleteReviewForStudent(review);
+            if (dto.DeleteReviewForStudent)
+                ReviewMapper.DeleteReviewForStudent(review);
             // Eliminar la parte del oferente si se solicita
-            if (dto.DeleteReviewForOfferor) ReviewMapper.DeleteReviewForOfferor(review);
+            if (dto.DeleteReviewForOfferor)
+                ReviewMapper.DeleteReviewForOfferor(review);
             await _repository.UpdateAsync(review);
         }
         #endregion
         #region Otras operaciones
 
-        public async Task<IEnumerable<PublicationAndReviewInfoDTO>> GetPublicationInformationAsync(int userId)
+        public async Task<IEnumerable<PublicationAndReviewInfoDTO>> GetPublicationInformationAsync(
+            int userId
+        )
         {
-            var user = await _userRepository.GetByIdAsync(userId) ?? throw new KeyNotFoundException($"No se encontró el usuario con ID {userId}.");
+            var user =
+                await _userRepository.GetUserByIdAsync(userId)
+                ?? throw new KeyNotFoundException($"No se encontró el usuario con ID {userId}.");
             IEnumerable<Review> reviews;
             if (user.UserType == UserType.Estudiante)
             {
                 reviews = await _repository.GetByStudentIdAsync(userId);
                 if (reviews == null || !reviews.Any())
-                    throw new KeyNotFoundException($"No se encontraron reseñas para el estudiante con ID {userId}.");
+                    throw new KeyNotFoundException(
+                        $"No se encontraron reseñas para el estudiante con ID {userId}."
+                    );
             }
             else if (user.UserType == UserType.Empresa || user.UserType == UserType.Particular)
             {
                 reviews = await _repository.GetByOfferorIdAsync(userId);
                 if (reviews == null || !reviews.Any())
-                    throw new KeyNotFoundException($"No se encontraron reseñas para el oferente con ID {userId}.");
+                    throw new KeyNotFoundException(
+                        $"No se encontraron reseñas para el oferente con ID {userId}."
+                    );
             }
             else
             {
-                throw new InvalidOperationException($"El tipo de usuario {user.UserType} no puede tener reseñas.");
+                throw new InvalidOperationException(
+                    $"El tipo de usuario {user.UserType} no puede tener reseñas."
+                );
             }
             var result = new List<PublicationAndReviewInfoDTO>();
             foreach (var review in reviews)
@@ -349,17 +458,28 @@ namespace bolsafeucn_back.src.Application.Services.Implements
                 {
                     foreach (var publication in publications)
                     {
-                        result.Add(ReviewMapper.MapToPublicationAndReviewInfoDTO(review, publication, user.UserType));
+                        result.Add(
+                            ReviewMapper.MapToPublicationAndReviewInfoDTO(
+                                review,
+                                publication,
+                                user.UserType
+                            )
+                        );
                     }
                 }
             }
             if (result.Count == 0)
-                throw new KeyNotFoundException($"No se encontró información de publicación para el usuario con ID {userId}.");
+                throw new KeyNotFoundException(
+                    $"No se encontró información de publicación para el usuario con ID {userId}."
+                );
             return result;
         }
+
         public async Task UpdateUserRatingAsync(int userId)
         {
-            var user = await _userRepository.GetByIdAsync(userId) ?? throw new KeyNotFoundException($"No se encontró el usuario con ID {userId}.");
+            var user =
+                await _userRepository.GetUserByIdAsync(userId)
+                ?? throw new KeyNotFoundException($"No se encontró el usuario con ID {userId}.");
             double? averageRating = null;
             // Determinar el tipo de usuario y obtener su calificación promedio
             if (user.UserType == UserType.Estudiante)
@@ -372,16 +492,23 @@ namespace bolsafeucn_back.src.Application.Services.Implements
             }
             else
             {
-                throw new InvalidOperationException($"El tipo de usuario {user.UserType} no puede tener calificaciones.");
+                throw new InvalidOperationException(
+                    $"El tipo de usuario {user.UserType} no puede tener calificaciones."
+                );
             }
             // Actualizar el rating del usuario (usar 0.0 si no hay calificaciones)
             user.Rating = averageRating ?? 0.0;
             await _userRepository.UpdateAsync(user);
-            Log.Information("Se actualizo el rating del usuario: {UserId} a: {Rating}", userId, user.Rating);
+            Log.Information(
+                "Se actualizo el rating del usuario: {UserId} a: {Rating}",
+                userId,
+                user.Rating
+            );
         }
-        public async Task<Double?> GetUserAverageRatingAsync(int userId)
+
+        public async Task<double?> GetUserAverageRatingAsync(int userId)
         {
-            var user = await _userRepository.GetByIdAsync(userId);
+            var user = await _userRepository.GetUserByIdAsync(userId);
             if (user == null)
             {
                 throw new KeyNotFoundException($"No se encontró el usuario con ID {userId}.");
@@ -396,9 +523,12 @@ namespace bolsafeucn_back.src.Application.Services.Implements
             }
             else
             {
-                throw new InvalidOperationException($"El tipo de usuario {user.UserType} no puede tener calificaciones.");
+                throw new InvalidOperationException(
+                    $"El tipo de usuario {user.UserType} no puede tener calificaciones."
+                );
             }
         }
+
         /// <summary>
         /// Obtiene el número de reseñas pendientes de un usuario.
         /// Una reseña está pendiente si el usuario no ha completado su parte,
@@ -409,7 +539,9 @@ namespace bolsafeucn_back.src.Application.Services.Implements
         /// <exception cref="KeyNotFoundException">Lanzada si no se encuentra el usuario.</exception>
         public async Task<int> GetPendingReviewsCountAsync(int userId)
         {
-            var user = await _userRepository.GetByIdAsync(userId) ?? throw new KeyNotFoundException($"No se encontró el usuario con ID {userId}.");
+            var user =
+                await _userRepository.GetUserByIdAsync(userId)
+                ?? throw new KeyNotFoundException($"No se encontró el usuario con ID {userId}.");
             IEnumerable<Review> allReviews;
             // Obtener todas las reseñas según el tipo de usuario
             if (user.UserType == UserType.Estudiante)
@@ -440,14 +572,21 @@ namespace bolsafeucn_back.src.Application.Services.Implements
                     {
                         pendingCount++;
                     }
-                    else if ((user.UserType == UserType.Empresa || user.UserType == UserType.Particular) && !review.IsReviewForStudentCompleted)
+                    else if (
+                        (user.UserType == UserType.Empresa || user.UserType == UserType.Particular)
+                        && !review.IsReviewForStudentCompleted
+                    )
                     {
                         pendingCount++;
                     }
                 }
             }
-            Log.Information("Usuario {UserId} ({UserType}) tiene {PendingCount} reseñas pendientes",
-                userId, user.UserType, pendingCount);
+            Log.Information(
+                "Usuario {UserId} ({UserType}) tiene {PendingCount} reseñas pendientes",
+                userId,
+                user.UserType,
+                pendingCount
+            );
             return pendingCount;
         }
 

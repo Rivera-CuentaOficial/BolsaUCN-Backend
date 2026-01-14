@@ -40,7 +40,7 @@ namespace bolsafeucn_back.src.Domain.Models
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
         public DateTime? LastLoginAt { get; set; }
-        
+
         // === PUBLICACIONES ===
         public ICollection<Publication> Publications { get; set; } = new List<Publication>();
 

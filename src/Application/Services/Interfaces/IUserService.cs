@@ -8,13 +8,8 @@ namespace bolsafeucn_back.src.Application.Services.Interfaces
 {
     public interface IUserService
     {
-        /*
-        Task<IEnumerable<GeneralUser>> GetUsuariosAsync();
-        Task<GeneralUser?> GetUsuarioAsync(int id);
-        Task<GeneralUser> CrearUsuarioAsync(UsuarioDto dto);
-        Task<bool> EliminarUsuarioAsync(int id);
-        */
         #region Registro de usuarios
+
         /// <summary>
         /// Funcion de registro de estudiante
         /// </summary>
@@ -25,6 +20,7 @@ namespace bolsafeucn_back.src.Application.Services.Interfaces
             RegisterStudentDTO registerStudentDTO,
             HttpContext httpContext
         );
+
         /// <summary>
         /// Funcion de registro de persona particular
         /// </summary>
@@ -35,6 +31,7 @@ namespace bolsafeucn_back.src.Application.Services.Interfaces
             RegisterIndividualDTO registerIndividualDTO,
             HttpContext httpContext
         );
+
         /// <summary>
         /// Funcion de registro de empresa
         /// </summary>
@@ -45,13 +42,19 @@ namespace bolsafeucn_back.src.Application.Services.Interfaces
             RegisterCompanyDTO registerCompanyDTO,
             HttpContext httpContext
         );
+
         /// <summary>
         /// Funcion de registro de administrador
         /// </summary>
         /// <param name="registerAdminDTO">Datos para registrar un administrador</param>
         /// <param name="httpContext">Contexto HTTP</param>
         /// <returns>Mensaje de resultado del registro</returns>
-        Task<string> RegisterAdminAsync(int adminId, RegisterAdminDTO registerAdminDTO, HttpContext httpContext);
+        Task<string> RegisterAdminAsync(
+            int adminId,
+            RegisterAdminDTO registerAdminDTO,
+            HttpContext httpContext
+        );
+
         /// <summary>
         /// Verifica el correo electrónico de un usuario.
         /// </summary>
@@ -59,6 +62,7 @@ namespace bolsafeucn_back.src.Application.Services.Interfaces
         /// <param name="httpContext">Contexto HTTP</param>
         /// <returns>Mensaje de resultado de la verificación</returns>
         Task<string> VerifyEmailAsync(VerifyEmailDTO verifyEmailDTO, HttpContext httpContext);
+
         /// <summary>
         /// Reenvía el correo de verificación a un usuario.
         /// </summary>
@@ -78,6 +82,7 @@ namespace bolsafeucn_back.src.Application.Services.Interfaces
         /// <param name="httpContext">Contexto HTTP</param>
         /// <returns>Mensaje de resultado del inicio de sesión</returns>
         Task<string> LoginAsync(LoginDTO loginDTO, HttpContext httpContext);
+
         /// <summary>
         /// Envía un correo electrónico con un código de verificación para restablecer la contraseña.
         /// </summary>
@@ -88,6 +93,7 @@ namespace bolsafeucn_back.src.Application.Services.Interfaces
             RequestResetPasswordCodeDTO requestResetPasswordCodeDTO,
             HttpContext httpContext
         );
+
         /// <summary>
         /// Verifica el código de restablecimiento de contraseña.
         /// </summary>
@@ -98,13 +104,17 @@ namespace bolsafeucn_back.src.Application.Services.Interfaces
             VerifyResetPasswordCodeDTO verifyResetPasswordCodeDTO,
             HttpContext httpContext
         );
+
         /// <summary>
         /// Restablece la contraseña de un usuario.
         /// </summary>
         /// <param name="changeUserPasswordDTO">Datos para cambiar la contraseña del usuario</param>
         /// <param name="userId">ID del usuario</param>
         /// <returns>Mensaje de resultado del cambio de contraseña</returns>
-        Task<string> ChangeUserPasswordById(ChangeUserPasswordDTO changeUserPasswordDTO, int userId);
+        Task<string> ChangeUserPasswordById(
+            ChangeUserPasswordDTO changeUserPasswordDTO,
+            int userId
+        );
         #endregion
         #region Profile Management
         /// <summary>
@@ -113,7 +123,8 @@ namespace bolsafeucn_back.src.Application.Services.Interfaces
         /// <param name="userId">ID del usuario</param>
         /// <param name="userType">Tipo de usuario</param>
         /// <returns>Perfil del usuario</returns>
-        Task<IGetUserProfileDTO> GetUserProfileByIdAsync(int userId, UserType userType);
+        Task<GetUserProfileDTO> GetUserProfileByIdAsync(int userId);
+
         /// <summary>
         /// Actualiza el perfil de un usuario por su ID.
         /// </summary>
@@ -121,13 +132,19 @@ namespace bolsafeucn_back.src.Application.Services.Interfaces
         /// <param name="userId">ID del usuario</param>
         /// <param name="userType">Tipo de usuario</param>
         /// <returns>Mensaje de resultado de la actualización</returns>
-        Task<string> UpdateUserProfileByIdAsync(IUpdateParamsDTO updateParamsDTO, int userId, UserType userType);
+        Task<string> UpdateUserProfileByIdAsync(
+            UpdateUserProfileDTO updateParamsDTO,
+            int userId,
+            UserType userType
+        );
+
         /// <summary>
         /// Obtiene la foto de perfil de un usuario por su ID.
         /// </summary>
         /// <param name="userId">ID del usuario</param>
         /// <returns>Foto de perfil del usuario</returns>
         Task<GetPhotoDTO> GetUserProfilePhotoByIdAsync(int userId);
+
         /// <summary>
         /// Actualiza la foto de perfil de un usuario por su ID.
         /// </summary>
@@ -135,7 +152,7 @@ namespace bolsafeucn_back.src.Application.Services.Interfaces
         /// <param name="userId">ID del usuario</param>
         /// <returns>Mensaje de resultado de la actualización</returns>
         Task<string> UpdateUserProfilePhotoByIdAsync(UpdatePhotoDTO updatePhotoDTO, int userId);
-        #endregion 
+        #endregion
         #region Documents Management
         /// <summary>
         /// Sube el CV de un usuario por su ID.
@@ -144,12 +161,14 @@ namespace bolsafeucn_back.src.Application.Services.Interfaces
         /// <param name="userId">ID del usuario</param>
         /// <returns>Mensaje de resultado de la subida</returns>
         Task<string> UploadCVByIdAsync(UploadCVDTO uploadCVDTO, int userId);
+
         /// <summary>
         /// Descarga el CV de un usuario por su ID.
         /// </summary>
         /// <param name="userId">ID del usuario</param>
         /// <returns>Archivo del CV</returns>
         Task<GetCVDTO> DownloadCVByIdAsync(int userId);
+
         /// <summary>
         /// Elimina el CV de un usuario por su ID.
         /// </summary>

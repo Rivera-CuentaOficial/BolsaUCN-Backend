@@ -24,7 +24,11 @@ namespace bolsafeucn_back.src.Application.Services.Implements
         private readonly string _transformationQuality;
         private readonly string _transformationFetchFormat;
 
-        public FileService(IConfiguration configuration, IFileRepository fileRepository, IUserRepository userRepository)
+        public FileService(
+            IConfiguration configuration,
+            IFileRepository fileRepository,
+            IUserRepository userRepository
+        )
         {
             _configuration = configuration;
             _fileRepository = fileRepository;
@@ -66,10 +70,7 @@ namespace bolsafeucn_back.src.Application.Services.Implements
                     "La configuración del formato de la transformación es obligatoria"
                 );
             if (
-                !int.TryParse(
-                    _configuration["Images:ImageMaxSizeInBytes"],
-                    out _maxFileSizeInBytes
-                )
+                !int.TryParse(_configuration["Images:ImageMaxSizeInBytes"], out _maxFileSizeInBytes)
             )
             {
                 throw new InvalidOperationException(
@@ -196,9 +197,8 @@ namespace bolsafeucn_back.src.Application.Services.Implements
             return true;
         }
 
-        public async Task<bool> UploadUserImageAsync(IFormFile file, GeneralUser user, UserImageType imageType)
+        public async Task<bool> UploadUserImageAsync(IFormFile file, User user)
         {
-
             if (user.Id <= 0)
             {
                 Log.Error($"Usuario inválido: {user.Id}");
@@ -269,7 +269,6 @@ namespace bolsafeucn_back.src.Application.Services.Implements
             {
                 PublicId = uploadResult.PublicId,
                 Url = uploadResult.SecureUrl.ToString(),
-                ImageType = imageType
             };
 
             var result = await _fileRepository.CreateUserImageAsync(image);
@@ -296,34 +295,16 @@ namespace bolsafeucn_back.src.Application.Services.Implements
 
             Log.Information($"Imagen subida exitosamente: {uploadResult.SecureUrl}");
 
+            // Actualizar la imagen de perfil del usuario
             string publicId;
-
-            switch (imageType)
+            if (user.ProfilePhoto != null)
             {
-                case UserImageType.Perfil:
-                    if (user.ProfilePhoto != null) {
-                        publicId = user.ProfilePhoto.PublicId;
-                        await DeleteInCloudinaryAsync(publicId);
-                        await _fileRepository.DeleteUserImageAsync(publicId);
-                    }
-                    
-                    user.ProfilePhoto = image;
-                    user.ProfilePhotoId = image.Id;
-                    break;
-                case UserImageType.Banner:
-                    if (user.ProfileBanner != null) {
-                        await _fileRepository.DeleteUserImageAsync(user.ProfileBanner.PublicId);
-                        //await DeleteInCloudinaryAsync(user.ProfileBanner.PublicId);
-                    }   
-                    user.ProfileBanner = image;
-                    user.ProfileBannerId = image.Id;
-                    break;
-                default:
-                    Log.Error($"Tipo de imagen de usuario no soportado: {imageType}");
-                    throw new ArgumentException("Tipo de imagen de usuario no soportado");
+                publicId = user.ProfilePhoto.PublicId;
+                await DeleteInCloudinaryAsync(publicId);
+                await _fileRepository.DeleteUserImageAsync(publicId);
             }
-
-
+            user.ProfilePhoto = image;
+            user.ProfilePhotoId = image.Id;
             return true;
         }
 
@@ -375,7 +356,7 @@ namespace bolsafeucn_back.src.Application.Services.Implements
         {
             var deletionParams = new DeletionParams(publicId);
             Log.Information($"Eliminando imagen con PublicId: {publicId} de Cloudinary");
-            try 
+            try
             {
                 var deleteResult = await _cloudinary.DestroyAsync(deletionParams);
                 if (deleteResult.Error != null)
@@ -386,16 +367,16 @@ namespace bolsafeucn_back.src.Application.Services.Implements
                     return false;
                 }
                 Log.Information(
-                $"Imagen con PublicId: {publicId} eliminada exitosamente de Cloudinary"
+                    $"Imagen con PublicId: {publicId} eliminada exitosamente de Cloudinary"
                 );
-            return true;
-            } 
-            catch 
+                return true;
+            }
+            catch
             {
                 Log.Error(
                     $"Error al eliminar la imagen con PublicId: {publicId} de Cloudinary: No es una publicId de cloudinary."
                 );
-                return false;   
+                return false;
             }
         }
 

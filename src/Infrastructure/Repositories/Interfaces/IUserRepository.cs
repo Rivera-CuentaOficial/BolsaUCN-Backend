@@ -5,30 +5,29 @@ namespace bolsafeucn_back.src.Infrastructure.Repositories.Interfaces
 {
     public interface IUserRepository
     {
-        Task<GeneralUser?> GetByEmailAsync(string email);
+        Task<User?> GetByEmailAsync(string email);
         Task<bool> ExistsByEmailAsync(string email);
         Task<bool> ExistsByRutAsync(string rut);
         Task<bool> GetBlockedStatusAsync(int userId);
-        Task<bool> CreateUserAsync(GeneralUser user, string password, string role);
-        Task<bool> CreateStudentAsync(Student student);
-        Task<bool> CreateIndividualAsync(Individual individual);
-        Task<bool> CreateCompanyAsync(Company company);
-        Task<bool> CreateAdminAsync(Admin admin, bool SuperAdmin);
-        Task<bool> CheckPasswordAsync(GeneralUser user, string password);
-        Task<bool> UpdateAsync(GeneralUser user);
-        Task<bool> UpdatePasswordAsync(GeneralUser user, string newPassword);
-        Task<bool> UpdateLastLoginAsync(GeneralUser user);
-        Task<string> GetRoleAsync(GeneralUser user);
-        Task<GeneralUser> GetGeneralUserByIdAsync(int id);
-        Task<IEnumerable<GeneralUser>> GetAllAsync();
+        Task<bool> CreateUserAsync(User user, string password, string role);
+        Task<bool> CheckPasswordAsync(User user, string password);
+        Task<bool> UpdateAsync(User user);
+        Task<bool> UpdatePasswordAsync(User user, string newPassword);
+        Task<bool> UpdateLastLoginAsync(User user);
+        Task<string> GetRoleAsync(User user);
+        Task<User> GetGeneralUserByIdAsync(int id);
         Task<bool> ConfirmEmailAsync(string email);
-        Task<GeneralUser?> GetByIdAsync(int id);
-        Task<GeneralUser?> GetByIdWithRelationsAsync(int id);
-        Task<GeneralUser?> GetUntrackedWithTypeAsync(int id, UserType? userType);
-        Task<GeneralUser?> GetTrackedWithTypeAsync(int id, UserType? userType);
-        Task<(IEnumerable<GeneralUser>, int TotalCount)> GetFilteredForAdminAsync(int adminId, SearchParamsDTO searchParams);
+        Task<User?> GetUserByIdAsync(
+            int userId,
+            bool tracking = false,
+            bool includePhoto = false,
+            bool includeCV = false
+        );
+        Task<(IEnumerable<User>, int TotalCount)> GetFilteredForAdminAsync(
+            int adminId,
+            SearchParamsDTO searchParams
+        );
         Task<int> GetNumberOfAdmins();
-        Task<GeneralUser> AddAsync(GeneralUser usuario);
-        Task<bool> DeleteAsync(int id);
+        Task<bool> DeleteUserAsync(User user);
     }
 }

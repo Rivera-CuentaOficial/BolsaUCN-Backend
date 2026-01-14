@@ -7,7 +7,7 @@ namespace bolsafeucn_back.src.Domain.Models
     {
         Pendiente,
         Aceptada,
-        Rechazada
+        Rechazada,
     }
 
     /// <summary>
@@ -15,7 +15,6 @@ namespace bolsafeucn_back.src.Domain.Models
     /// </summary>
     public class JobApplication : ModelBase
     {
-
         /// <summary>
         /// The student user who submitted the application.
         /// </summary>

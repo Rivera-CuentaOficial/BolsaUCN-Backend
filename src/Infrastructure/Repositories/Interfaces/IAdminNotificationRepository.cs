@@ -4,5 +4,4 @@ public interface IAdminNotificationRepository
     Task<IEnumerable<AdminNotification>> GetAllAsync();
     Task<AdminNotification?> GetByIdAsync(int id);
     Task UpdateAsync(AdminNotification notification);
-
 }

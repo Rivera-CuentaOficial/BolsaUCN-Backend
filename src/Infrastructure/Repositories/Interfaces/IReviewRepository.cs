@@ -22,6 +22,7 @@ namespace bolsafeucn_back.src.Infrastructure.Repositories.Interfaces
         /// <param name="offerorId">El identificador del oferente.</param>
         /// <returns>Una colección de reseñas del oferente.</returns>
         Task<IEnumerable<Review>> GetByOfferorIdAsync(int offerorId);
+
         /// <summary>
         /// Obtiene todas las reseñas asociadas a un estudiante específico.
         /// </summary>
@@ -35,6 +36,7 @@ namespace bolsafeucn_back.src.Infrastructure.Repositories.Interfaces
         /// <param name="providerId">El identificador del oferente.</param>
         /// <returns>El promedio de calificaciones, o null si no hay reseñas.</returns>
         Task<double?> GetOfferorAverageRatingAsync(int providerId);
+
         /// <summary>
         /// Calcula el promedio de calificaciones de un estudiante.
         /// </summary>
@@ -62,6 +64,7 @@ namespace bolsafeucn_back.src.Infrastructure.Repositories.Interfaces
         /// <param name="review">La reseña con los datos actualizados.</param>
         /// <returns>Una tarea que representa la operación asíncrona.</returns>
         Task UpdateAsync(Review review);
+
         /// <summary>
         /// Obtiene todas las reseñas del sistema.
         /// </summary>

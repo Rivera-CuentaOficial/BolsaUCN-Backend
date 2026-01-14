@@ -25,7 +25,7 @@ namespace bolsafeucn_back.src.Application.Mappers
                 PublicationDate = publication.PublicationDate,
                 Images = publication.Images,
                 IsActive = publication.IsActive,
-                statusValidation = publication.statusValidation
+                statusValidation = publication.statusValidation,
             };
         }
     }
