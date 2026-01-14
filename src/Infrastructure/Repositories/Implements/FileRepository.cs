@@ -76,6 +76,7 @@ namespace bolsafeucn_back.src.Infrastructure.Repositories.Implements
             }
             return null;
         }
+
         public async Task<bool?> DeleteUserImageAsync(string publicId)
         {
             var image = await _context.UserImages.FirstOrDefaultAsync(i => i.PublicId == publicId);
@@ -86,6 +87,7 @@ namespace bolsafeucn_back.src.Infrastructure.Repositories.Implements
             }
             return null;
         }
+
         public async Task<bool?> DeleteCVAsync(string publicId)
         {
             var curriculum = await _context.CVs.FirstOrDefaultAsync(cv => cv.PublicId == publicId);

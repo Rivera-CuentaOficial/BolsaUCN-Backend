@@ -27,9 +27,6 @@ public class OfferRepository : IOfferRepository
         _logger.LogInformation("Consultando ofertas activas en la base de datos");
         var offers = await _context
             .Offers.Include(o => o.User)
-            .ThenInclude(gu => gu.Company)
-            .Include(o => o.User)
-            .ThenInclude(gu => gu.Individual)
             .Where(o => o.IsActive && o.EndDate > DateTime.UtcNow)
             .AsNoTracking()
             .ToListAsync();
@@ -48,9 +45,6 @@ public class OfferRepository : IOfferRepository
         _logger.LogInformation("Consultando ofertas pendientes en la base de datos");
         var offers = await _context
             .Offers.Include(o => o.User)
-            .ThenInclude(gu => gu.Company)
-            .Include(o => o.User)
-            .ThenInclude(gu => gu.Individual)
             .Where(o => o.statusValidation == StatusValidation.InProcess)
             .AsNoTracking()
             .ToListAsync();
@@ -69,9 +63,6 @@ public class OfferRepository : IOfferRepository
         _logger.LogInformation("Consultando ofertas publicadas en la base de datos");
         var offers = await _context
             .Offers.Include(o => o.User)
-            .ThenInclude(gu => gu.Company)
-            .Include(o => o.User)
-            .ThenInclude(gu => gu.Individual)
             .Where(o => o.statusValidation == StatusValidation.Published && o.IsActive == true)
             .AsNoTracking()
             .ToListAsync();
@@ -90,9 +81,6 @@ public class OfferRepository : IOfferRepository
         _logger.LogInformation("Consultando oferta ID: {OfferId} en la base de datos", offerId);
         var offer = await _context
             .Offers.Include(o => o.User)
-            .ThenInclude(gu => gu.Company)
-            .Include(o => o.User)
-            .ThenInclude(gu => gu.Individual)
             .FirstOrDefaultAsync(o => o.Id == offerId);
 
         if (offer != null)
@@ -143,9 +131,6 @@ public class OfferRepository : IOfferRepository
         _logger.LogInformation("Consultando oferta por ID: {OfferId}", id);
         var offer = await _context
             .Offers.Include(o => o.User)
-            .ThenInclude(gu => gu.Company)
-            .Include(o => o.User)
-            .ThenInclude(gu => gu.Individual)
             .Include(o => o.Images)
             .FirstOrDefaultAsync(o => o.Id == id);
 
@@ -166,13 +151,7 @@ public class OfferRepository : IOfferRepository
     public async Task<IEnumerable<Offer>> GetAllOffersAsync()
     {
         _logger.LogInformation("Consultando todas las ofertas en la base de datos");
-        var offers = await _context
-            .Offers.Include(o => o.User)
-            .ThenInclude(gu => gu.Company)
-            .Include(o => o.User)
-            .ThenInclude(gu => gu.Individual)
-            .AsNoTracking()
-            .ToListAsync();
+        var offers = await _context.Offers.Include(o => o.User).AsNoTracking().ToListAsync();
         _logger.LogInformation("Consulta completada: {Count} ofertas encontradas", offers.Count);
         return offers;
     }
@@ -185,9 +164,6 @@ public class OfferRepository : IOfferRepository
         _logger.LogInformation("Consultando ofertas del usuario ID: {UserId}", userId);
         var offers = await _context
             .Offers.Include(o => o.User)
-            .ThenInclude(gu => gu.Company)
-            .Include(o => o.User)
-            .ThenInclude(gu => gu.Individual)
             .Where(o => o.UserId == userId)
             .AsNoTracking()
             .ToListAsync();

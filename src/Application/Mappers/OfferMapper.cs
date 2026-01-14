@@ -20,14 +20,7 @@ public class OfferMapper
         TypeAdapterConfig<Offer, OfferSummaryDto>
             .NewConfig()
             .Map(dest => dest.Title, src => src.Title)
-            .Map(
-                dest => dest.CompanyName,
-                src =>
-                    src.User.UserType == UserType.Empresa ? src.User.Company!.CompanyName
-                    : src.User.UserType == UserType.Particular
-                        ? $"{src.User.Individual!.Name} {src.User.Individual!.LastName}"
-                    : "Unknown"
-            );
+            .Map(dest => dest.CompanyName, src => src.User.FirstName);
 
         // Map Offer to OfferDetailDto (full details)
         TypeAdapterConfig<Offer, OfferDetailDto>
@@ -38,13 +31,6 @@ public class OfferMapper
             .Map(dest => dest.EndDate, src => src.EndDate)
             .Map(dest => dest.Remuneration, src => src.Remuneration)
             .Map(dest => dest.OfferType, src => src.OfferType.ToString())
-            .Map(
-                dest => dest.CompanyName,
-                src =>
-                    src.User.UserType == UserType.Empresa ? src.User.Company!.CompanyName
-                    : src.User.UserType == UserType.Particular
-                        ? $"{src.User.Individual!.Name} {src.User.Individual!.LastName}"
-                    : "Unknown"
-            );
+            .Map(dest => dest.CompanyName, src => src.User.FirstName);
     }
 }

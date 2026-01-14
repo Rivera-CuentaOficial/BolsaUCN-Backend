@@ -1,6 +1,4 @@
 using Microsoft.AspNetCore.Mvc;
-using bolsafeucn_back.src.Infrastructure.Repositories.Interfaces;
-using bolsafeucn_back.src.Domain.Models;
 
 namespace bolsafeucn_back.src.API.Controllers
 {

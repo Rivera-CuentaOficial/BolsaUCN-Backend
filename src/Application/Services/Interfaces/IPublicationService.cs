@@ -8,11 +8,11 @@ namespace bolsafeucn_back.src.Application.Services.Interfaces
     {
         Task<GenericResponse<string>> CreateOfferAsync(
             CreateOfferDTO publicationDTO,
-            GeneralUser currentUser
+            User currentUser
         );
         Task<GenericResponse<string>> CreateBuySellAsync(
             CreateBuySellDTO publicationDTO,
-            GeneralUser currentUser
+            User currentUser
         );
 
         /// <summary>

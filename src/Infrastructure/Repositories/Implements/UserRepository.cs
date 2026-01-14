@@ -12,10 +12,14 @@ namespace bolsafeucn_back.src.Infrastructure.Repositories.Implements
     {
         private readonly AppDbContext _context;
         private readonly IConfiguration _configuration;
-        private readonly UserManager<GeneralUser> _userManager;
+        private readonly UserManager<User> _userManager;
         private readonly int _defaultPageSize;
 
-        public UserRepository(AppDbContext context, UserManager<GeneralUser> userManager, IConfiguration configuration)
+        public UserRepository(
+            AppDbContext context,
+            UserManager<User> userManager,
+            IConfiguration configuration
+        )
         {
             _context = context;
             _userManager = userManager;
@@ -28,7 +32,7 @@ namespace bolsafeucn_back.src.Infrastructure.Repositories.Implements
         /// </summary>
         /// <param name="email">Correo electrónico</param>
         /// <returns>El usuario encontrado o null si no existe.</returns>
-        public async Task<GeneralUser?> GetByEmailAsync(string email)
+        public async Task<User?> GetByEmailAsync(string email)
         {
             return await _userManager.FindByEmailAsync(email);
         }
@@ -69,124 +73,30 @@ namespace bolsafeucn_back.src.Infrastructure.Repositories.Implements
         /// <param name="user">Usuario a crear</param>
         /// <param name="password">Contraseña del usuario</param>
         /// <returns>True si se creó el usuario, de lo contrario false.</returns>
-        public async Task<bool> CreateUserAsync(GeneralUser user, string password, string role)
+        public async Task<bool> CreateUserAsync(User user, string password, string role)
         {
-            Log.Information(
-                "Creando usuario en la base de datos: {Email}, Rol: {Role}",
-                user.Email,
-                role
-            );
+            Log.Information($"Creando usuario en la base de datos: {user.Email}, Rol: {role}");
             var result = await _userManager.CreateAsync(user, password);
             if (result.Succeeded)
             {
-                Log.Information(
-                    "Usuario creado exitosamente: {Email}, UserId: {UserId}",
-                    user.Email,
-                    user.Id
-                );
+                Log.Information($"Usuario creado exitosamente: {user.Email}, UserId: {user.Id}");
                 var userRole = await _userManager.AddToRoleAsync(user, role);
                 if (userRole.Succeeded)
                 {
-                    Log.Information(
-                        "Rol {Role} asignado exitosamente a usuario ID: {UserId}",
-                        role,
-                        user.Id
-                    );
+                    Log.Information($"Rol {role} asignado exitosamente a usuario ID: {user.Id}");
                 }
                 else
                 {
                     Log.Error(
-                        "Error al asignar rol {Role} a usuario ID: {UserId}. Errores: {Errors}",
-                        role,
-                        user.Id,
-                        string.Join(", ", userRole.Errors.Select(e => e.Description))
+                        $"Error al asignar rol {role} a usuario ID: {user.Id}. Errores: {string.Join(", ", userRole.Errors.Select(e => e.Description))}"
                     );
                 }
                 return userRole.Succeeded;
             }
             Log.Error(
-                "Error al crear usuario {Email}. Errores: {Errors}",
-                user.Email,
-                string.Join(", ", result.Errors.Select(e => e.Description))
+                $"Error al crear usuario {user.Email}. Errores: {string.Join(", ", result.Errors.Select(e => e.Description))}"
             );
             return false;
-        }
-
-        /// <summary>
-        /// Crea un nuevo estudiante en el sistema.
-        /// </summary>
-        /// <param name="student">Estudiante a crear</param>
-        /// <returns>True si se creó el estudiante, de lo contrario false.</returns>
-        public async Task<bool> CreateStudentAsync(Student student)
-        {
-            Log.Information(
-                "Creando perfil de estudiante para usuario ID: {UserId}",
-                student.GeneralUserId
-            );
-            var result = await _context.Students.AddAsync(student);
-            await _context.SaveChangesAsync();
-            Log.Information(
-                "Perfil de estudiante creado exitosamente para usuario ID: {UserId}",
-                student.GeneralUserId
-            );
-            return result != null;
-        }
-
-        public async Task<bool> CreateIndividualAsync(Individual individual)
-        {
-            Log.Information(
-                "Creando perfil de particular para usuario ID: {UserId}",
-                individual.GeneralUserId
-            );
-            var result = await _context.Individuals.AddAsync(individual);
-            await _context.SaveChangesAsync();
-            Log.Information(
-                "Perfil de particular creado exitosamente para usuario ID: {UserId}",
-                individual.GeneralUserId
-            );
-            return result != null;
-        }
-
-        /// <summary>
-        /// Crea una nueva empresa en el sistema.
-        /// </summary>
-        /// <param name="company">Empresa a crear</param>
-        /// <returns>True si se creó la empresa, de lo contrario false.</returns>
-        public async Task<bool> CreateCompanyAsync(Company company)
-        {
-            Log.Information(
-                "Creando perfil de empresa para usuario ID: {UserId}",
-                company.GeneralUserId
-            );
-            var result = await _context.Companies.AddAsync(company);
-            await _context.SaveChangesAsync();
-            Log.Information(
-                "Perfil de empresa creado exitosamente para usuario ID: {UserId}",
-                company.GeneralUserId
-            );
-            return result != null;
-        }
-
-        /// <summary>
-        /// Crea un nuevo administrador en el sistema.
-        /// </summary>
-        /// <param name="admin">Administrador a crear</param>
-        /// <param name="SuperAdmin">Indica si el administrador es superadministrador</param>
-        /// <returns>True si se creó el administrador, de lo contrario false.</returns>
-        public async Task<bool> CreateAdminAsync(Admin admin, bool SuperAdmin)
-        {
-            Log.Information(
-                "Creando perfil de admin para usuario ID: {UserId}, SuperAdmin: {SuperAdmin}",
-                admin.GeneralUserId,
-                SuperAdmin
-            );
-            var result = await _context.Admins.AddAsync(admin);
-            await _context.SaveChangesAsync();
-            Log.Information(
-                "Perfil de admin creado exitosamente para usuario ID: {UserId}",
-                admin.GeneralUserId
-            );
-            return result != null;
         }
 
         /// <summary>
@@ -218,7 +128,7 @@ namespace bolsafeucn_back.src.Infrastructure.Repositories.Implements
         /// <param name="user">Usuario a verificar</param>
         /// <param name="password">Contraseña a verificar</param>
         /// <returns>True si la contraseña es correcta, de lo contrario false.</returns>
-        public async Task<bool> CheckPasswordAsync(GeneralUser user, string password)
+        public async Task<bool> CheckPasswordAsync(User user, string password)
         {
             return await _userManager.CheckPasswordAsync(user, password);
         }
@@ -229,15 +139,24 @@ namespace bolsafeucn_back.src.Infrastructure.Repositories.Implements
         /// <param name="user">Usuario a actualizar</param>
         /// <returns>True si la actualización fue exitosa, de lo contrario false.</returns>
         /// <exception cref="InvalidOperationException"></exception>
-        public async Task<bool> UpdateAsync(GeneralUser user)
+        public async Task<bool> UpdateAsync(User user)
         {
             Log.Information($"Actualizando informacion para el usuario Id: {user.Id}");
             var userResult = await _userManager.UpdateAsync(user);
             if (!userResult.Succeeded)
             {
-                var errors = string.Join(" | ", userResult.Errors.Select(e => $"{e.Code}: {e.Description}"));
-                Log.Error("Error al actualizar usuario Id: {UserId}. Identity errors: {Errors}", user.Id, errors);
-                throw new InvalidOperationException($"Error al actualizar los datos del usuario: {errors}");
+                var errors = string.Join(
+                    " | ",
+                    userResult.Errors.Select(e => $"{e.Code}: {e.Description}")
+                );
+                Log.Error(
+                    "Error al actualizar usuario Id: {UserId}. Identity errors: {Errors}",
+                    user.Id,
+                    errors
+                );
+                throw new InvalidOperationException(
+                    $"Error al actualizar los datos del usuario: {errors}"
+                );
             }
             await _context.SaveChangesAsync();
             return true;
@@ -249,7 +168,7 @@ namespace bolsafeucn_back.src.Infrastructure.Repositories.Implements
         /// <param name="user">Usuario al que se le actualizará la contraseña</param>
         /// <param name="newPassword">Nueva contraseña</param>
         /// <returns>True si la contraseña se actualizó correctamente, de lo contrario false.</returns>
-        public async Task<bool> UpdatePasswordAsync(GeneralUser user, string newPassword)
+        public async Task<bool> UpdatePasswordAsync(User user, string newPassword)
         {
             Log.Information($"Actualizando contraseña para usuario ID: {user.Id}");
             var removePasswordResult = await _userManager.RemovePasswordAsync(user);
@@ -281,7 +200,7 @@ namespace bolsafeucn_back.src.Infrastructure.Repositories.Implements
             return newPasswordResult.Succeeded;
         }
 
-        public async Task<bool> UpdateLastLoginAsync(GeneralUser user)
+        public async Task<bool> UpdateLastLoginAsync(User user)
         {
             Log.Information($"Actualizando último login para usuario ID: {user.Id}");
             user.LastLoginAt = DateTime.UtcNow;
@@ -293,9 +212,7 @@ namespace bolsafeucn_back.src.Infrastructure.Repositories.Implements
                 );
                 return false;
             }
-            Log.Information(
-                $"Último login actualizado exitosamente para usuario ID: {user.Id}"
-            );
+            Log.Information($"Último login actualizado exitosamente para usuario ID: {user.Id}");
             return true;
         }
 
@@ -304,132 +221,60 @@ namespace bolsafeucn_back.src.Infrastructure.Repositories.Implements
         /// </summary>
         /// <param name="user">Usuario del cual obtener el rol</param>
         /// <returns>Rol del usuario</returns>
-        public async Task<string> GetRoleAsync(GeneralUser user)
+        public async Task<string> GetRoleAsync(User user)
         {
             var roles = await _userManager.GetRolesAsync(user);
             return roles.FirstOrDefault()!;
         }
 
+        /// TODO: MARCADO PARA REFACTORIZACION DE PublicationController
         /// <summary>
         /// Obtiene un usuario general por su ID.
         /// </summary>
         /// <param name="id">ID del usuario a obtener</param>
         /// <returns>Usuario general</returns>
-        public async Task<GeneralUser> GetGeneralUserByIdAsync(int id)
+        public async Task<User> GetGeneralUserByIdAsync(int id)
         {
             var user = await _userManager.FindByIdAsync(id.ToString());
             return user!;
         }
 
-        public async Task<IEnumerable<GeneralUser>> GetAllAsync()
-        {
-            return await _context.Users.ToListAsync();
-        }
-
-        public async Task<GeneralUser?> GetByIdAsync(int id)
-        {
-            return await _context.Users.FindAsync(id);
-        }
-
-        // TODO: Revisar si combiana implementar estas funciones genéricas.
-        // public async Task<GeneralUser?> GetBy(int id, // ReadOne, ReadAll
-        //     bool includeStudent = false,
-        //     bool includeCompany = false,
-        //     bool includeIndividual = false,
-        //     bool includeAdmin = false,
-        //     bool AsNoTracking = false,
-        //     Func<GeneralUser, bool>? filter = null // u.Id == id, u.Name == "test", etc
-        // )
-        // {
-        //     var query = _context.Users.AsQueryable();
-        //     if (includeStudent)
-        //         query = query.Include(u => u.Student);
-        //     if (includeCompany)
-        //         query = query.Include(u => u.Company);
-        //     if (includeIndividual)  
-        //         query = query.Include(u => u.Individual);
-        //     if (includeAdmin)
-        //         query = query.Include(u => u.Admin);
-        //     if (AsNoTracking)
-        //         query = query.AsNoTracking();
-
-        //     return await query.FirstOrDefaultAsync(filter != null
-        //         ? u => u.Id == id && filter(u)
-        //         : u => u.Id == id);
-        // }
-
-        public async Task<GeneralUser?> GetByIdWithRelationsAsync(int userId)
-        {
-            return await _context
-                .Users.Include(u => u.Student)
-                .Include(u => u.Company)
-                .Include(u => u.Individual)
-                .AsNoTracking()
-                .FirstOrDefaultAsync(u => u.Id == userId);
-        }
-
         /// <summary>
-        /// Obtiene un usuario por su ID y tipo de usuario.
+        /// Obtiene un usuario por su ID con opción de tracking.
         /// </summary>
-        /// <param name="userId">ID del usuario</param>
-        /// <param name="userType">Tipo de usuario</param>
-        /// <returns>Usuario general con las relaciones correspondientes</returns>
-        public async Task<GeneralUser?> GetUntrackedWithTypeAsync(int userId, UserType? userType)
-        {
-            var query = _context.Users.AsNoTracking().AsQueryable();
-            switch (userType)
-            {
-                case UserType.Estudiante: query = query.Include(u => u.Student); break;
-                case UserType.Particular: query = query.Include(u => u.Individual); break;
-                case UserType.Empresa: query = query.Include(u => u.Company); break;
-                case UserType.Administrador: query = query.Include(u => u.Admin); break;
-                default: break;
-            }
-            ;
-            return await query
-                            .Include(u => u.ProfilePhoto)
-                            .Include(u => u.ProfileBanner)
-                            .FirstOrDefaultAsync(u => u.Id == userId);
-        }
-
-        /// <summary>
-        /// Obtiene un usuario por su ID y tipo de usuario para actualización.
-        /// </summary>
-        /// <param name="userId">ID del usuario</param>
-        /// <param name="userType">Tipo de usuario</param>
-        /// <returns>Usuario general con las relaciones correspondientes</returns>
-        public async Task<GeneralUser?> GetTrackedWithTypeAsync(int userId, UserType? userType)
+        /// <param name="userId"></param>
+        /// <param name="tracking"></param>
+        /// <returns></returns>
+        public async Task<User?> GetUserByIdAsync(
+            int userId,
+            bool tracking,
+            bool includePhoto,
+            bool includeCV
+        )
         {
             var query = _context.Users.AsQueryable();
-            switch (userType)
-            {
-                case UserType.Estudiante: query = query.Include(u => u.Student); break;
-                case UserType.Particular: query = query.Include(u => u.Individual); break;
-                case UserType.Empresa: query = query.Include(u => u.Company); break;
-                case UserType.Administrador: query = query.Include(u => u.Admin); break;
-                default: break;
-            }
-            ;
-            return await query
-                            .Include(u => u.ProfilePhoto)
-                            .Include(u => u.ProfileBanner)
-                            .Include(u => u.CV)
-                            .FirstOrDefaultAsync(u => u.Id == userId);
+            if (!tracking)
+                query = query.AsNoTracking();
+            if (includePhoto)
+                query = query.Include(u => u.ProfilePhoto);
+            if (includeCV)
+                query = query.Include(u => u.CV);
+
+            return await query.FirstOrDefaultAsync(u => u.Id == userId);
         }
 
         /// <summary>
-        /// Obtiene usuarios filtrados para administración.
+        /// Obtiene usuarios filtrados para administración. Se salta al administrador que realiza la consulta.
         /// </summary>
         /// <param name="searchParams">Parámetros de búsqueda y paginación</param>
         /// <returns>Usuarios filtrados y el conteo total</returns>
         /// <exception cref="ArgumentNullException"></exception>
-        public async Task<(IEnumerable<GeneralUser>, int TotalCount)> GetFilteredForAdminAsync(int adminId, SearchParamsDTO searchParams)
+        public async Task<(IEnumerable<User>, int TotalCount)> GetFilteredForAdminAsync(
+            int adminId,
+            SearchParamsDTO searchParams
+        )
         {
-            var query = _context
-                .Users
-                .Where(u => u.Id != adminId)
-                .AsNoTracking()
-                .AsQueryable();
+            var query = _context.Users.Where(u => u.Id != adminId).AsNoTracking().AsQueryable();
             if (query == null)
             {
                 Log.Warning("No se encontraron usuarios en la base de datos.");
@@ -440,14 +285,21 @@ namespace bolsafeucn_back.src.Infrastructure.Repositories.Implements
             {
                 var searchTerm = searchParams.SearchTerm.ToLower();
                 query = query.Where(u =>
-                    u.Email!.ToLower().Contains(searchTerm) ||
-                    u.Rut!.ToLower().Contains(searchTerm) ||
-                    u.UserName!.ToLower().Contains(searchTerm));
+                    u.Email!.ToLower().Contains(searchTerm)
+                    || u.Rut!.ToLower().Contains(searchTerm)
+                    || u.UserName!.ToLower().Contains(searchTerm)
+                );
             }
             // Filtro por tipo
             if (!string.IsNullOrEmpty(searchParams.UserType))
             {
-                if (Enum.TryParse(searchParams.UserType, ignoreCase: true, out UserType userTypeEnum))
+                if (
+                    Enum.TryParse(
+                        searchParams.UserType,
+                        ignoreCase: true,
+                        out UserType userTypeEnum
+                    )
+                )
                 {
                     query = query.Where(u => u.UserType == userTypeEnum);
                 }
@@ -483,19 +335,10 @@ namespace bolsafeucn_back.src.Infrastructure.Repositories.Implements
         /// <returns>El número de administradores activos</returns>
         public async Task<int> GetNumberOfAdmins()
         {
-            return await _context.Admins.CountAsync(a => a.GeneralUser!.Banned == false);
-        }
-
-        /// <summary>
-        /// Agrega un nuevo usuario al sistema.
-        /// </summary>
-        /// <param name="user">Usuario a agregar</param>
-        /// <returns>El usuario agregado</returns>
-        public async Task<GeneralUser> AddAsync(GeneralUser user)
-        {
-            _context.Users.Add(user);
-            await _context.SaveChangesAsync();
-            return user;
+            return await _context
+                .Users.Where(u => u.UserType == UserType.Administrador)
+                .CountAsync();
+            //return await _context.Admins.CountAsync(a => a.GeneralUser!.Banned == false);
         }
 
         /// <summary>
@@ -503,19 +346,19 @@ namespace bolsafeucn_back.src.Infrastructure.Repositories.Implements
         /// </summary>
         /// <param name="id">ID del usuario a eliminar</param>
         /// <returns>True si se eliminó el usuario, de lo contrario false.</returns>
-        public async Task<bool> DeleteAsync(int id)
+        public async Task<bool> DeleteUserAsync(User user)
         {
-            Log.Information("Intentando eliminar usuario ID: {UserId}", id);
-            var user = await _context.Users.FindAsync(id);
-            if (user == null)
+            Log.Information($"Intentando eliminar usuario ID: {user.Id}");
+            var existingUser = await _context.Users.FindAsync(user.Id);
+            if (existingUser == null)
             {
-                Log.Warning("Usuario ID: {UserId} no encontrado para eliminación", id);
+                Log.Warning($"Usuario ID: {user.Id} no encontrado para eliminación");
                 return false;
             }
 
             _context.Users.Remove(user);
             await _context.SaveChangesAsync();
-            Log.Information("Usuario ID: {UserId} eliminado exitosamente", id);
+            Log.Information($"Usuario ID: {user.Id} eliminado exitosamente");
             return true;
         }
 
@@ -526,29 +369,35 @@ namespace bolsafeucn_back.src.Infrastructure.Repositories.Implements
         /// <param name="sortBy"></param>
         /// <param name="sortOrder"></param>
         /// <returns></returns>
-        private IQueryable<GeneralUser> ApplySorting(IQueryable<GeneralUser> query, string? sortBy, string? sortOrder)
-        {   
-            if (string.IsNullOrEmpty(sortBy)) return query.OrderBy(u => u.Id); // Ordenamiento por defecto es por ID
-            if (string.IsNullOrEmpty(sortOrder)) sortOrder = "asc"; // Ordenamiento por defecto es ascendente
+        private IQueryable<User> ApplySorting(
+            IQueryable<User> query,
+            string? sortBy,
+            string? sortOrder
+        )
+        {
+            if (string.IsNullOrEmpty(sortBy))
+                return query.OrderBy(u => u.Id); // Ordenamiento por defecto es por ID
+            if (string.IsNullOrEmpty(sortOrder))
+                sortOrder = "asc"; // Ordenamiento por defecto es ascendente
 
             bool ascending = string.Equals(sortOrder, "asc", StringComparison.OrdinalIgnoreCase);
 
             return query = sortBy.ToLower() switch
             {
-                "username" => ascending 
-                    ? query.OrderBy(u => u.UserName) 
+                "username" => ascending
+                    ? query.OrderBy(u => u.UserName)
                     : query.OrderByDescending(u => u.UserName),
-                "email" => ascending 
-                    ? query.OrderBy(u => u.Email) 
+                "email" => ascending
+                    ? query.OrderBy(u => u.Email)
                     : query.OrderByDescending(u => u.Email),
-                "rut" => ascending 
-                    ? query.OrderBy(u => u.Rut) 
+                "rut" => ascending
+                    ? query.OrderBy(u => u.Rut)
                     : query.OrderByDescending(u => u.Rut),
-                "usertype" => ascending 
-                    ? query.OrderBy(u => u.UserType) 
+                "usertype" => ascending
+                    ? query.OrderBy(u => u.UserType)
                     : query.OrderByDescending(u => u.UserType),
-                "rating" => ascending 
-                    ? query.OrderBy(u => u.Rating) 
+                "rating" => ascending
+                    ? query.OrderBy(u => u.Rating)
                     : query.OrderByDescending(u => u.Rating),
                 _ => query.OrderBy(u => u.Id), // Ordenamiento por defecto si el campo no es reconocido
             };

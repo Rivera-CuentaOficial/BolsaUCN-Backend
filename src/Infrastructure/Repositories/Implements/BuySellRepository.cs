@@ -38,9 +38,6 @@ namespace bolsafeucn_back.src.Infrastructure.Repositories.Implements
         {
             return await _context
                 .BuySells.Include(bs => bs.User)
-                .ThenInclude(u => u.Company)
-                .Include(bs => bs.User)
-                .ThenInclude(u => u.Individual)
                 .Include(bs => bs.Images)
                 .Where(bs => bs.IsActive)
                 .OrderByDescending(bs => bs.PublicationDate)
@@ -55,9 +52,6 @@ namespace bolsafeucn_back.src.Infrastructure.Repositories.Implements
             );
             var buysell = await _context
                 .BuySells.Include(bs => bs.User)
-                .ThenInclude(u => u.Company)
-                .Include(bs => bs.User)
-                .ThenInclude(u => u.Individual)
                 .Include(bs => bs.Images)
                 .Where(bs => bs.statusValidation == StatusValidation.InProcess)
                 .OrderByDescending(bs => bs.PublicationDate)
@@ -77,9 +71,6 @@ namespace bolsafeucn_back.src.Infrastructure.Repositories.Implements
             );
             var buysell = await _context
                 .BuySells.Include(bs => bs.User)
-                .ThenInclude(u => u.Company)
-                .Include(bs => bs.User)
-                .ThenInclude(u => u.Individual)
                 .Include(bs => bs.Images)
                 .Where(bs => bs.statusValidation == StatusValidation.Published)
                 .OrderByDescending(bs => bs.PublicationDate)

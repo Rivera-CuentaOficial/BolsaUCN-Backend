@@ -6,14 +6,8 @@ namespace bolsafeucn_back.src.Application.Mappers
     {
         public static void ConfigureMapster(IServiceProvider serviceProvider)
         {
-            var studentMapper = serviceProvider.GetService<StudentMapper>();
-            studentMapper?.ConfigureAllMappings();
-            var individualMapper = serviceProvider.GetService<IndividualMapper>();
-            individualMapper?.ConfigureAllMappings();
-            var companyMapper = serviceProvider.GetService<CompanyMapper>();
-            companyMapper?.ConfigureAllMappings();
-            var adminMapper = serviceProvider.GetService<AdminMapper>();
-            adminMapper?.ConfigureAllMappings();
+            var userMapper = serviceProvider.GetService<UserMapper>();
+            userMapper?.ConfigureAllMappings();
             var offerMapper = serviceProvider.GetService<OfferMapper>();
             offerMapper?.ConfigureAllMappings();
             var buySellMapper = serviceProvider.GetService<BuySellMapper>();

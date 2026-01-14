@@ -25,7 +25,8 @@ namespace bolsafeucn_back.src.Application.Mappers
             review.ReviewChecklistValues.GoodPresentation = dto.GoodPresentation;
             review.ReviewChecklistValues.StudentHasRespectOfferor = dto.StudentHasRespectOfferor;
             review.IsReviewForStudentCompleted = true;
-            review.IsCompleted = review.IsReviewForStudentCompleted && review.IsReviewForOfferorCompleted;
+            review.IsCompleted =
+                review.IsReviewForStudentCompleted && review.IsReviewForOfferorCompleted;
             return review;
         }
 
@@ -41,7 +42,8 @@ namespace bolsafeucn_back.src.Application.Mappers
             review.RatingForOfferor = dto.RatingForOfferor;
             review.CommentForOfferor = dto.CommentForOfferor;
             review.IsReviewForOfferorCompleted = true;
-            review.IsCompleted = review.IsReviewForStudentCompleted && review.IsReviewForOfferorCompleted;
+            review.IsCompleted =
+                review.IsReviewForStudentCompleted && review.IsReviewForOfferorCompleted;
             return review;
         }
 
@@ -52,7 +54,11 @@ namespace bolsafeucn_back.src.Application.Mappers
         /// </summary>
         /// <param name="dto">DTO con los identificadores del estudiante, oferente y publicación.</param>
         /// <returns>Una nueva entidad Review con estado inicial y ventana de revisión de 14 días.</returns>
-        public static Review CreateInitialReviewAsync(InitialReviewDTO dto, GeneralUser student, GeneralUser offeror)
+        public static Review CreateInitialReviewAsync(
+            InitialReviewDTO dto,
+            User student,
+            User offeror
+        )
         {
             return new Review
             {
@@ -60,9 +66,10 @@ namespace bolsafeucn_back.src.Application.Mappers
                 Student = student,
                 OfferorId = dto.OfferorId,
                 Offeror = offeror,
-                PublicationId = dto.PublicationId
+                PublicationId = dto.PublicationId,
             };
         }
+
         // TODO: Revisar si es necesario este método
         // public static Review ToEntity(ReviewDTO dto)
         // {
@@ -79,7 +86,6 @@ namespace bolsafeucn_back.src.Application.Mappers
         /// </summary>
         /// <param name="dto">El DTO de reseña a convertir.</param>
         /// <returns>Una entidad Review con los datos del DTO.</returns>
-
         public static ReviewDTO ToDTO(Review entity)
         {
             return new ReviewDTO
@@ -97,9 +103,10 @@ namespace bolsafeucn_back.src.Application.Mappers
                 IdPublication = entity.PublicationId,
                 HasReviewForOfferorBeenDeleted = entity.HasReviewForOfferorBeenDeleted,
                 HasReviewForStudentBeenDeleted = entity.HasReviewForStudentBeenDeleted,
-                IsComplete = entity.IsCompleted
+                IsComplete = entity.IsCompleted,
             };
         }
+
         public static ShowReviewDTO ShowReviewDTO(Review entity)
         {
             // TODO: Manejar en caso donde las relaciones sean nulas.
@@ -120,30 +127,41 @@ namespace bolsafeucn_back.src.Application.Mappers
                 IsReviewForOfferorCompleted = entity.IsReviewForOfferorCompleted,
                 HasReviewForOfferorBeenDeleted = entity.HasReviewForOfferorBeenDeleted,
                 HasReviewForStudentBeenDeleted = entity.HasReviewForStudentBeenDeleted,
-                IsClosed = entity.IsClosed
+                IsClosed = entity.IsClosed,
             };
         }
-        public static PublicationAndReviewInfoDTO MapToPublicationAndReviewInfoDTO(Review review, Publication publication, UserType userType)
+
+        public static PublicationAndReviewInfoDTO MapToPublicationAndReviewInfoDTO(
+            Review review,
+            Publication publication,
+            UserType userType
+        )
         {
             var reviewDto = ShowReviewDTO(review);
             var publicationDto = PublicationMapper.ToDTO(publication);
             // Ocultar datos según el tipo de usuario y el estado de la review
             var bool1 = !reviewDto.IsClosed && userType != UserType.Administrador;
-            var bool2 = !review.HasReviewForOfferorBeenDeleted && !review.HasReviewForStudentBeenDeleted;
+            var bool2 =
+                !review.HasReviewForOfferorBeenDeleted && !review.HasReviewForStudentBeenDeleted;
             if (bool1 && bool2)
             {
                 // Si es oferente, no ha completado su review pero el estudiante si
-                if ((userType == UserType.Empresa || userType == UserType.Particular) && reviewDto.IsReviewForOfferorCompleted)
+                if (
+                    (userType == UserType.Empresa || userType == UserType.Particular)
+                    && reviewDto.IsReviewForOfferorCompleted
+                )
                 {
                     reviewDto.RatingForOfferor = 0;
-                    reviewDto.CommentForOfferor = "No podrás ver la reseña de la contraparte si aún no realizas la tuya.";
+                    reviewDto.CommentForOfferor =
+                        "No podrás ver la reseña de la contraparte si aún no realizas la tuya.";
                 }
                 // Si es estudiante y no ha completado su review pero el oferente si
                 else if (userType == UserType.Estudiante && reviewDto.IsReviewForStudentCompleted)
                 {
                     // Si la Review no esta completada,
                     reviewDto.RatingForStudent = 0;
-                    reviewDto.CommentForStudent = "No podrás ver la reseña de la contraparte si aún no realizas la tuya.";
+                    reviewDto.CommentForStudent =
+                        "No podrás ver la reseña de la contraparte si aún no realizas la tuya.";
                     reviewDto.AtTime = false;
                     reviewDto.GoodPresentation = false;
                     reviewDto.StudentHasRespectOfferor = false;
@@ -152,9 +170,10 @@ namespace bolsafeucn_back.src.Application.Mappers
             return new PublicationAndReviewInfoDTO
             {
                 Review = reviewDto,
-                Publication = publicationDto
+                Publication = publicationDto,
             };
         }
+
         public static Review DeleteReviewForOfferor(Review review)
         {
             review.RatingForOfferor = 0;
@@ -165,6 +184,7 @@ namespace bolsafeucn_back.src.Application.Mappers
             Log.Information("Deleted offeror part of review ID {ReviewId}", review.Id);
             return review;
         }
+
         public static Review DeleteReviewForStudent(Review review)
         {
             review.RatingForStudent = 0;
@@ -180,4 +200,3 @@ namespace bolsafeucn_back.src.Application.Mappers
         }
     }
 }
-

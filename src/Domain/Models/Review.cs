@@ -27,15 +27,18 @@ namespace bolsafeucn_back.src.Domain.Models
         /// Comentario del estudiante sobre su experiencia con el oferente.
         /// </summary>
         public string? CommentForOfferor { get; set; }
+
         /// <summary>
         /// Contiene los valores del checklist de evaluación para la reseña.
         /// </summary>
         /// <returns></returns>
-        public ReviewChecklistValues ReviewChecklistValues { get; set; } = new ReviewChecklistValues();
+        public ReviewChecklistValues ReviewChecklistValues { get; set; } =
+            new ReviewChecklistValues();
+
         /// <summary>
         /// Referencia de navegación al estudiante evaluado.
         /// </summary>
-        public GeneralUser? Student { get; set; }
+        public User? Student { get; set; }
 
         /// <summary>
         /// Identificador del estudiante evaluado.
@@ -45,7 +48,7 @@ namespace bolsafeucn_back.src.Domain.Models
         /// <summary>
         /// Referencia de navegación al oferente evaluado.
         /// </summary>
-        public GeneralUser? Offeror { get; set; }
+        public User? Offeror { get; set; }
 
         /// <summary>
         /// Identificador del oferente evaluado.
@@ -56,7 +59,8 @@ namespace bolsafeucn_back.src.Domain.Models
         /// Indica si las evaluaciones hacia el estudiante han sido completadas.
         /// </summary>
         public bool IsReviewForStudentCompleted { get; set; } = false;
-        //todo: valor calculado 
+
+        //todo: valor calculado
 
         /// <summary>
         /// Indica si las evaluaciones hacia el oferente han sido completadas.
@@ -83,11 +87,13 @@ namespace bolsafeucn_back.src.Domain.Models
         /// Requerido - cada reseña debe estar asociada a una publicación específica.
         /// </summary>
         public required int PublicationId { get; set; }
+
         /// <summary>
         /// Indica si la reseña del estudiante ha sido eliminada.
         /// </summary>
         /// <value></value>
         public bool HasReviewForStudentBeenDeleted { get; set; } = false;
+
         /// <summary>
         /// Indica si la reseña del oferente ha sido eliminada.
         /// </summary>
@@ -95,4 +101,3 @@ namespace bolsafeucn_back.src.Domain.Models
         public bool HasReviewForOfferorBeenDeleted { get; set; } = false;
     }
 }
-

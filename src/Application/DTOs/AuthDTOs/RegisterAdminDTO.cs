@@ -41,7 +41,7 @@ namespace bolsafeucn_back.src.Application.DTOs.AuthDTOs
         )]
         [MinLength(2, ErrorMessage = "El nombre debe tener mínimo 2 letras.")]
         [MaxLength(50, ErrorMessage = "El nombre debe tener máximo 50 letras.")]
-        public required string Name { get; set; }
+        public required string FirstName { get; set; }
 
         /// <summary>
         /// Apellido del usuario.
@@ -71,11 +71,5 @@ namespace bolsafeucn_back.src.Application.DTOs.AuthDTOs
         /// </summary>
         [Required(ErrorMessage = "El teléfono es obligatorio.")]
         public required string PhoneNumber { get; set; }
-
-        /// <summary>
-        /// Indica si el administrador es SuperAdmin.
-        /// </summary>
-        [Required(ErrorMessage = "Es necesario saber si el administrador es SuperAdmin.")]
-        public required bool SuperAdmin { get; set; }
     }
 }

@@ -45,10 +45,10 @@ public class OfferService : IOfferService
                 // Nombre de oferente
                 var ownerName =
                     o.User?.UserType == UserType.Empresa
-                        ? (o.User.Company?.CompanyName ?? "Empresa desconocida")
+                        ? (o.User.FirstName ?? "Empresa desconocida")
                     : o.User?.UserType == UserType.Particular
-                        ? $"{(o.User.Individual?.Name ?? "").Trim()} {(o.User.Individual?.LastName ?? "").Trim()}".Trim()
-                    : (o.User?.UserName ?? "UCN");
+                        ? $"{(o.User.FirstName ?? "").Trim()} {(o.User.LastName ?? "").Trim()}".Trim()
+                    : (o.User?.UserName ?? "Nombre desconocido");
 
                 var ownerRating = o.User?.Rating ?? 0.0f;
                 return new OfferSummaryDto
@@ -87,10 +87,10 @@ public class OfferService : IOfferService
         // Nombre de oferente para detalles
         var ownerName =
             offer.User?.UserType == UserType.Empresa
-                ? (offer.User.Company?.CompanyName ?? "Empresa desconocida")
+                ? (offer.User.FirstName ?? "Empresa desconocida")
             : offer.User?.UserType == UserType.Particular
-                ? $"{(offer.User.Individual?.Name ?? "").Trim()} {(offer.User.Individual?.LastName ?? "").Trim()}".Trim()
-            : (offer.User?.UserName ?? "UCN");
+                ? $"{(offer.User.FirstName ?? "").Trim()} {(offer.User.LastName ?? "").Trim()}".Trim()
+            : (offer.User?.UserName ?? "Nombre desconocido");
 
         var result = new OfferDetailDto
         {
@@ -159,10 +159,10 @@ public class OfferService : IOfferService
             {
                 var ownerName =
                     o.User?.UserType == UserType.Empresa
-                        ? (o.User.Company?.CompanyName ?? "Empresa desconocida")
+                        ? (o.User.FirstName ?? "Empresa desconocida")
                     : o.User?.UserType == UserType.Particular
-                        ? $"{(o.User.Individual?.Name ?? "").Trim()} {(o.User.Individual?.LastName ?? "").Trim()}".Trim()
-                    : (o.User?.UserName ?? "UCN");
+                        ? $"{(o.User.FirstName ?? "").Trim()} {(o.User.LastName ?? "").Trim()}".Trim()
+                    : (o.User?.UserName ?? "Nombre desconocido");
                 return new OfferBasicAdminDto
                 {
                     Id = o.Id,
@@ -189,10 +189,10 @@ public class OfferService : IOfferService
         }
         var ownerName =
             offer.User?.UserType == UserType.Empresa
-                ? (offer.User.Company?.CompanyName ?? "Empresa desconocida")
+                ? (offer.User.FirstName ?? "Empresa desconocida")
             : offer.User?.UserType == UserType.Particular
-                ? $"{(offer.User.Individual?.Name ?? "").Trim()} {(offer.User.Individual?.LastName ?? "").Trim()}".Trim()
-            : (offer.User?.UserName ?? "UCN");
+                ? $"{(offer.User.FirstName ?? "").Trim()} {(offer.User.LastName ?? "").Trim()}".Trim()
+            : (offer.User?.UserName ?? "Nombre desconocido");
         var imageForDTO = offer.Images.Select(i => i.Url).ToList();
         var result = new OfferDetailsAdminDto
         {
@@ -212,7 +212,7 @@ public class OfferService : IOfferService
             Requirements = offer.Requirements,
             ContactInfo = offer.ContactInfo,
             AboutMe = offer.User?.AboutMe,
-            Rating = offer.User.Rating
+            Rating = offer.User.Rating,
         };
         _logger.LogInformation("Detalles de oferta ID: {OfferId} obtenidos exitosamente", offerId);
         return result;
@@ -259,10 +259,10 @@ public class OfferService : IOfferService
         }
         var ownerName =
             offer.User?.UserType == UserType.Empresa
-                ? (offer.User.Company?.CompanyName ?? "Empresa desconocida")
+                ? (offer.User.FirstName ?? "Empresa desconocida")
             : offer.User?.UserType == UserType.Particular
-                ? $"{(offer.User.Individual?.Name ?? "").Trim()} {(offer.User.Individual?.LastName ?? "").Trim()}".Trim()
-            : (offer.User?.UserName ?? "UCN");
+                ? $"{(offer.User.FirstName ?? "").Trim()} {(offer.User.LastName ?? "").Trim()}".Trim()
+            : (offer.User?.UserName ?? "Nombre desconocido");
         var imageForDTO = offer.Images.Select(i => i.Url).ToList();
         return new OfferDetailValidationDto
         {
@@ -280,7 +280,7 @@ public class OfferService : IOfferService
             ContactInfo = offer.ContactInfo,
             AboutMe = offer.User?.AboutMe,
             Requirements = offer.Requirements,
-            Rating = offer.User.Rating
+            Rating = offer.User.Rating,
         };
     }
 
@@ -417,7 +417,9 @@ public class OfferService : IOfferService
         // El estado de publicación debe ser Publicado para poder cerrarse
         if (offer.statusValidation != StatusValidation.Published)
         {
-            throw new InvalidOperationException($"La oferta con ID {offerId} está {offer.statusValidation}. Solo las publicaciones activas pueden ser cerradas.");
+            throw new InvalidOperationException(
+                $"La oferta con ID {offerId} está {offer.statusValidation}. Solo las publicaciones activas pueden ser cerradas."
+            );
         }
 
         offer.IsActive = false;
@@ -426,7 +428,8 @@ public class OfferService : IOfferService
 
         _logger.LogInformation(
             "Oferta ID: {OfferId} cerrada por el oferente {OffererId}. Reviews se crearán automáticamente.",
-            offerId, offererUserId
+            offerId,
+            offererUserId
         );
 
         if (offer.User?.Email != null)

@@ -60,6 +60,7 @@ namespace bolsafeucn_back.src.Application.Services.Interfaces
         /// <param name="offerorId">El identificador del oferente.</param>
         /// <returns>El promedio de calificaciones, o null si no hay reseñas.</returns>
         Task<double?> GetOfferorAverageRatingAsync(int offerorId);
+
         /// <summary>
         /// Calcula el promedio de calificaciones de un estudiante.
         /// </summary>
@@ -84,23 +85,27 @@ namespace bolsafeucn_back.src.Application.Services.Interfaces
         /// <exception cref="InvalidOperationException">Lanzada si no se especifica ninguna parte para eliminar.</exception>
         /// <exception cref="KeyNotFoundException">Lanzada si no se encuentra la reseña.</exception>
         Task DeleteReviewPartAsync(DeleteReviewPartDTO dto);
+
         /// <summary>
         /// Obtiene una reseña específica por su ID.
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
         Task<ShowReviewDTO> GetReviewAsync(int id);
+
         /// <summary>
         /// Obtiene todas las reseñas asociadas a un estudiante específico.
         /// </summary>
         /// <param name="studentId"></param>
         /// <returns></returns>
         Task<IEnumerable<PublicationAndReviewInfoDTO>> GetReviewsByStudentAsync(int studentId);
+
         /// <summary>
         /// Obtiene todas las reseñas del sistema.
         /// </summary>
         /// <returns></returns>
         Task<IEnumerable<PublicationAndReviewInfoDTO>> GetAllReviewsAsync();
+
         /// <summary>
         /// Obtiene la información de publicaciones asociadas a las reseñas de un usuario.
         /// Identifica automáticamente si el usuario es estudiante u oferente y devuelve las publicaciones correspondientes.
@@ -112,11 +117,13 @@ namespace bolsafeucn_back.src.Application.Services.Interfaces
         Task<IEnumerable<PublicationAndReviewInfoDTO>> GetPublicationInformationAsync(int userId);
         Task UpdateUserRatingAsync(int userId);
         Task<Double?> GetUserAverageRatingAsync(int userId);
+
         /// <summary>
         /// Cierra las reseñas cuya ventana de revisión terminó, marcándolas como no modificables.
         /// Este método será invocado por un job en segundo plano.
         /// </summary>
         Task CloseExpiredReviewsAsync();
+
         /// <summary>
         /// Obtiene el número de reseñas pendientes de un usuario.
         /// Una reseña está pendiente si el usuario no ha completado su parte de la evaluación,

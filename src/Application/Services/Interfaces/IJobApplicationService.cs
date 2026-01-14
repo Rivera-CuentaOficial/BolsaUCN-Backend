@@ -33,7 +33,11 @@ namespace bolsafeucn_back.src.Application.Services.Interfaces
         /// <summary>
         /// Actualiza el estado de una postulación (Pendiente, Aceptada, Rechazada)
         /// </summary>
-        Task<bool> UpdateApplicationStatusAsync(int applicationId, ApplicationStatus newStatus, int companyId);
+        Task<bool> UpdateApplicationStatusAsync(
+            int applicationId,
+            ApplicationStatus newStatus,
+            int companyId
+        );
 
         /// <summary>
         /// Valida si un estudiante es elegible para postular
@@ -50,21 +54,21 @@ namespace bolsafeucn_back.src.Application.Services.Interfaces
         /// </summary>
         Task<ViewApplicantDetailAdminDto> GetApplicantDetailForAdmin(int studentId);
 
-
         /// <summary>
         /// Obtiene los postulantes para una oferta específica, validando que el oferente sea el dueño.
         /// </summary>
-        Task<IEnumerable<OffererApplicantViewDto>> GetApplicantsForOffererAsync(int offerId, int offererUserId);
+        Task<IEnumerable<OffererApplicantViewDto>> GetApplicantsForOffererAsync(
+            int offerId,
+            int offererUserId
+        );
 
         /// <summary>
         /// Obtiene los detalles de un postulante para una oferta específica, validando que el oferente sea el dueño.
         /// </summary>
-        Task<ViewApplicantUserDetailDto> GetApplicantDetailForOfferer(int studentId, int offerId, int offererUserId);
-
-
-
-
-
-
+        Task<ViewApplicantUserDetailDto> GetApplicantDetailForOfferer(
+            int studentId,
+            int offerId,
+            int offererUserId
+        );
     }
 }

@@ -1,7 +1,7 @@
 using System.Security;
 using System.Text.Json;
 using bolsafeucn_back.src.Application.DTOs.BaseResponse;
-using bolsafeucn_back.src.Application.Services.Implements;
+using bolsafeucn_back.src.Infrastructure.Exceptions;
 using Serilog;
 
 namespace bolsafeucn_back.src.API.Middlewares.ErrorHandlingMiddleware;

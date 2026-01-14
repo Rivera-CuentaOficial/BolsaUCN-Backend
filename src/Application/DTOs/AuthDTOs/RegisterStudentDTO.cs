@@ -9,7 +9,7 @@ namespace bolsafeucn_back.src.Application.DTOs.AuthDTOs
         /// Nombre completo del estudiante.
         /// </summary>
         [Required(ErrorMessage = "El nombre es obligatorio.")]
-        public required string Name { get; set; }
+        public required string FirstName { get; set; }
 
         /// <summary>
         /// Apellido completo del estudiante.

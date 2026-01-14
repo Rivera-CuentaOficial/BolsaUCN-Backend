@@ -4,19 +4,19 @@ using bolsafeucn_back.src.Application.Services.Implements;
 using bolsafeucn_back.src.Application.Services.Interfaces;
 using bolsafeucn_back.src.Domain.Models;
 using bolsafeucn_back.src.Infrastructure.Data;
+using bolsafeucn_back.src.Infrastructure.Extensions;
 using bolsafeucn_back.src.Infrastructure.Repositories.Implements;
 using bolsafeucn_back.src.Infrastructure.Repositories.Interfaces;
-using Mapster;
 using Hangfire;
 using Hangfire.MemoryStorage;
+using Mapster;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.FileProviders;
 using Microsoft.Net.Http.Headers; // <<-- para CORS (HeaderNames)
 using Resend;
 using Serilog;
-using bolsafeucn_back.src.Infrastructure.Extensions;
-using Microsoft.Extensions.FileProviders;
 
 Log.Logger = new LoggerConfiguration()
     .ReadFrom.Configuration(
@@ -46,7 +46,7 @@ try
     // 1) Identity
     // =========================
     builder
-        .Services.AddIdentity<GeneralUser, Role>(options =>
+        .Services.AddIdentity<User, Role>(options =>
         {
             options.User.AllowedUserNameCharacters =
                 "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._@+";
@@ -109,8 +109,8 @@ try
                 policy
                     .WithOrigins(
                         "http://localhost:3000" // Next.js dev
-                                                // ,"https://localhost:3000"  // agrega si usas https en front
-                                                // ,"https://localhost:7129"  // agrega si llamas al backend en https y navegas desde https
+                    // ,"https://localhost:3000"  // agrega si usas https en front
+                    // ,"https://localhost:7129"  // agrega si llamas al backend en https y navegas desde https
                     )
                     .WithHeaders(HeaderNames.ContentType, HeaderNames.Authorization, "Accept")
                     .WithMethods("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS")
@@ -144,9 +144,7 @@ try
 
     #region Hangfire
     // Hangfire - usa MemoryStorage por simplicidad
-    builder.Services.AddHangfire(configuration =>
-        configuration.UseMemoryStorage()
-    );
+    builder.Services.AddHangfire(configuration => configuration.UseMemoryStorage());
     builder.Services.AddHangfireServer();
     #endregion
 
@@ -155,10 +153,7 @@ try
     // =========================
     // 6) DI (repos/services/mappers)
     // =========================
-    builder.Services.AddScoped<StudentMapper>();
-    builder.Services.AddScoped<IndividualMapper>();
-    builder.Services.AddScoped<CompanyMapper>();
-    builder.Services.AddScoped<AdminMapper>();
+    builder.Services.AddScoped<UserMapper>();
     builder.Services.AddScoped<OfferMapper>();
     builder.Services.AddScoped<ProfileMapper>();
 
@@ -187,7 +182,6 @@ try
     builder.Services.AddScoped<IFileService, FileService>();
     builder.Services.AddScoped<INotificationService, NotificationService>();
     builder.Services.AddDocumentStorageProvider(builder.Configuration);
-    
 
     builder.Services.AddMapster();
 
@@ -211,7 +205,9 @@ try
             service => service.CloseExpiredReviewsAsync(),
             Cron.Hourly
         );
-        Log.Information("Hangfire dashboard habilitado y job recurrente para cierre de reviews programado. Servidor en: http://localhost:5185/hangfire");
+        Log.Information(
+            "Hangfire dashboard habilitado y job recurrente para cierre de reviews programado. Servidor en: http://localhost:5185/hangfire"
+        );
     }
 
     #endregion
@@ -243,17 +239,21 @@ try
 
     // Configuración para servir archivos estáticos desde la carpeta "uploads"
     var uploadsPath = Path.Combine(builder.Environment.ContentRootPath, "uploads");
-    if (!Directory.Exists(uploadsPath)) Directory.CreateDirectory(uploadsPath);
-    app.UseStaticFiles(new StaticFileOptions
-    {
-        FileProvider = new PhysicalFileProvider(
-            Path.Combine(builder.Environment.ContentRootPath, "uploads")),
-        RequestPath = "/uploads",
-        OnPrepareResponse = ctx =>
+    if (!Directory.Exists(uploadsPath))
+        Directory.CreateDirectory(uploadsPath);
+    app.UseStaticFiles(
+        new StaticFileOptions
         {
-            ctx.Context.Response.Headers.Append("Cache-Control", "public,max-age=3600");
+            FileProvider = new PhysicalFileProvider(
+                Path.Combine(builder.Environment.ContentRootPath, "uploads")
+            ),
+            RequestPath = "/uploads",
+            OnPrepareResponse = ctx =>
+            {
+                ctx.Context.Response.Headers.Append("Cache-Control", "public,max-age=3600");
+            },
         }
-    });
+    );
 
     app.MapControllers();
 

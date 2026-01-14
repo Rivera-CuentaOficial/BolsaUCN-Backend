@@ -17,7 +17,10 @@ namespace bolsafeucn_back.src.Application.Services.Implements
         /// <summary>
         /// Constructs a new <see cref="NotificationService"/>.
         /// </summary>
-        public NotificationService(IEmailService emailService, INotificationRepository notificationRepo)
+        public NotificationService(
+            IEmailService emailService,
+            INotificationRepository notificationRepo
+        )
         {
             _emailService = emailService;
             _notificationRepo = notificationRepo;

@@ -18,7 +18,6 @@ public class PublicationRepository : IPublicationRepository
         _context = context;
     }
 
-
     public async Task<IEnumerable<Publication>> GetPublishedPublicationsByUserIdAsync(string userId)
     {
         return await _context

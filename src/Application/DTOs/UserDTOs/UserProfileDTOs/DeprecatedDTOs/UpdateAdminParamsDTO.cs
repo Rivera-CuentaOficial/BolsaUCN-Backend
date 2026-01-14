@@ -1,17 +1,15 @@
 using System.ComponentModel.DataAnnotations;
 using bolsafeucn_back.src.Application.Validators;
 using bolsafeucn_back.src.Domain.Models;
-using bolsafeucn_back.src.Application.DTOs.UserDTOs;
 using Mapster;
 
 namespace bolsafeucn_back.src.Application.DTOs.UserDTOs.UserProfileDTOs
 {
-    public class UpdateStudentParamsDTO : IUpdateParamsDTO
+    public class UpdateAdminParamsDTO : IUpdateParamsDTO
     {
         /// <summary>
         /// Nombre de usuario.
         /// </summary>
-        /// 
         public string? UserName { get; set; }
 
         /// <summary>
@@ -51,11 +49,9 @@ namespace bolsafeucn_back.src.Application.DTOs.UserDTOs.UserProfileDTOs
         [MaxLength(500, ErrorMessage = "La información sobre el usuario debe tener como máximo 500 caracteres")]
         public string? AboutMe { get; set; }
 
-        /// <summary>
-        /// Aplica los cambios del DTO al usuario dado.
-        /// </summary>
-        /// <param name="user">Usuario al que se le aplicarán los cambios.</param>
-        public void ApplyTo(GeneralUser user)
+        public bool SuperAdmin { get; set; }
+
+        public void ApplyTo(User user)
         {
             this.Adapt(user);
         }

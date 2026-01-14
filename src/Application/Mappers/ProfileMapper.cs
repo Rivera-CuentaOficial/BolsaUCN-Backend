@@ -1,8 +1,8 @@
-using Mapster;
-using bolsafeucn_back.src.Domain.Models;
-using bolsafeucn_back.src.Application.DTOs.UserDTOs.UserProfileDTOs;
-using System.IO.Compression;
+using bolsafeucn_back.src.Application.DTOs.UserDTOs;
 using bolsafeucn_back.src.Application.DTOs.UserDTOs.AdminDTOs;
+using bolsafeucn_back.src.Application.DTOs.UserDTOs.UserProfileDTOs;
+using bolsafeucn_back.src.Domain.Models;
+using Mapster;
 
 namespace bolsafeucn_back.src.Application.Mappers
 {
@@ -16,33 +16,79 @@ namespace bolsafeucn_back.src.Application.Mappers
         /// </summary>
         public void ConfigureAllMappings()
         {
-            ConfigureViewProfileMapping();
+            ConfigureGetProfileMapping();
             ConfigureUpdateMappings();
             ConfigureAdminMappings();
         }
+
+        public void ConfigureGetProfileMapping()
+        {
+            TypeAdapterConfig<User, GetUserProfileDTO>
+                .NewConfig()
+                .Map(dest => dest.UserName, src => src.UserName)
+                .Map(dest => dest.FirstName, src => src.FirstName)
+                .Map(dest => dest.LastName, src => src.LastName)
+                .Map(dest => dest.Rut, src => src.Rut)
+                .Map(dest => dest.Email, src => src.Email)
+                .Map(dest => dest.PhoneNumber, src => src.PhoneNumber)
+                .Map(dest => dest.AboutMe, src => src.AboutMe)
+                .Map(dest => dest.Rating, src => src.Rating)
+                .Map(dest => dest.CurriculumVitae, src => src.CV != null ? src.CV.Url : null)
+                .Map(
+                    dest => dest.Disability,
+                    src => src.Disability != null ? src.Disability.ToString() : null
+                )
+                .Map(dest => dest.ProfilePhoto, src => src.ProfilePhoto!.Url);
+            TypeAdapterConfig<User, GetPhotoDTO>
+                .NewConfig()
+                .Map(
+                    dest => dest.PhotoUrl,
+                    src => src.ProfilePhoto != null ? src.ProfilePhoto.Url : string.Empty
+                );
+            TypeAdapterConfig<User, GetCVDTO>
+                .NewConfig()
+                .Map(dest => dest.Url, src => src.CV!.Url)
+                .Map(dest => dest.OriginalFileName, src => src.CV!.OriginalFileName)
+                .Map(dest => dest.FileSizeBytes, src => src.CV!.FileSizeBytes)
+                .Map(dest => dest.UploadDate, src => src.CV!.CreatedAt);
+        }
+
+        public void ConfigureUpdateProfileMappings()
+        {
+            TypeAdapterConfig<UpdateUserProfileDTO, User>
+                .NewConfig()
+                .IgnoreNullValues(true)
+                .Map(dest => dest.UserName, src => src.UserName)
+                .Map(dest => dest.FirstName, src => src.FirstName)
+                .Map(dest => dest.LastName, src => src.LastName)
+                .Map(dest => dest.Email, src => src.Email)
+                .Map(dest => dest.AboutMe, src => src.AboutMe)
+                .Map(dest => dest.PhoneNumber, src => src.PhoneNumber);
+        }
+
         /// <summary>
         /// Configura el mapeo de GeneralUser a GetUserProfileDTO para ver el perfil de usuario.
         /// </summary>
         public void ConfigureViewProfileMapping()
         {
-            TypeAdapterConfig<GeneralUser, GetStudentProfileDTO>
+            TypeAdapterConfig<User, GetStudentProfileDTO>
                 .NewConfig()
                 .Map(dest => dest.UserName, src => src.UserName)
-                .Map(dest => dest.Name, src => src.Student!.Name)
-                .Map(dest => dest.LastName, src => src.Student!.LastName)
+                .Map(dest => dest.Name, src => src.FirstName)
+                .Map(dest => dest.LastName, src => src.LastName)
                 //.Map(dest => dest.Rating, src => src.Student!.Rating)
-                .Map(dest => dest.CurriculumVitae, src => src.Student!.CurriculumVitae)
+                .Map(dest => dest.CurriculumVitae, src => src.CV != null ? src.CV.Url : null)
                 .Map(dest => dest.Rut, src => src.Rut)
                 .Map(dest => dest.Email, src => src.Email)
                 .Map(dest => dest.PhoneNumber, src => src.PhoneNumber)
                 .Map(dest => dest.AboutMe, src => src.AboutMe)
                 .Map(dest => dest.ProfilePhoto, src => src.ProfilePhoto!.Url);
 
-            TypeAdapterConfig<GeneralUser, GetIndividualProfileDTO>
+            TypeAdapterConfig<User, GetIndividualProfileDTO>
                 .NewConfig()
                 .Map(dest => dest.UserName, src => src.UserName)
-                .Map(dest => dest.Name, src => src.Individual!.Name)
-                .Map(dest => dest.LastName, src => src.Individual!.LastName)
+                .Map(dest => dest.Name, src => src.FirstName)
+                .Map(dest => dest.LastName, src => src.LastName)
                 //.Map(dest => dest.Rating, src => src.Individual!.Rating)
                 .Map(dest => dest.Rut, src => src.Rut)
                 .Map(dest => dest.Email, src => src.Email)
@@ -50,11 +96,11 @@ namespace bolsafeucn_back.src.Application.Mappers
                 .Map(dest => dest.AboutMe, src => src.AboutMe)
                 .Map(dest => dest.ProfilePhoto, src => src.ProfilePhoto!.Url);
 
-            TypeAdapterConfig<GeneralUser, GetCompanyProfileDTO>
+            TypeAdapterConfig<User, GetCompanyProfileDTO>
                 .NewConfig()
                 .Map(dest => dest.UserName, src => src.UserName)
-                .Map(dest => dest.CompanyName, src => src.Company!.CompanyName)
-                .Map(dest => dest.LegalName, src => src.Company!.LegalName)
+                .Map(dest => dest.CompanyName, src => src.FirstName)
+                .Map(dest => dest.LegalName, src => src.LastName)
                 //.Map(dest => dest.Rating, src => src.Company!.Rating)
                 .Map(dest => dest.Rut, src => src.Rut)
                 .Map(dest => dest.Email, src => src.Email)
@@ -62,43 +108,16 @@ namespace bolsafeucn_back.src.Application.Mappers
                 .Map(dest => dest.AboutMe, src => src.AboutMe)
                 .Map(dest => dest.ProfilePhoto, src => src.ProfilePhoto!.Url);
 
-            TypeAdapterConfig<GeneralUser, GetAdminProfileDTO>
+            TypeAdapterConfig<User, GetAdminProfileDTO>
                 .NewConfig()
                 .Map(dest => dest.UserName, src => src.UserName)
-                .Map(dest => dest.Name, src => src.Admin!.Name)
-                .Map(dest => dest.LastName, src => src.Admin!.LastName)
+                .Map(dest => dest.Name, src => src.FirstName)
+                .Map(dest => dest.LastName, src => src.LastName)
                 .Map(dest => dest.Rut, src => src.Rut)
                 .Map(dest => dest.Email, src => src.Email)
                 .Map(dest => dest.PhoneNumber, src => src.PhoneNumber)
                 .Map(dest => dest.AboutMe, src => src.AboutMe)
-                .Map(dest => dest.ProfilePhoto, src => src.ProfilePhoto!.Url)
-                .Map(dest => dest.SuperAdmin, src => src.Admin!.SuperAdmin);
-
-            /*TypeAdapterConfig<GeneralUser, GetUserProfileDTO>
-                .NewConfig()
-                .Map(dest => dest.UserName, src => src.UserName)
-                .Map(dest => dest.Name, src =>
-                    src.Student != null ? src.Student.Name :
-                    src.Individual != null ? src.Individual.Name :
-                    src.Admin != null ? src.Admin.Name : 
-                    null)
-                .Map(dest => dest.LastName, src =>
-                    src.Student != null ? src.Student.LastName :
-                    src.Individual != null ? src.Individual.LastName :
-                    src.Admin != null ? src.Admin.LastName :
-                    null)
-                .Map(dest => dest.CompanyName, src => src.Company != null ? src.Company.CompanyName : null)
-                .Map(dest => dest.LegalName, src => src.Company != null ? src.Company.LegalName : null)
-                .Map(dest => dest.Rating, src =>
-                    src.Student != null ? src.Student.Rating :
-                    src.Individual != null ? src.Individual.Rating :
-                    src.Company != null ? src.Company.Rating :
-                    (float?)null)
-                .Map(dest => dest.CurriculumVitae, src => src.Student != null ? src.Student.CurriculumVitae : null)
-                .Map(dest => dest.Rut, src => src.Rut)
-                .Map(dest => dest.Email, src => src.Email)
-                .Map(dest => dest.PhoneNumber, src => src.PhoneNumber)
-                .Map(dest => dest.AboutMe, src => src.AboutMe);*/
+                .Map(dest => dest.ProfilePhoto, src => src.ProfilePhoto!.Url);
         }
 
         /// <summary>
@@ -106,57 +125,51 @@ namespace bolsafeucn_back.src.Application.Mappers
         /// </summary>
         public void ConfigureUpdateMappings()
         {
-            TypeAdapterConfig<UpdateStudentParamsDTO, GeneralUser>
-            .NewConfig()
-            .IgnoreNullValues(true)
-            .Ignore(src => src.ProfilePhoto!)
-            .Ignore(src => src.ProfileBanner!)
-            .Map(dest => dest.UserName, src => src.UserName)
-            .Map(dest => dest.Student!.Name, src => src.Name)
-            .Map(dest => dest.Student!.LastName, src => src.LastName)
-            .Map(dest => dest.Rut, src => src.Rut)
-            .Map(dest => dest.Email, src => src.Email)
-            .Map(dest => dest.AboutMe, src => src.AboutMe)
-            .Map(dest => dest.PhoneNumber, src => src.PhoneNumber);
+            TypeAdapterConfig<UpdateStudentParamsDTO, User>
+                .NewConfig()
+                .IgnoreNullValues(true)
+                .Ignore(src => src.ProfilePhoto!)
+                .Map(dest => dest.UserName, src => src.UserName)
+                .Map(dest => dest.FirstName, src => src.Name)
+                .Map(dest => dest.LastName, src => src.LastName)
+                .Map(dest => dest.Email, src => src.Email)
+                .Map(dest => dest.AboutMe, src => src.AboutMe)
+                .Map(dest => dest.PhoneNumber, src => src.PhoneNumber);
 
-            TypeAdapterConfig<UpdateIndividualParamsDTO, GeneralUser>
-            .NewConfig()
-            .IgnoreNullValues(true)
-            .Map(dest => dest.UserName, src => src.UserName)
-            .Map(dest => dest.Individual!.Name, src => src.Name)
-            .Map(dest => dest.Individual!.LastName, src => src.LastName)
-            .Map(dest => dest.Rut, src => src.Rut)
-            .Map(dest => dest.Email, src => src.Email)
-            .Map(dest => dest.AboutMe, src => src.AboutMe)
-            .Map(dest => dest.PhoneNumber, src => src.PhoneNumber);
+            TypeAdapterConfig<UpdateIndividualParamsDTO, User>
+                .NewConfig()
+                .IgnoreNullValues(true)
+                .Map(dest => dest.UserName, src => src.UserName)
+                .Map(dest => dest.FirstName, src => src.Name)
+                .Map(dest => dest.LastName, src => src.LastName)
+                .Map(dest => dest.Email, src => src.Email)
+                .Map(dest => dest.AboutMe, src => src.AboutMe)
+                .Map(dest => dest.PhoneNumber, src => src.PhoneNumber);
 
-            TypeAdapterConfig<UpdateCompanyParamsDTO, GeneralUser>
-            .NewConfig()
-            .IgnoreNullValues(true)
-            .Map(dest => dest.UserName, src => src.UserName)
-            .Map(dest => dest.Company!.CompanyName, src => src.CompanyName)
-            .Map(dest => dest.Company!.LegalName, src => src.LegalName)
-            .Map(dest => dest.Rut, src => src.Rut)
-            .Map(dest => dest.Email, src => src.Email)
-            .Map(dest => dest.AboutMe, src => src.AboutMe)
-            .Map(dest => dest.PhoneNumber, src => src.PhoneNumber);
+            TypeAdapterConfig<UpdateCompanyParamsDTO, User>
+                .NewConfig()
+                .IgnoreNullValues(true)
+                .Map(dest => dest.UserName, src => src.UserName)
+                .Map(dest => dest.FirstName, src => src.FirstName)
+                .Map(dest => dest.LastName, src => src.LastName)
+                .Map(dest => dest.Email, src => src.Email)
+                .Map(dest => dest.AboutMe, src => src.AboutMe)
+                .Map(dest => dest.PhoneNumber, src => src.PhoneNumber);
 
-            TypeAdapterConfig<UpdateAdminParamsDTO, GeneralUser>
-            .NewConfig()
-            .IgnoreNullValues(true)
-            .Map(dest => dest.UserName, src => src.UserName)
-            .Map(dest => dest.Admin!.Name, src => src.Name)
-            .Map(dest => dest.Admin!.LastName, src => src.LastName)
-            .Map(dest => dest.Rut, src => src.Rut)
-            .Map(dest => dest.Email, src => src.Email)
-            .Map(dest => dest.AboutMe, src => src.AboutMe)
-            .Map(dest => dest.PhoneNumber, src => src.PhoneNumber)
-            .Map(dest => dest.Admin!.SuperAdmin, src => src.SuperAdmin);
+            TypeAdapterConfig<UpdateAdminParamsDTO, User>
+                .NewConfig()
+                .IgnoreNullValues(true)
+                .Map(dest => dest.UserName, src => src.UserName)
+                .Map(dest => dest.FirstName, src => src.Name)
+                .Map(dest => dest.LastName, src => src.LastName)
+                .Map(dest => dest.Email, src => src.Email)
+                .Map(dest => dest.AboutMe, src => src.AboutMe)
+                .Map(dest => dest.PhoneNumber, src => src.PhoneNumber);
         }
 
         public void ConfigureAdminMappings()
         {
-            TypeAdapterConfig<GeneralUser, UserForAdminDTO>
+            TypeAdapterConfig<User, UserForAdminDTO>
                 .NewConfig()
                 .Map(dest => dest.UserName, src => src.UserName)
                 .Map(dest => dest.Email, src => src.Email)
@@ -164,38 +177,32 @@ namespace bolsafeucn_back.src.Application.Mappers
                 .Map(dest => dest.Rating, src => src.Rating)
                 .Map(dest => dest.UserType, src => src.UserType.ToString())
                 .Map(dest => dest.Banned, src => src.Banned);
-                
-            TypeAdapterConfig<GeneralUser, UserProfileForAdminDTO>
+
+            TypeAdapterConfig<User, UserProfileForAdminDTO>
                 .NewConfig()
                 .Map(dest => dest.Id, src => src.Id)
                 .Map(dest => dest.Username, src => src.UserName)
                 .Map(dest => dest.Email, src => src.Email)
-                .Map(dest => dest.FirstName, src =>
-                    src.Student != null ? src.Student.Name :
-                    src.Individual != null ? src.Individual.Name :
-                    src.Company != null ? src.Company.CompanyName :
-                    src.Admin != null ? src.Admin.Name :
-                    null)
-                .Map(dest => dest.LastName, src =>
-                    src.Student != null ? src.Student.LastName :
-                    src.Individual != null ? src.Individual.LastName :
-                    src.Company != null ? src.Company.LegalName :
-                    src.Admin != null ? src.Admin.LastName :
-                    null)
+                .Map(dest => dest.FirstName, src => src.FirstName)
+                .Map(dest => dest.LastName, src => src.LastName)
                 .Map(dest => dest.PhoneNumber, src => src.PhoneNumber)
                 .Map(dest => dest.Rut, src => src.Rut)
-                .Map(dest => dest.Rating, src => (float?)src.Rating)
-                .Map(dest => dest.ProfilePictureUrl, src => src.ProfilePhoto != null ? src.ProfilePhoto.Url : null)
+                .Map(dest => dest.Rating, src => src.Rating)
+                .Map(
+                    dest => dest.ProfilePictureUrl,
+                    src => src.ProfilePhoto != null ? src.ProfilePhoto.Url : null
+                )
                 .Map(dest => dest.AboutMe, src => src.AboutMe)
                 .Map(dest => dest.UserType, src => src.UserType.ToString())
                 .Map(dest => dest.Banned, src => src.Banned)
                 .Map(dest => dest.CreatedAt, src => src.CreatedAt)
                 .Map(dest => dest.UpdatedAt, src => src.UpdatedAt)
                 .Map(dest => dest.LastLoginAt, src => src.LastLoginAt)
-                .Map(dest => dest.CVUrl, src => src.Student != null ? src.Student.CurriculumVitae : null)
-                .Map(dest => dest.Disability, src => src.Student != null ? src.Student.Disability.ToString() : null)
-                .Map(dest => dest.SuperAdmin, src => src.Admin != null ? src.Admin.SuperAdmin : (bool?)null);
+                .Map(dest => dest.CVUrl, src => src.CV != null ? src.CV.Url : null)
+                .Map(
+                    dest => dest.Disability,
+                    src => src.Disability != null ? src.Disability.ToString() : null
+                );
         }
-
     }
 }

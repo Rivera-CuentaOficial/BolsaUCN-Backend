@@ -1,6 +1,8 @@
 using bolsafeucn_back.src.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
+
 namespace bolsafeucn_back.src.Infrastructure.Repositories.Implements;
+
 public class AdminNotificationRepository : IAdminNotificationRepository
 {
     private readonly AppDbContext _context;
@@ -18,9 +20,7 @@ public class AdminNotificationRepository : IAdminNotificationRepository
 
     public async Task<IEnumerable<AdminNotification>> GetAllAsync()
     {
-        return await _context.AdminNotifications
-            .OrderByDescending(n => n.CreatedAt)
-            .ToListAsync();
+        return await _context.AdminNotifications.OrderByDescending(n => n.CreatedAt).ToListAsync();
     }
 
     public async Task<AdminNotification?> GetByIdAsync(int id)
