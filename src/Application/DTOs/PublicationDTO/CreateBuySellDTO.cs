@@ -31,8 +31,9 @@ namespace bolsafeucn_back.src.Application.DTOs.PublicationDTO
         [Range(0, 100000000, ErrorMessage = "El precio debe estar entre $0 y $100.000.000")]
         public required decimal Price { get; set; }
 
-        [MaxLength(10, ErrorMessage = "Máximo 10 imágenes permitidas")]
-        public required List<string> ImagesURL { get; set; } = new List<string>();
+        /* === IMAGENES (NO USADO POR AHORA) ===
+        public required List<IFormFile> Images { get; set; } = new List<IFormFile>();
+        */
 
         [StringLength(200, ErrorMessage = "La ubicación no puede exceder 200 caracteres")]
         public string? Location { get; set; }
