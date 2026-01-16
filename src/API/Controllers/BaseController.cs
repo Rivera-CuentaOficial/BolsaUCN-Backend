@@ -24,9 +24,28 @@ namespace bolsafeucn_back.src.API.Controllers
                 User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value ?? null;
             var userType = User.Claims.FirstOrDefault(c => c.Type == "userType")?.Value ?? null;
             int.TryParse(userId, out int parsedUserId);
+            if (parsedUserId == 0)
+                throw new ArgumentException("ID de usuario no válido");
             if (!Enum.TryParse<UserType>(userType, ignoreCase: true, out var parsedUserType))
                 throw new ArgumentException("Tipo de usuario no existe");
             return (parsedUserId, parsedUserType);
+        }
+
+        protected (int, string[]) GetIdAndRolesFromToken()
+        {
+            Log.Information("Verificando token de autenticacion");
+            if (User.Identity?.IsAuthenticated != true)
+                throw new UnauthorizedAccessException("Usuario no autenticado.");
+            var userId =
+                User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value ?? null;
+            int.TryParse(userId, out int parsedUserId);
+            if (parsedUserId == 0)
+                throw new ArgumentException("ID de usuario no válido");
+            var roles = User
+                .Claims.Where(c => c.Type == ClaimTypes.Role)
+                .Select(c => c.Value)
+                .ToArray();
+            return (parsedUserId, roles);
         }
 
         /// <summary>
@@ -41,6 +60,8 @@ namespace bolsafeucn_back.src.API.Controllers
             var userId =
                 User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value ?? null;
             int.TryParse(userId, out int parsedUserId);
+            if (parsedUserId == 0)
+                throw new ArgumentException("ID de usuario no válido");
             return parsedUserId;
         }
 

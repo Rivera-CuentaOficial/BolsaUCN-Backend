@@ -23,6 +23,7 @@ namespace bolsafeucn_back.src.Application.DTOs.UserDTOs.AdminDTOs
         // Student specific fields
         public string? CVUrl { get; set; }
         public string? Disability { get; set; }
+
         // Admin specific fields
         public bool? SuperAdmin { get; set; }
     }

@@ -6,14 +6,8 @@ namespace bolsafeucn_back.src.Application.Services.Interfaces
 {
     public interface IPublicationService
     {
-        Task<GenericResponse<string>> CreateOfferAsync(
-            CreateOfferDTO publicationDTO,
-            User currentUser
-        );
-        Task<GenericResponse<string>> CreateBuySellAsync(
-            CreateBuySellDTO publicationDTO,
-            User currentUser
-        );
+        Task<string> CreateOfferAsync(CreateOfferDTO publicationDTO, int userId);
+        Task<string> CreateBuySellAsync(CreateBuySellDTO publicationDTO, int userId);
 
         /// <summary>
         /// Funcion

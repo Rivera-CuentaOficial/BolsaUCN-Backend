@@ -4,8 +4,7 @@ using bolsafeucn_back.src.Application.Services.Interfaces;
 using bolsafeucn_back.src.Domain.Models;
 using bolsafeucn_back.src.Infrastructure.Repositories.Interfaces;
 using Mapster;
-using MapsterMapper;
-using Microsoft.Extensions.Logging;
+using Serilog;
 
 namespace bolsafeucn_back.src.Application.Services.Implements
 {
@@ -16,238 +15,135 @@ namespace bolsafeucn_back.src.Application.Services.Implements
     {
         private readonly IOfferRepository _offerRepository;
         private readonly IBuySellRepository _buySellRepository;
-        private readonly ILogger<PublicationService> _logger;
         private const int MAX_APPEALS = 3;
         private readonly IPublicationRepository _publicationRepository;
-        private readonly IMapper _mapper;
+        private readonly IUserService _userService;
         private readonly IReviewService _reviewService;
 
         public PublicationService(
             IOfferRepository offerRepository,
             IBuySellRepository buySellRepository,
-            ILogger<PublicationService> logger,
             IPublicationRepository publicationRepository,
-            IMapper mapper,
-            IReviewService reviewService
+            IReviewService reviewService,
+            IUserService userService
         )
         {
             _offerRepository = offerRepository;
             _buySellRepository = buySellRepository;
-            _logger = logger;
             _publicationRepository = publicationRepository;
-            _mapper = mapper;
             _reviewService = reviewService;
+            _userService = userService;
         }
 
         /// <summary>
         /// Crea una nueva oferta laboral o de voluntariado
         /// </summary>
-        public async Task<GenericResponse<string>> CreateOfferAsync(
-            CreateOfferDTO offerDTO,
-            User currentUser
-        )
+        public async Task<string> CreateOfferAsync(CreateOfferDTO offerDTO, int userId)
         {
-            if (
-                currentUser.UserType != UserType.Empresa
-                && currentUser.UserType != UserType.Particular
-                && currentUser.UserType != UserType.Administrador
-                && currentUser.UserType != UserType.Estudiante
-            )
-            {
-                throw new UnauthorizedAccessException(
-                    "Solo usuarios tipo Empresa, Particular, Administrador o Estudiante registrado pueden crear ofertas."
-                );
-            }
+            // Obtener y validar el usuario actual
+            User currentUser = await _userService.GetUserByIdAsync(userId);
+            // Validaciones de fechas
             if (offerDTO.EndDate <= DateTime.UtcNow)
             {
                 throw new InvalidOperationException(
                     "La fecha de finalización (EndDate) debe ser en el futuro."
                 );
             }
-            if (offerDTO.DeadlineDate >= offerDTO.EndDate)
+            if (offerDTO.ApplicationDeadline >= offerDTO.EndDate)
             {
                 throw new InvalidOperationException(
-                    "La fecha límite de postulación (DeadlineDate) debe ser anterior a la fecha de finalización de la oferta."
+                    "La fecha límite de postulación (ApplicationDeadline) debe ser anterior a la fecha de finalización de la oferta."
                 );
             }
             // Validar que el usuario no tenga más de 3 reseñas pendientes
-            var pendingReviewsCount = await _reviewService.GetPendingReviewsCountAsync(
-                currentUser.Id
-            );
-            Console.WriteLine(
-                $"Reseñas pendientes para el usuario {currentUser.Id}: {pendingReviewsCount}"
+            var pendingReviewsCount = await _reviewService.GetPendingReviewsCountAsync(currentUser);
+            Log.Information(
+                "Reseñas pendientes para el usuario {userId}: {pendingReviewsCount}",
+                userId,
+                pendingReviewsCount
             );
             if (pendingReviewsCount >= 3)
             {
-                _logger.LogWarning(
-                    "Usuario {UserId} intentó crear publicación de compra/venta con {PendingCount} reseñas pendientes",
-                    currentUser.Id,
+                Log.Warning(
+                    "Usuario {userId} intentó crear publicación de compra/venta con {pendingReviewsCount} reseñas pendientes",
+                    userId,
                     pendingReviewsCount
                 );
                 throw new InvalidOperationException(
-                    "No puedes crear una oferta mientras tengas 3 o más reseñas pendientes de revisión."
+                    "No se puede crear una oferta mientras se tengan 3 o más reseñas pendientes."
                 );
             }
-            try
-            {
-                var isAdmin = currentUser.UserType == UserType.Administrador;
+            bool isAdmin = currentUser.UserType == UserType.Administrador;
 
-                var offer = new Offer
-                {
-                    Title = offerDTO.Title,
-                    Description = offerDTO.Description,
-                    PublicationDate = DateTime.UtcNow,
-                    EndDate = offerDTO.EndDate.ToUniversalTime(),
-                    DeadlineDate = offerDTO.DeadlineDate.ToUniversalTime(),
-                    Remuneration = (int)offerDTO.Remuneration,
-                    OfferType = offerDTO.OfferType,
-                    Location = offerDTO.Location,
-                    Requirements = offerDTO.Requirements,
-                    ContactInfo = offerDTO.ContactInfo,
-                    IsCvRequired = offerDTO.IsCvRequired,
-                    UserId = currentUser.Id,
-                    User = currentUser,
-                    Type = Types.Offer,
+            // Mapeo principal DTO a Entidad
+            Offer newOffer = offerDTO.Adapt<Offer>();
 
-                    statusValidation = isAdmin
-                        ? StatusValidation.Published
-                        : StatusValidation.InProcess,
+            // Mapeo adicional y asignaciones
+            newOffer.UserId = currentUser.Id;
+            newOffer.User = currentUser;
+            newOffer.Type = Types.Oferta;
 
-                    IsActive = isAdmin,
-                };
+            newOffer.StatusValidation = isAdmin
+                ? StatusValidation.Publicado
+                : StatusValidation.EnProceso;
 
-                var createdOffer = await _offerRepository.CreateOfferAsync(offer);
+            newOffer.IsValidated = isAdmin;
 
-                _logger.LogInformation(
-                    "Oferta creada exitosamente. ID: {OfferId}, Título: {Title}, Usuario: {UserId}",
-                    createdOffer.Id,
-                    createdOffer.Title,
-                    currentUser.Id
-                );
+            var createOfferResult = await _offerRepository.CreateOfferAsync(newOffer);
 
-                return new GenericResponse<string>(
-                    "Oferta creada exitosamente",
-                    $"Oferta ID: {createdOffer.Id}"
-                );
-            }
-            catch (InvalidOperationException ex)
-            {
-                _logger.LogWarning(
-                    ex,
-                    "Error de validación al crear oferta para el usuario {UserId}: {ErrorMessage}",
-                    currentUser.Id,
-                    ex.Message
-                );
-                return new GenericResponse<string>($"Error al crear la oferta: {ex.Message}", null);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(
-                    ex,
-                    "Error al crear oferta para el usuario {UserId}",
-                    currentUser.Id
-                );
-                return new GenericResponse<string>($"Error al crear la oferta: {ex.Message}", null);
-            }
+            Log.Information(
+                "Oferta creada exitosamente. ID: {OfferId}, Título: {Title}, Usuario: {UserId}",
+                createOfferResult,
+                newOffer.Title,
+                currentUser.Id
+            );
+
+            return $"Oferta creada exitosamente. Oferta ID: {createOfferResult}";
         }
 
         /// <summary>
         /// Crea una nueva publicación de compra/venta
         /// </summary>
-        public async Task<GenericResponse<string>> CreateBuySellAsync(
-            CreateBuySellDTO buySellDTO,
-            User currentUser
-        )
+        public async Task<string> CreateBuySellAsync(CreateBuySellDTO buySellDTO, int currentUserId)
         {
-            if (
-                currentUser.UserType != UserType.Empresa
-                && currentUser.UserType != UserType.Particular
-                && currentUser.UserType != UserType.Administrador
-                && currentUser.UserType != UserType.Estudiante
-            )
-            {
-                throw new UnauthorizedAccessException(
-                    "Solo usuarios tipo Empresa, Particular, Administrador o Estudiante registrado pueden crear ofertas."
-                );
-            }
+            // Obtener y validar el usuario actual
+            var currentUser = await _userService.GetUserByIdAsync(currentUserId);
+            var isAdmin = currentUser.UserType == UserType.Administrador;
             // Validar que el usuario no tenga más de 3 reseñas pendientes
-            var pendingReviewsCount = await _reviewService.GetPendingReviewsCountAsync(
-                currentUser.Id
-            );
+            var pendingReviewsCount = await _reviewService.GetPendingReviewsCountAsync(currentUser);
             if (pendingReviewsCount >= 3)
             {
-                _logger.LogWarning(
-                    "Usuario {UserId} intentó crear publicación de compra/venta con {PendingCount} reseñas pendientes",
+                Log.Warning(
+                    "Usuario {userId} intentó crear publicación de compra/venta con {PendingCount} reseñas pendientes",
                     currentUser.Id,
                     pendingReviewsCount
                 );
                 throw new InvalidOperationException(
-                    "No puedes crear una publicación de compra/venta mientras tengas 3 o más reseñas pendientes de revisión."
+                    "No se puede crear una publicacion de compra/venta mientras se tengan 3 o más reseñas pendientes."
                 );
             }
-            try
-            {
-                var isAdmin = currentUser.UserType == UserType.Administrador;
+            // Mapeo principal DTO a Entidad
+            BuySell newBuySell = buySellDTO.Adapt<BuySell>();
+            // Mapeo adicional y asignaciones
+            newBuySell.UserId = currentUser.Id;
+            newBuySell.User = currentUser;
+            newBuySell.Type = Types.CompraVenta;
 
-                var buySell = new BuySell
-                {
-                    Title = buySellDTO.Title,
-                    Description = buySellDTO.Description,
-                    UserId = currentUser.Id,
-                    User = currentUser,
-                    Type = Types.BuySell,
-                    Price = buySellDTO.Price,
-                    Category = buySellDTO.Category,
-                    Location = buySellDTO.Location,
-                    ContactInfo = buySellDTO.ContactInfo,
-                    PublicationDate = DateTime.UtcNow,
+            newBuySell.StatusValidation = isAdmin
+                ? StatusValidation.Publicado
+                : StatusValidation.EnProceso;
+            newBuySell.IsValidated = isAdmin;
 
-                    statusValidation = isAdmin
-                        ? StatusValidation.Published
-                        : StatusValidation.InProcess,
+            var createdBuySellResult = await _buySellRepository.CreateBuySellAsync(newBuySell);
 
-                    IsActive = isAdmin,
-                };
+            Log.Information(
+                "Publicación de compra/venta creada exitosamente. ID: {BuySellId}, Título: {Title}, Usuario: {UserId}",
+                createdBuySellResult,
+                newBuySell.Title,
+                currentUser.Id
+            );
 
-                var createdBuySell = await _buySellRepository.CreateBuySellAsync(buySell);
-
-                _logger.LogInformation(
-                    "Publicación de compra/venta creada exitosamente. ID: {BuySellId}, Título: {Title}, Usuario: {UserId}",
-                    createdBuySell.Id,
-                    createdBuySell.Title,
-                    currentUser.Id
-                );
-
-                return new GenericResponse<string>(
-                    "Publicación de compra/venta creada exitosamente",
-                    $"Publicación ID: {createdBuySell.Id}"
-                );
-            }
-            catch (InvalidOperationException ex)
-            {
-                _logger.LogWarning(
-                    ex,
-                    "Error de validación al crear publicación de compra/venta para el usuario {UserId}: {ErrorMessage}",
-                    currentUser.Id,
-                    ex.Message
-                );
-                return new GenericResponse<string>(
-                    $"Error al crear la publicación de compra/venta: {ex.Message}",
-                    null
-                );
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(
-                    ex,
-                    "Error al crear publicación de compra/venta para el usuario {UserId}",
-                    currentUser.Id
-                );
-                return new GenericResponse<string>(
-                    $"Error al crear la publicación de compra/venta: {ex.Message}",
-                    null
-                );
-            }
+            return $"Publicación de compra/venta creada exitosamente. Publicación ID: {createdBuySellResult}";
         }
 
         public async Task<IEnumerable<PublicationsDTO>> GetMyPublishedPublicationsAsync(
@@ -264,12 +160,12 @@ namespace bolsafeucn_back.src.Application.Services.Implements
             {
                 IdPublication = p.Id,
                 Title = p.Title,
-                PublicationDate = p.PublicationDate,
-                statusValidation = p.statusValidation,
+                PublicationDate = p.CreatedAt,
+                StatusValidation = p.StatusValidation,
                 UserId = p.UserId,
                 Images = p.Images,
-                types = p.Type,
-                IsActive = p.IsActive,
+                Types = p.Type,
+                IsActive = p.IsValidated,
             });
 
             return publicationsDto;
@@ -288,12 +184,12 @@ namespace bolsafeucn_back.src.Application.Services.Implements
             {
                 IdPublication = p.Id,
                 Title = p.Title,
-                PublicationDate = p.PublicationDate,
-                statusValidation = p.statusValidation,
+                PublicationDate = p.CreatedAt,
+                StatusValidation = p.StatusValidation,
                 UserId = p.UserId,
                 Images = p.Images,
-                types = p.Type,
-                IsActive = p.IsActive,
+                Types = p.Type,
+                IsActive = p.IsValidated,
             });
 
             return publicationsDto;
@@ -316,12 +212,12 @@ namespace bolsafeucn_back.src.Application.Services.Implements
 
                 Title = p.Title,
                 Description = p.Description, // ¡No olvides la descripción!
-                PublicationDate = p.PublicationDate,
-                statusValidation = p.statusValidation,
+                PublicationDate = p.CreatedAt,
+                StatusValidation = p.StatusValidation,
                 UserId = p.UserId,
                 Images = p.Images,
-                types = p.Type,
-                IsActive = p.IsActive,
+                Types = p.Type,
+                IsActive = p.IsValidated,
             });
 
             return publicationsDto;
@@ -340,8 +236,8 @@ namespace bolsafeucn_back.src.Application.Services.Implements
                 throw new KeyNotFoundException("La publicación no existe.");
 
             // 3. Update logic
-            publication.statusValidation = StatusValidation.Published;
-            publication.IsActive = true;
+            publication.StatusValidation = StatusValidation.Publicado;
+            publication.IsValidated = true;
 
             await _publicationRepository.UpdateAsync(publication);
 
@@ -362,8 +258,8 @@ namespace bolsafeucn_back.src.Application.Services.Implements
             if (publication == null)
                 throw new KeyNotFoundException("La publicación no existe.");
 
-            publication.statusValidation = StatusValidation.Rejected;
-            publication.IsActive = false;
+            publication.StatusValidation = StatusValidation.Rechazado;
+            publication.IsValidated = false;
             publication.AdminRejectionReason = dto.Reason;
 
             await _publicationRepository.UpdateAsync(publication);
@@ -393,7 +289,7 @@ namespace bolsafeucn_back.src.Application.Services.Implements
                 );
 
             // 3. Validate status -> 409 Conflict (InvalidOperationException maps to 409 in your middleware)
-            if (publication.statusValidation != StatusValidation.Rejected)
+            if (publication.StatusValidation != StatusValidation.Rechazado)
                 throw new InvalidOperationException(
                     "Solo se pueden apelar publicaciones que han sido rechazadas."
                 );
@@ -407,7 +303,7 @@ namespace bolsafeucn_back.src.Application.Services.Implements
             }
 
             // 5. Process appeal
-            publication.statusValidation = StatusValidation.InProcess;
+            publication.StatusValidation = StatusValidation.EnProceso;
             publication.UserAppealJustification = dto.Justification;
             publication.AppealCount++;
 

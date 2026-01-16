@@ -41,7 +41,7 @@ namespace bolsafeucn_back.src.Application.Services.Implements
                     Category = bs.Category,
                     Price = bs.Price,
                     Location = bs.Location,
-                    PublicationDate = bs.PublicationDate,
+                    PublicationDate = bs.CreatedAt,
                     FirstImageUrl = bs.Images.FirstOrDefault()?.Url,
                     UserId = bs.UserId,
                     UserName = bs.User.UserName ?? "Usuario",
@@ -84,16 +84,16 @@ namespace bolsafeucn_back.src.Application.Services.Implements
                     Category = buySell.Category,
                     Price = buySell.Price,
                     Location = buySell.Location,
-                    ContactInfo = buySell.ContactInfo,
-                    PublicationDate = buySell.PublicationDate,
-                    IsActive = buySell.IsActive,
+                    ContactInfo = buySell.AdditionalContactInfo,
+                    PublicationDate = buySell.CreatedAt,
+                    IsActive = buySell.IsValidated,
                     ImageUrls = buySell.Images.Select(img => img.Url).ToList(),
                     UserId = buySell.UserId,
                     UserName = buySell.User.UserName ?? "Usuario",
                     UserEmail = buySell.User.Email ?? "",
                     AboutMe = buySell.User.AboutMe,
                     Rating = buySell.User.Rating,
-                    statusValidation = buySell.statusValidation,
+                    statusValidation = buySell.StatusValidation,
                 };
 
                 _logger.LogInformation(
@@ -128,7 +128,7 @@ namespace bolsafeucn_back.src.Application.Services.Implements
                     Category = bs.Category,
                     Price = bs.Price,
                     Location = bs.Location,
-                    PublicationDate = bs.PublicationDate,
+                    PublicationDate = bs.CreatedAt,
                     FirstImageUrl = bs.Images.FirstOrDefault()?.Url,
                     UserId = bs.UserId,
                     UserName = bs.User.UserName ?? "Usuario",
@@ -151,9 +151,9 @@ namespace bolsafeucn_back.src.Application.Services.Implements
                     Id = bs.Id,
                     Title = bs.Title,
                     NameOwner = bs.User.UserName ?? "Usuario",
-                    PublicationDate = bs.PublicationDate,
+                    PublicationDate = bs.CreatedAt,
                     Type = bs.Type,
-                    Activa = bs.IsActive,
+                    IsActive = bs.IsValidated,
                 })
                 .ToList();
             _logger.LogInformation(
@@ -203,14 +203,14 @@ namespace bolsafeucn_back.src.Application.Services.Implements
             {
                 throw new KeyNotFoundException($"La compra/venta con id {id} no fue encontrada.");
             }
-            if (buySell.statusValidation != StatusValidation.InProcess)
+            if (buySell.StatusValidation != StatusValidation.EnProceso)
             {
                 throw new InvalidOperationException(
-                    $"La compra/venta con ID {id} ya fue {buySell.statusValidation}. No se puede publicar."
+                    $"La compra/venta con ID {id} ya fue {buySell.StatusValidation}. No se puede publicar."
                 );
             }
-            buySell.IsActive = true;
-            buySell.statusValidation = StatusValidation.Published;
+            buySell.IsValidated = true;
+            buySell.StatusValidation = StatusValidation.Publicado;
             await _buySellRepository.UpdateAsync(buySell);
 
             if (buySell.User?.Email != null)
@@ -231,14 +231,14 @@ namespace bolsafeucn_back.src.Application.Services.Implements
             {
                 throw new KeyNotFoundException($"La compra/venta con id {id} no fue encontrada.");
             }
-            if (buySell.statusValidation != StatusValidation.InProcess)
+            if (buySell.StatusValidation != StatusValidation.EnProceso)
             {
                 throw new InvalidOperationException(
-                    $"La compra/venta con ID {id} ya fue {buySell.statusValidation}. No se puede rechazar."
+                    $"La compra/venta con ID {id} ya fue {buySell.StatusValidation}. No se puede rechazar."
                 );
             }
-            buySell.IsActive = false;
-            buySell.statusValidation = StatusValidation.Rejected;
+            buySell.IsValidated = false;
+            buySell.StatusValidation = StatusValidation.Rechazado;
             await _buySellRepository.UpdateAsync(buySell);
 
             if (buySell.User?.Email != null)
@@ -261,14 +261,14 @@ namespace bolsafeucn_back.src.Application.Services.Implements
                     $"La compra/venta con id {buySellId} no fue encontrada."
                 );
             }
-            if (buySell.statusValidation != StatusValidation.Published)
+            if (buySell.StatusValidation != StatusValidation.Publicado)
             {
                 throw new InvalidOperationException(
-                    $"La compra/venta con ID {buySellId} está {buySell.statusValidation}. No se puede cerrar."
+                    $"La compra/venta con ID {buySellId} está {buySell.StatusValidation}. No se puede cerrar."
                 );
             }
-            buySell.IsActive = false;
-            buySell.statusValidation = StatusValidation.Closed;
+            buySell.IsValidated = false;
+            buySell.StatusValidation = StatusValidation.Cerrado;
             await _buySellRepository.UpdateAsync(buySell);
 
             {
@@ -298,22 +298,22 @@ namespace bolsafeucn_back.src.Application.Services.Implements
                 );
             }
 
-            if (!buySell.IsActive)
+            if (!buySell.IsValidated)
             {
                 throw new InvalidOperationException(
                     $"La compra/venta con id {buySellId} ya ha sido cerrada."
                 );
             }
 
-            if (buySell.statusValidation != StatusValidation.Published)
+            if (buySell.StatusValidation != StatusValidation.Publicado)
             {
                 throw new InvalidOperationException(
-                    $"La compra/venta con ID {buySellId} está {buySell.statusValidation}. Solo las publicaciones activas pueden ser cerradas."
+                    $"La compra/venta con ID {buySellId} está {buySell.StatusValidation}. Solo las publicaciones activas pueden ser cerradas."
                 );
             }
 
-            buySell.IsActive = false;
-            buySell.statusValidation = StatusValidation.Closed;
+            buySell.IsValidated = false;
+            buySell.StatusValidation = StatusValidation.Cerrado;
             await _buySellRepository.UpdateAsync(buySell);
 
             if (buySell.User?.Email != null)

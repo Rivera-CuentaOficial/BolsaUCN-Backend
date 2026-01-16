@@ -1,4 +1,5 @@
 using bolsafeucn_back.src.Application.DTOs.OfferDTOs;
+using bolsafeucn_back.src.Application.DTOs.PublicationDTO;
 using bolsafeucn_back.src.Domain.Models;
 using Mapster;
 
@@ -16,6 +17,24 @@ public class OfferMapper
     /// </summary>
     public void ConfigureAllMappings()
     {
+        ConfigureOfferMapping();
+    }
+
+    public void ConfigureOfferMapping()
+    {
+        TypeAdapterConfig<CreateOfferDTO, Offer>
+            .NewConfig()
+            .Map(dest => dest.Title, src => src.Title)
+            .Map(dest => dest.Description, src => src.Description)
+            .Map(dest => dest.EndDate, src => src.EndDate)
+            .Map(dest => dest.ApplicationDeadline, src => src.ApplicationDeadline)
+            .Map(dest => dest.Remuneration, src => src.Remuneration)
+            .Map(dest => dest.OfferType, src => src.OfferType)
+            .Map(dest => dest.Location, src => src.Location)
+            .Map(dest => dest.Requirements, src => src.Requirements)
+            .Map(dest => dest.AdditionalContactInfo, src => src.AdditionalContactInfo)
+            .Map(dest => dest.IsCvRequired, src => src.IsCvRequired);
+
         // Map Offer to OfferSummaryDto (used for lists)
         TypeAdapterConfig<Offer, OfferSummaryDto>
             .NewConfig()
@@ -27,7 +46,7 @@ public class OfferMapper
             .NewConfig()
             .Map(dest => dest.Title, src => src.Title)
             .Map(dest => dest.Description, src => src.Description)
-            .Map(dest => dest.PostDate, src => src.PublicationDate)
+            .Map(dest => dest.PostDate, src => src.CreatedAt)
             .Map(dest => dest.EndDate, src => src.EndDate)
             .Map(dest => dest.Remuneration, src => src.Remuneration)
             .Map(dest => dest.OfferType, src => src.OfferType.ToString())

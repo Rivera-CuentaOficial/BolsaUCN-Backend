@@ -20,18 +20,11 @@ namespace bolsafeucn_back.src.Infrastructure.Repositories.Implements
             _logger = logger;
         }
 
-        public async Task<BuySell> CreateBuySellAsync(BuySell buySell)
+        public async Task<int> CreateBuySellAsync(BuySell buySell)
         {
-            try
-            {
-                _context.BuySells.Add(buySell);
-                await _context.SaveChangesAsync();
-                return buySell;
-            }
-            catch (Exception ex)
-            {
-                throw new Exception("Error al crear la publicación de compra/venta", ex);
-            }
+            _context.BuySells.Add(buySell);
+            await _context.SaveChangesAsync();
+            return buySell.Id;
         }
 
         public async Task<IEnumerable<BuySell>> GetAllActiveAsync()
@@ -39,8 +32,8 @@ namespace bolsafeucn_back.src.Infrastructure.Repositories.Implements
             return await _context
                 .BuySells.Include(bs => bs.User)
                 .Include(bs => bs.Images)
-                .Where(bs => bs.IsActive)
-                .OrderByDescending(bs => bs.PublicationDate)
+                .Where(bs => bs.IsValidated)
+                .OrderByDescending(bs => bs.CreatedAt)
                 .AsNoTracking()
                 .ToListAsync();
         }
@@ -53,8 +46,8 @@ namespace bolsafeucn_back.src.Infrastructure.Repositories.Implements
             var buysell = await _context
                 .BuySells.Include(bs => bs.User)
                 .Include(bs => bs.Images)
-                .Where(bs => bs.statusValidation == StatusValidation.InProcess)
-                .OrderByDescending(bs => bs.PublicationDate)
+                .Where(bs => bs.StatusValidation == StatusValidation.EnProceso)
+                .OrderByDescending(bs => bs.CreatedAt)
                 .AsNoTracking()
                 .ToListAsync();
             _logger.LogInformation(
@@ -72,8 +65,8 @@ namespace bolsafeucn_back.src.Infrastructure.Repositories.Implements
             var buysell = await _context
                 .BuySells.Include(bs => bs.User)
                 .Include(bs => bs.Images)
-                .Where(bs => bs.statusValidation == StatusValidation.Published)
-                .OrderByDescending(bs => bs.PublicationDate)
+                .Where(bs => bs.StatusValidation == StatusValidation.Publicado)
+                .OrderByDescending(bs => bs.CreatedAt)
                 .AsNoTracking()
                 .ToListAsync();
             _logger.LogInformation(
@@ -96,7 +89,7 @@ namespace bolsafeucn_back.src.Infrastructure.Repositories.Implements
             return await _context
                 .BuySells.Where(bs => bs.UserId == userId)
                 .Include(bs => bs.Images)
-                .OrderByDescending(bs => bs.PublicationDate)
+                .OrderByDescending(bs => bs.CreatedAt)
                 .ToListAsync();
         }
 
@@ -122,7 +115,7 @@ namespace bolsafeucn_back.src.Infrastructure.Repositories.Implements
                 if (buySell == null)
                     return false;
 
-                buySell.IsActive = false;
+                buySell.IsValidated = false;
                 await _context.SaveChangesAsync();
                 return true;
             }
@@ -136,11 +129,11 @@ namespace bolsafeucn_back.src.Infrastructure.Repositories.Implements
         {
             return await _context
                 .BuySells.Where(bs =>
-                    bs.IsActive && bs.Category.ToLower().Contains(category.ToLower())
+                    bs.IsValidated && bs.Category.ToLower().Contains(category.ToLower())
                 )
                 .Include(bs => bs.User)
                 .Include(bs => bs.Images)
-                .OrderByDescending(bs => bs.PublicationDate)
+                .OrderByDescending(bs => bs.CreatedAt)
                 .ToListAsync();
         }
 
@@ -150,7 +143,9 @@ namespace bolsafeucn_back.src.Infrastructure.Repositories.Implements
         )
         {
             return await _context
-                .BuySells.Where(bs => bs.IsActive && bs.Price >= minPrice && bs.Price <= maxPrice)
+                .BuySells.Where(bs =>
+                    bs.IsValidated && bs.Price >= minPrice && bs.Price <= maxPrice
+                )
                 .Include(bs => bs.User)
                 .Include(bs => bs.Images)
                 .OrderBy(bs => bs.Price)

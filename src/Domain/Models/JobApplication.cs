@@ -1,7 +1,7 @@
 namespace bolsafeucn_back.src.Domain.Models
 {
     /// <summary>
-    /// Enum that defines the possible statuses of a job application.
+    /// Estado de la postulación (Pendiente, Aceptada, Rechazada).
     /// </summary>
     public enum ApplicationStatus
     {
@@ -11,38 +11,38 @@ namespace bolsafeucn_back.src.Domain.Models
     }
 
     /// <summary>
-    /// Represents an application submitted by a student to a job offer.
+    /// Representa una postulación realizada por un estudiante a una oferta laboral.
     /// </summary>
     public class JobApplication : ModelBase
     {
         /// <summary>
-        /// The student user who submitted the application.
+        /// El usuario estudiante que realizó la postulación.
         /// </summary>
         public required User Student { get; set; }
 
         /// <summary>
-        /// Identifier of the student who applied.
+        /// Identificador del usuario estudiante que realizó la postulación.
         /// </summary>
         public required int StudentId { get; set; }
 
         /// <summary>
-        /// The job offer to which the student applied.
+        /// La oferta laboral a la que el estudiante postuló.
         /// </summary>
         public required Offer JobOffer { get; set; }
 
         /// <summary>
-        /// Identifier of the job offer.
+        /// Identificador de la oferta laboral.
         /// </summary>
         public required int JobOfferId { get; set; }
 
         /// <summary>
-        /// Current status of the application (Pendiente, Aceptada, Rechazada).
+        /// Carta de presentación opcional adjuntada por el estudiante.
         /// </summary>
-        public required ApplicationStatus Status { get; set; }
+        public string? CoverLetter { get; set; }
 
         /// <summary>
-        /// Date and time when the application was submitted (UTC).
+        /// Estado actual de la postulación (Pendiente, Aceptada, Rechazada).
         /// </summary>
-        public DateTime ApplicationDate { get; set; } = DateTime.UtcNow;
+        public required ApplicationStatus Status { get; set; }
     }
 }

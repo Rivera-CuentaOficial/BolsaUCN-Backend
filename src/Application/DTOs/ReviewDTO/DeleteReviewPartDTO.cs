@@ -7,11 +7,13 @@ namespace bolsafeucn_back.src.Application.DTOs.ReviewDTO
         /// </summary>
         /// <value></value>
         public required int ReviewId { get; set; }
+
         /// <summary>
         /// Indica si se debe eliminar la parte de la reseña del estudiante hacia el oferente.
         /// </summary>
         /// <value></value>
         public bool DeleteReviewForStudent { get; set; } = false;
+
         /// <summary>
         /// Indica si se debe eliminar la parte de la reseña del oferente hacia el estudiante.
         /// </summary>

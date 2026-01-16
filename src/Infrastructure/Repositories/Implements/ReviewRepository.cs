@@ -1,3 +1,4 @@
+using bolsafeucn_back.src.Domain.Constants;
 using bolsafeucn_back.src.Domain.Models;
 using bolsafeucn_back.src.Infrastructure.Data;
 using bolsafeucn_back.src.Infrastructure.Repositories.Interfaces;
@@ -135,6 +136,40 @@ namespace bolsafeucn_back.src.Infrastructure.Repositories.Implements
                 .Reviews.Include(r => r.Student)
                 .Include(r => r.Offeror)
                 .ToListAsync();
+        }
+
+        /// <summary>
+        /// Obtiene el conteo de reseñas pendientes para un usuario específico.
+        /// </summary>
+        /// <param name="userId">El identificador del usuario.</param>
+        /// <param name="role">El rol del usuario (opcional). Si el rol es nulo, se consideran ambos roles.</param>
+        /// <returns>El número de reseñas pendientes.</returns>
+        public async Task<int> GetPendingCountOfReviewsByUserIdAsync(
+            int userId,
+            string? role = null
+        )
+        {
+            var pendingCountQuery = _context.Reviews.AsQueryable();
+            switch (role)
+            {
+                case RoleNames.Offeror:
+                    pendingCountQuery = pendingCountQuery.Where(r =>
+                        r.OfferorId == userId && r.IsReviewForStudentCompleted == false
+                    );
+                    break;
+                case RoleNames.Applicant:
+                    pendingCountQuery = pendingCountQuery.Where(r =>
+                        r.StudentId == userId && r.IsReviewForOfferorCompleted == false
+                    );
+                    break;
+                default:
+                    pendingCountQuery = pendingCountQuery.Where(r =>
+                        (r.OfferorId == userId && r.IsReviewForStudentCompleted == false)
+                        || (r.StudentId == userId && r.IsReviewForOfferorCompleted == false)
+                    );
+                    break;
+            }
+            return await pendingCountQuery.CountAsync();
         }
 
         public async Task<IEnumerable<Publication>> GetPublicationInformationAsync(

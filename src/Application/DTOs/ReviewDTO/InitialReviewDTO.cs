@@ -6,13 +6,13 @@ namespace bolsafeucn_back.src.Application.DTOs.ReviewDTO
     {
         [Required(ErrorMessage = "Se requiere la ID de la publicación.")]
         public int PublicationId { get; set; }
-        
+
         [Required(ErrorMessage = "Se requiere la ID del oferente.")]
         public int OfferorId { get; set; }
-        
-        [Required(ErrorMessage = "Se requiere la ID del estudiante.")]  
+
+        [Required(ErrorMessage = "Se requiere la ID del estudiante.")]
         public int StudentId { get; set; }
-        
+
         // reviewWindowEndDate se calculará automáticamente como DateTime.UtcNow.AddDays(14)
     }
 }

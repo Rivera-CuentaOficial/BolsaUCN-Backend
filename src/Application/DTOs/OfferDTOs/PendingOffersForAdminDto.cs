@@ -37,7 +37,7 @@ namespace bolsafeucn_back.src.Application.DTOs.OfferDTOs
         /// Remuneration offered (integer value).
         /// </summary>
         public required int Remuneration { get; set; }
-        
+
         /// <summary>
         /// Offer type enum from the domain model.
         /// </summary>

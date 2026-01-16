@@ -8,7 +8,7 @@ namespace bolsafeucn_back.src.Application.DTOs.OfferDTOs
     public class OfferBasicAdminDto
     {
         public int Id { get; set; }
-        
+
         /// <summary>
         /// Offer title.
         /// </summary>

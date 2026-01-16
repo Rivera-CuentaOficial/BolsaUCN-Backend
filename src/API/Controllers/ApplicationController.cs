@@ -1,5 +1,6 @@
 using bolsafeucn_back.src.Application.DTOs.BaseResponse;
 using bolsafeucn_back.src.Application.DTOs.JobAplicationDTO;
+using bolsafeucn_back.src.Application.DTOs.JobAplicationDTO.ApplicantsDTOs;
 using bolsafeucn_back.src.Application.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -18,12 +19,13 @@ namespace bolsafeucn_back.src.API.Controllers
             _service = service;
         }
 
+        //! COMPLETE
         /// <summary>
         /// Permite a un estudiante postularse a una oferta laboral.
         /// </summary>
         /// <param name="offerId">ID de la oferta laboral a la que el estudiante desea postularse.</param>
         /// <returns>Respuesta que entrega un DTO con la aplicación creada.</returns>
-        [HttpPost("offers/{id}/apply")]
+        [HttpPost("offers/{offerId}/apply")]
         [Authorize(Roles = "Applicant")]
         public async Task<IActionResult> ApplyToOffer(int offerId)
         {
@@ -37,18 +39,24 @@ namespace bolsafeucn_back.src.API.Controllers
             );
         }
 
+        //! COMPLETE
+        //? NOT IN USE BY FRONTEND. TO REPLACE LEGACY ENDPOINT IN JobApplicationController
+        //? LEGACY RESPONSE: IEnumerable<JobApplicationResponseDto>
         /// <summary>
         /// Obtiene todas las aplicaciones realizadas por el estudiante autenticado.
         /// </summary>
         /// <returns>Respuesta que entrega un DTO con las aplicaciones del estudiante.</returns>
         [HttpGet("offers/my-applications")]
         [Authorize(Roles = "Applicant")]
-        public async Task<IActionResult> GetMyApplications()
+        public async Task<IActionResult> GetMyApplications([FromBody] SearchParamsDTO searchParams)
         {
             int parsedUserId = GetUserIdFromToken();
-            var applications = await _service.GetStudentApplicationsAsync(parsedUserId);
+            var applications = await _service.GetUserApplicationsByIdAsync(
+                parsedUserId,
+                searchParams
+            );
             return Ok(
-                new GenericResponse<IEnumerable<JobApplicationResponseDto>>(
+                new GenericResponse<ApplicationsForApplicantDTO>(
                     "Aplicaciones obtenidas exitosamente.",
                     applications
                 )

@@ -40,16 +40,16 @@ namespace bolsafeucn_back.src.Application.Services.Implements
             }
         }
 
+        /// <summary>
+        /// Sube un CV al almacenamiento local.
+        /// </summary>
+        /// <param name="cvFile">El archivo de CV a subir.</param>
+        /// <param name="user">El usuario al que se asociará el CV.</param>
+        /// <returns>True si la operación fue exitosa.</returns>
+        /// <exception cref="ArgumentException"></exception>
+        /// <exception cref="Exception"></exception>
         public async Task<bool> UploadCVAsync(IFormFile cvFile, User user)
         {
-            if (user.CV != null)
-            {
-                Log.Warning(
-                    "El usuario {UserId} ya tiene un CV asociado. Se sobrescribirá el existente.",
-                    user.Id
-                );
-                user.CV.IsActive = false;
-            }
             if (cvFile == null || cvFile.Length == 0)
             {
                 throw new ArgumentException("File is empty or null");
@@ -87,15 +87,21 @@ namespace bolsafeucn_back.src.Application.Services.Implements
                 Url = relativeUrl,
                 PublicId = uniqueFileName,
                 FileSizeBytes = cvFile.Length,
+                UpdatedAt = now,
             };
 
-            var result = await _fileRepository.CreateCVAsync(newFile);
+            bool hasCV = user.CV != null;
+            var result =
+                hasCV == false
+                    ? await _fileRepository.CreateCVAsync(newFile)
+                    : await _fileRepository.UpdateCVAsync(user.CV!.PublicId, newFile);
             if (result == false)
             {
                 throw new Exception("Error al guardar el CV en la base de datos.");
             }
 
-            user.CV = newFile;
+            if (!hasCV)
+                user.CV = newFile;
 
             var updateResult = await _userRepository.UpdateAsync(user);
             if (!updateResult)
@@ -106,6 +112,11 @@ namespace bolsafeucn_back.src.Application.Services.Implements
             return true;
         }
 
+        /// <summary>
+        /// Elimina el CV de un usuario del almacenamiento local.
+        /// </summary>
+        /// <param name="user">El usuario cuyo CV se eliminará.</param>
+        /// <returns>True si la operación fue exitosa.</returns>
         public async Task<bool> DeleteCVAsync(User user)
         {
             if (user.CV == null)

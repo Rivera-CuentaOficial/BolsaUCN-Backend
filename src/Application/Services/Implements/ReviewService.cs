@@ -2,7 +2,9 @@ using bolsafeucn_back.src.Application.DTOs.PublicationDTO;
 using bolsafeucn_back.src.Application.DTOs.ReviewDTO;
 using bolsafeucn_back.src.Application.Mappers;
 using bolsafeucn_back.src.Application.Services.Interfaces;
+using bolsafeucn_back.src.Domain.Constants;
 using bolsafeucn_back.src.Domain.Models;
+using bolsafeucn_back.src.Domain.Models.Options;
 using bolsafeucn_back.src.Infrastructure.Repositories.Interfaces;
 using Serilog;
 
@@ -18,7 +20,7 @@ namespace bolsafeucn_back.src.Application.Services.Implements
     public class ReviewService : IReviewService
     {
         private readonly IReviewRepository _repository;
-        private readonly IUserRepository _userRepository;
+        private readonly IUserService _userService;
         private readonly IAdminNotificationRepository _adminNotificationRepository;
         private readonly IEmailService _emailService;
 
@@ -29,13 +31,13 @@ namespace bolsafeucn_back.src.Application.Services.Implements
         /// <param name="userRepository">El repositorio de usuarios para validación.</param>
         public ReviewService(
             IReviewRepository repository,
-            IUserRepository userRepository,
+            IUserService userService,
             IAdminNotificationRepository adminNotificationRepository,
             IEmailService emailService
         )
         {
             _repository = repository;
-            _userRepository = userRepository;
+            _userService = userService;
             _adminNotificationRepository = adminNotificationRepository;
             _emailService = emailService;
         }
@@ -68,9 +70,7 @@ namespace bolsafeucn_back.src.Application.Services.Implements
                     $"No se encontraron reseñas para el oferente con ID {offerorId}."
                 );
 
-            var user =
-                await _userRepository.GetUserByIdAsync(offerorId)
-                ?? throw new KeyNotFoundException($"No se encontró el usuario con ID {offerorId}.");
+            var user = await _userService.GetUserByIdAsync(offerorId);
 
             var result = new List<PublicationAndReviewInfoDTO>();
             foreach (var review in reviews)
@@ -360,10 +360,10 @@ namespace bolsafeucn_back.src.Application.Services.Implements
         {
             // Validar que existan el estudiante y el oferente
             var student =
-                await _userRepository.GetUserByIdAsync(dto.StudentId)
+                await _userService.GetUserByIdAsync(dto.StudentId)
                 ?? throw new ArgumentException($"El estudiante con ID {dto.StudentId} no existe.");
             var offeror =
-                await _userRepository.GetUserByIdAsync(dto.OfferorId)
+                await _userService.GetUserByIdAsync(dto.OfferorId)
                 ?? throw new ArgumentException($"El oferente con ID {dto.OfferorId} no existe.");
             // Validar que no exista ya una review para esta publicación
             var existingReview = await _repository.GetByPublicationIdAsync(dto.PublicationId);
@@ -424,9 +424,7 @@ namespace bolsafeucn_back.src.Application.Services.Implements
             int userId
         )
         {
-            var user =
-                await _userRepository.GetUserByIdAsync(userId)
-                ?? throw new KeyNotFoundException($"No se encontró el usuario con ID {userId}.");
+            var user = await _userService.GetUserByIdAsync(userId);
             IEnumerable<Review> reviews;
             if (user.UserType == UserType.Estudiante)
             {
@@ -477,9 +475,10 @@ namespace bolsafeucn_back.src.Application.Services.Implements
 
         public async Task UpdateUserRatingAsync(int userId)
         {
-            var user =
-                await _userRepository.GetUserByIdAsync(userId)
-                ?? throw new KeyNotFoundException($"No se encontró el usuario con ID {userId}.");
+            var user = await _userService.GetUserByIdAsync(
+                userId,
+                new UserQueryOptions { TrackChanges = true }
+            );
             double? averageRating = null;
             // Determinar el tipo de usuario y obtener su calificación promedio
             if (user.UserType == UserType.Estudiante)
@@ -498,7 +497,7 @@ namespace bolsafeucn_back.src.Application.Services.Implements
             }
             // Actualizar el rating del usuario (usar 0.0 si no hay calificaciones)
             user.Rating = averageRating ?? 0.0;
-            await _userRepository.UpdateAsync(user);
+            await _userService.UpdateUserAsync(user);
             Log.Information(
                 "Se actualizo el rating del usuario: {UserId} a: {Rating}",
                 userId,
@@ -508,7 +507,7 @@ namespace bolsafeucn_back.src.Application.Services.Implements
 
         public async Task<double?> GetUserAverageRatingAsync(int userId)
         {
-            var user = await _userRepository.GetUserByIdAsync(userId);
+            var user = await _userService.GetUserByIdAsync(userId);
             if (user == null)
             {
                 throw new KeyNotFoundException($"No se encontró el usuario con ID {userId}.");
@@ -537,54 +536,29 @@ namespace bolsafeucn_back.src.Application.Services.Implements
         /// <param name="userId">El identificador del usuario (estudiante u oferente).</param>
         /// <returns>El número de reseñas pendientes del usuario.</returns>
         /// <exception cref="KeyNotFoundException">Lanzada si no se encuentra el usuario.</exception>
-        public async Task<int> GetPendingReviewsCountAsync(int userId)
+        public async Task<int> GetPendingReviewsCountAsync(User user, string? role = null)
         {
-            var user =
-                await _userRepository.GetUserByIdAsync(userId)
-                ?? throw new KeyNotFoundException($"No se encontró el usuario con ID {userId}.");
-            IEnumerable<Review> allReviews;
-            // Obtener todas las reseñas según el tipo de usuario
-            if (user.UserType == UserType.Estudiante)
+            // Corrobora que el usuario tenga el rol por el cual se esta filtrando
+            if (role != null)
             {
-                allReviews = await _repository.GetByStudentIdAsync(userId);
-            }
-            else if (user.UserType == UserType.Empresa || user.UserType == UserType.Particular)
-            {
-                allReviews = await _repository.GetByOfferorIdAsync(userId);
-            }
-            else
-            {
-                // Administradores no tienen reseñas pendientes
-                return 0;
-            }
-            // Si no hay reseñas, retornar 0
-            if (allReviews == null || !allReviews.Any())
-            {
-                return 0;
-            }
-            // Filtrar reseñas pendientes según el tipo de usuario
-            int pendingCount = 0;
-            foreach (var review in allReviews)
-            {
-                if (!review.IsCompleted)
+                var hasRoleResult = await _userService.HasRoleAsync(user, role);
+                if (!hasRoleResult)
                 {
-                    if (user.UserType == UserType.Estudiante && !review.IsReviewForOfferorCompleted)
-                    {
-                        pendingCount++;
-                    }
-                    else if (
-                        (user.UserType == UserType.Empresa || user.UserType == UserType.Particular)
-                        && !review.IsReviewForStudentCompleted
-                    )
-                    {
-                        pendingCount++;
-                    }
+                    Log.Error("El usuario con ID {UserId} no tiene el rol {Role}", user.Id, role);
+                    throw new UnauthorizedAccessException(
+                        $"El usuario con ID {user.Id} no tiene el rol {role}."
+                    );
                 }
             }
+            // Contar el numero de reseñas pendientes por medio de filtrado por ID
+            int pendingCount = await _repository.GetPendingCountOfReviewsByUserIdAsync(
+                user.Id,
+                role
+            );
             Log.Information(
-                "Usuario {UserId} ({UserType}) tiene {PendingCount} reseñas pendientes",
-                userId,
+                "Usuario {UserType} con ID {UserId} tiene {PendingCount} reseñas pendientes",
                 user.UserType,
+                user.Id,
                 pendingCount
             );
             return pendingCount;

@@ -1,5 +1,6 @@
 using bolsafeucn_back.src.Application.DTOs.UserDTOs.AdminDTOs;
 using bolsafeucn_back.src.Domain.Models;
+using bolsafeucn_back.src.Domain.Models.Options;
 using bolsafeucn_back.src.Infrastructure.Data;
 using bolsafeucn_back.src.Infrastructure.Repositories.Interfaces;
 using Microsoft.AspNetCore.Identity;
@@ -64,7 +65,7 @@ namespace bolsafeucn_back.src.Infrastructure.Repositories.Implements
         /// <returns>Estado de bloqueo del usuario</returns>
         public async Task<bool> GetBlockedStatusAsync(int userId)
         {
-            return await _context.Users.AnyAsync(u => u.Id == userId && u.Banned);
+            return await _context.Users.AnyAsync(u => u.Id == userId && u.IsBlocked);
         }
 
         /// <summary>
@@ -245,20 +246,19 @@ namespace bolsafeucn_back.src.Infrastructure.Repositories.Implements
         /// <param name="userId"></param>
         /// <param name="tracking"></param>
         /// <returns></returns>
-        public async Task<User?> GetUserByIdAsync(
-            int userId,
-            bool tracking,
-            bool includePhoto,
-            bool includeCV
-        )
+        public async Task<User?> GetByIdAsync(int userId, UserQueryOptions? options = null)
         {
             var query = _context.Users.AsQueryable();
-            if (!tracking)
+            if (options?.TrackChanges == false)
                 query = query.AsNoTracking();
-            if (includePhoto)
+            if (options?.IncludePhoto == true)
                 query = query.Include(u => u.ProfilePhoto);
-            if (includeCV)
+            if (options?.IncludeCV == true)
                 query = query.Include(u => u.CV);
+            if (options?.IncludeApplications == true)
+                query = query.Include(u => u.Applications);
+            if (options?.IncludePublications == true)
+                query = query.Include(u => u.Publications);
 
             return await query.FirstOrDefaultAsync(u => u.Id == userId);
         }
@@ -310,11 +310,11 @@ namespace bolsafeucn_back.src.Infrastructure.Repositories.Implements
                 var status = searchParams.BlockedStatus.ToLower();
                 if (status == "unblocked")
                 {
-                    query = query.Where(u => u.Banned == false);
+                    query = query.Where(u => u.IsBlocked == false);
                 }
                 else if (status == "blocked")
                 {
-                    query = query.Where(u => u.Banned == true);
+                    query = query.Where(u => u.IsBlocked == true);
                 }
             }
             // Ordenamiento
@@ -333,11 +333,9 @@ namespace bolsafeucn_back.src.Infrastructure.Repositories.Implements
         /// Obtiene el número de administradores en el sistema.
         /// </summary>
         /// <returns>El número de administradores activos</returns>
-        public async Task<int> GetNumberOfAdmins()
+        public async Task<int> GetCountByTypeAsync(UserType userType)
         {
-            return await _context
-                .Users.Where(u => u.UserType == UserType.Administrador)
-                .CountAsync();
+            return await _context.Users.Where(u => u.UserType == userType).CountAsync();
             //return await _context.Admins.CountAsync(a => a.GeneralUser!.Banned == false);
         }
 

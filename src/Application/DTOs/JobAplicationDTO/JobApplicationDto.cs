@@ -26,24 +26,22 @@ namespace bolsafeucn_back.src.Application.DTOs.JobAplicationDTO
         public string CompanyName { get; set; } = string.Empty;
 
         // Información de fechas y remuneración
-        public DateTime ApplicationDate { get; set; }              // Postulada hasta: 20/09/2025
+        public DateTime ApplicationDate { get; set; } // Postulada hasta: 20/09/2025
 
-        public DateTime PublicationDate { get; set; }            // Fecha de publicación: 01/09/2025
-        public DateTime? EndDate { get; set; }                    // Duración fin
-        public int Remuneration { get; set; }                     // Remuneración: $5.000 CLP
+        public DateTime PublicationDate { get; set; } // Fecha de publicación: 01/09/2025
+        public DateTime? EndDate { get; set; } // Duración fin
+        public int Remuneration { get; set; } // Remuneración: $5.000 CLP
 
         // Descripción y requisitos
-        public string? Description { get; set; }                  // Descripción completa
-        public string? Requirements { get; set; }                 // Requisitos
+        public string? Description { get; set; } // Descripción completa
+        public string? Requirements { get; set; } // Requisitos
 
         // Contacto
-        public string? ContactInfo { get; set; }                  // Teléfono o email de contacto
+        public string? ContactInfo { get; set; } // Teléfono o email de contacto
 
         // Estado de la postulación
-        public int Id { get; set; }                               // ID de la postulación
-        public string Status { get; set; } = string.Empty;        // Pendiente/Aceptado/Rechazado
-        public string? StatusMessage { get; set; }                // Mensaje según estado
-
-
+        public int Id { get; set; } // ID de la postulación
+        public string Status { get; set; } = string.Empty; // Pendiente/Aceptado/Rechazado
+        public string? StatusMessage { get; set; } // Mensaje según estado
     }
 }

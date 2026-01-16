@@ -5,40 +5,46 @@ using bolsafeucn_back.src.Domain.Models;
 using bolsafeucn_back.src.Infrastructure.Data;
 using bolsafeucn_back.src.Infrastructure.Repositories.Interfaces;
 using Mapster;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
+using Serilog;
 
 namespace bolsafeucn_back.src.Application.Services.Implements;
 
 public class OfferService : IOfferService
 {
     private readonly IOfferRepository _offerRepository;
-    private readonly ILogger<OfferService> _logger;
     private readonly AppDbContext _context;
     private readonly IEmailService _emailService;
 
     public OfferService(
         IOfferRepository offerRepository,
-        ILogger<OfferService> logger,
         AppDbContext context,
         IEmailService emailService
     )
     {
         _offerRepository = offerRepository;
-        _logger = logger;
         _context = context;
         _emailService = emailService;
     }
 
+    public async Task<Offer> GetByOfferIdAsync(int offerId)
+    {
+        Offer? offer = await _offerRepository.GetByIdAsync(offerId);
+        if (offer == null)
+        {
+            Log.Warning("Oferta con ID {OfferId} no encontrada", offerId);
+            throw new KeyNotFoundException($"Offer with id {offerId} not found");
+        }
+        return offer;
+    }
+
     public async Task<IEnumerable<OfferSummaryDto>> GetActiveOffersAsync()
     {
-        _logger.LogInformation("Obteniendo todas las ofertas activas");
-
+        Log.Information("Obteniendo todas las ofertas activas");
         // Debe traer User + Company/Individual (el repo debería hacer Include).
         var offers = await _offerRepository.GetAllActiveAsync();
         var list = offers.ToList();
 
-        _logger.LogInformation("Se encontraron {Count} ofertas activas", list.Count);
+        Log.Information("Se encontraron {Count} ofertas activas", list.Count);
 
         var result = list.Select(o =>
             {
@@ -63,8 +69,8 @@ public class OfferService : IOfferService
 
                     // 💰 y fechas para la tarjeta
                     Remuneration = o.Remuneration,
-                    DeadlineDate = o.DeadlineDate,
-                    PublicationDate = o.PublicationDate,
+                    DeadlineDate = o.ApplicationDeadline,
+                    PublicationDate = o.CreatedAt,
                     OfferType = o.OfferType, // Trabajo / Voluntariado (enum)
                 };
             })
@@ -75,12 +81,12 @@ public class OfferService : IOfferService
 
     public async Task<OfferDetailDto?> GetOfferDetailsAsync(int offerId)
     {
-        _logger.LogInformation("Obteniendo detalles de la oferta ID: {OfferId}", offerId);
+        Log.Information("Obteniendo detalles de la oferta ID: {OfferId}", offerId);
 
         var offer = await _offerRepository.GetByIdAsync(offerId);
         if (offer == null)
         {
-            _logger.LogWarning("Oferta con ID {OfferId} no encontrada", offerId);
+            Log.Warning("Oferta con ID {OfferId} no encontrada", offerId);
             throw new KeyNotFoundException($"Offer with id {offerId} not found");
         }
 
@@ -101,14 +107,14 @@ public class OfferService : IOfferService
             // si también quieres forzar aquí Antofagasta:
             Location = "Campus Antofagasta",
 
-            PostDate = offer.PublicationDate,
+            PostDate = offer.CreatedAt,
             EndDate = offer.EndDate,
             Remuneration = (int)offer.Remuneration, // tu DTO usa int
             OfferType = offer.OfferType.ToString(),
-            statusValidation = offer.statusValidation,
+            statusValidation = offer.StatusValidation,
         };
 
-        _logger.LogInformation("Detalles de oferta ID: {OfferId} obtenidos exitosamente", offerId);
+        Log.Information("Detalles de oferta ID: {OfferId} obtenidos exitosamente", offerId);
         return result;
     }
 
@@ -118,7 +124,7 @@ public class OfferService : IOfferService
         if (offer == null)
             throw new KeyNotFoundException("Offer not found.");
 
-        offer.IsActive = true; // o Published / Active, según tu modelo
+        offer.IsValidated = true; // o Published / Active, según tu modelo
         _context.Offers.Update(offer);
         await _context.SaveChangesAsync();
     }
@@ -129,7 +135,7 @@ public class OfferService : IOfferService
         if (offer == null)
             throw new KeyNotFoundException("Offer not found.");
 
-        offer.IsActive = false;
+        offer.IsValidated = false;
         _context.Offers.Update(offer);
         await _context.SaveChangesAsync();
     }
@@ -144,7 +150,7 @@ public class OfferService : IOfferService
                 Title = o.Title,
                 Description = o.Description,
                 Location = o.Location,
-                PostDate = o.PublicationDate,
+                PostDate = o.CreatedAt,
                 Remuneration = o.Remuneration,
                 OfferType = o.OfferType,
             })
@@ -168,9 +174,9 @@ public class OfferService : IOfferService
                     Id = o.Id,
                     Title = o.Title,
                     CompanyName = ownerName,
-                    PublicationDate = o.PublicationDate,
+                    PublicationDate = o.CreatedAt,
                     OfferType = o.OfferType,
-                    Activa = o.IsActive,
+                    Activa = o.IsValidated,
                     Remuneration = o.Remuneration,
                 };
             })
@@ -180,11 +186,11 @@ public class OfferService : IOfferService
 
     public async Task<OfferDetailsAdminDto> GetOfferDetailsForAdminManagement(int offerId)
     {
-        _logger.LogInformation("Obteniendo detalles de la oferta ID: {OfferId}", offerId);
+        Log.Information("Obteniendo detalles de la oferta ID: {OfferId}", offerId);
         var offer = await _offerRepository.GetByIdAsync(offerId);
         if (offer == null)
         {
-            _logger.LogWarning("Oferta con ID {OfferId} no encontrada", offerId);
+            Log.Warning("Oferta con ID {OfferId} no encontrada", offerId);
             throw new KeyNotFoundException($"Offer with id {offerId} not found");
         }
         var ownerName =
@@ -200,21 +206,21 @@ public class OfferService : IOfferService
             Description = offer.Description,
             Images = imageForDTO,
             CompanyName = ownerName,
-            PublicationDate = offer.PublicationDate,
+            PublicationDate = offer.CreatedAt,
             EndDate = offer.EndDate,
-            DeadlineDate = offer.DeadlineDate,
+            DeadlineDate = offer.ApplicationDeadline,
             Type = offer.Type,
-            Active = offer.IsActive,
-            statusValidation = offer.statusValidation,
+            Active = offer.IsValidated,
+            statusValidation = offer.StatusValidation,
             Remuneration = offer.Remuneration,
             OfferType = offer.OfferType,
             Location = offer.Location,
             Requirements = offer.Requirements,
-            ContactInfo = offer.ContactInfo,
+            ContactInfo = offer.AdditionalContactInfo,
             AboutMe = offer.User?.AboutMe,
             Rating = offer.User.Rating,
         };
-        _logger.LogInformation("Detalles de oferta ID: {OfferId} obtenidos exitosamente", offerId);
+        Log.Information("Detalles de oferta ID: {OfferId} obtenidos exitosamente", offerId);
         return result;
     }
 
@@ -225,14 +231,14 @@ public class OfferService : IOfferService
         {
             throw new KeyNotFoundException($"La oferta con id {offerId} no fue encontrada.");
         }
-        if (!offer.IsActive)
+        if (!offer.IsValidated)
         {
             throw new InvalidOperationException($"La oferta con id {offerId} ya ha sido cerrada.");
         }
-        offer.IsActive = false;
+        offer.IsValidated = false;
         await _offerRepository.UpdateOfferAsync(offer);
 
-        _logger.LogInformation(
+        Log.Information(
             "Oferta ID: {OfferId} cerrada. Reviews se crearán automáticamente.",
             offerId
         );
@@ -250,11 +256,11 @@ public class OfferService : IOfferService
 
     public async Task<OfferDetailValidationDto> GetOfferDetailForOfferValidationAsync(int id)
     {
-        _logger.LogInformation("Obteniendo detalles de la oferta ID: {OfferId}", id);
+        Log.Information("Obteniendo detalles de la oferta ID: {OfferId}", id);
         var offer = await _offerRepository.GetByIdAsync(id);
         if (offer == null)
         {
-            _logger.LogWarning("Oferta con ID {OfferId} no encontrada", id);
+            Log.Warning("Oferta con ID {OfferId} no encontrada", id);
             throw new KeyNotFoundException($"Offer with id {id} not found");
         }
         var ownerName =
@@ -270,14 +276,14 @@ public class OfferService : IOfferService
             Images = imageForDTO,
             Description = offer.Description,
             CompanyName = ownerName,
-            CorreoContacto = offer.ContactInfo,
+            CorreoContacto = offer.AdditionalContactInfo,
             TelefonoContacto = offer.User?.PhoneNumber,
-            PublicationDate = offer.PublicationDate,
-            DeadlineDate = offer.DeadlineDate,
+            PublicationDate = offer.CreatedAt,
+            DeadlineDate = offer.ApplicationDeadline,
             EndDate = offer.EndDate,
             Remuneration = offer.Remuneration,
             OfferType = offer.OfferType,
-            ContactInfo = offer.ContactInfo,
+            ContactInfo = offer.AdditionalContactInfo,
             AboutMe = offer.User?.AboutMe,
             Requirements = offer.Requirements,
             Rating = offer.User.Rating,
@@ -291,14 +297,14 @@ public class OfferService : IOfferService
         {
             throw new KeyNotFoundException($"La oferta con id {id} no fue encontrada.");
         }
-        if (offer.statusValidation != StatusValidation.InProcess)
+        if (offer.StatusValidation != StatusValidation.EnProceso)
         {
             throw new InvalidOperationException(
-                $"La oferta con ID {id} ya fue {offer.statusValidation}. No se puede publicar."
+                $"La oferta con ID {id} ya fue {offer.StatusValidation}. No se puede publicar."
             );
         }
-        offer.IsActive = true;
-        offer.statusValidation = StatusValidation.Published;
+        offer.IsValidated = true;
+        offer.StatusValidation = StatusValidation.Publicado;
         await _offerRepository.UpdateOfferAsync(offer);
 
         if (offer.User?.Email != null)
@@ -319,14 +325,14 @@ public class OfferService : IOfferService
         {
             throw new KeyNotFoundException($"La oferta con id {id} no fue encontrada.");
         }
-        if (offer.statusValidation != StatusValidation.InProcess)
+        if (offer.StatusValidation != StatusValidation.EnProceso)
         {
             throw new InvalidOperationException(
-                $"La oferta con ID {id} ya fue {offer.statusValidation}. No se puede rechazar."
+                $"La oferta con ID {id} ya fue {offer.StatusValidation}. No se puede rechazar."
             );
         }
-        offer.IsActive = false;
-        offer.statusValidation = StatusValidation.Rejected;
+        offer.IsValidated = false;
+        offer.StatusValidation = StatusValidation.Rechazado;
         await _offerRepository.UpdateOfferAsync(offer);
 
         if (offer.User?.Email != null)
@@ -373,14 +379,14 @@ public class OfferService : IOfferService
         {
             throw new KeyNotFoundException($"La oferta con id {offerId} no fue encontrada.");
         }
-        if (!offer.IsActive)
+        if (!offer.IsValidated)
         {
             throw new InvalidOperationException($"La oferta con id {offerId} ya ha sido cerrada.");
         }
-        offer.IsActive = false;
+        offer.IsValidated = false;
         await _offerRepository.UpdateOfferAsync(offer);
 
-        _logger.LogInformation(
+        Log.Information(
             "Oferta ID: {OfferId} cerrada por el oferente. Reviews se crearán automáticamente.",
             offerId
         );
@@ -409,24 +415,24 @@ public class OfferService : IOfferService
             throw new KeyNotFoundException($"La oferta con id {offerId} no fue encontrada.");
         }
 
-        if (!offer.IsActive)
+        if (!offer.IsValidated)
         {
             throw new InvalidOperationException($"La oferta con id {offerId} ya ha sido cerrada.");
         }
 
         // El estado de publicación debe ser Publicado para poder cerrarse
-        if (offer.statusValidation != StatusValidation.Published)
+        if (offer.StatusValidation != StatusValidation.Publicado)
         {
             throw new InvalidOperationException(
-                $"La oferta con ID {offerId} está {offer.statusValidation}. Solo las publicaciones activas pueden ser cerradas."
+                $"La oferta con ID {offerId} está {offer.StatusValidation}. Solo las publicaciones activas pueden ser cerradas."
             );
         }
 
-        offer.IsActive = false;
-        offer.statusValidation = StatusValidation.Closed;
+        offer.IsValidated = false;
+        offer.StatusValidation = StatusValidation.Cerrado;
         await _offerRepository.UpdateOfferAsync(offer);
 
-        _logger.LogInformation(
+        Log.Information(
             "Oferta ID: {OfferId} cerrada por el oferente {OffererId}. Reviews se crearán automáticamente.",
             offerId,
             offererUserId

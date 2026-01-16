@@ -22,7 +22,7 @@ public class PublicationRepository : IPublicationRepository
     {
         return await _context
             .Publications.Where(p =>
-                p.UserId == int.Parse(userId) && p.statusValidation == StatusValidation.Published
+                p.UserId == int.Parse(userId) && p.StatusValidation == StatusValidation.Publicado
             ) // <-- Filtro Published
             .AsNoTracking()
             .ToListAsync();
@@ -33,7 +33,7 @@ public class PublicationRepository : IPublicationRepository
     {
         return await _context
             .Publications.Where(p =>
-                p.UserId == int.Parse(userId) && p.statusValidation == StatusValidation.Rejected
+                p.UserId == int.Parse(userId) && p.StatusValidation == StatusValidation.Rechazado
             ) // <-- Filtro Rejected
             .AsNoTracking()
             .ToListAsync();
@@ -44,7 +44,7 @@ public class PublicationRepository : IPublicationRepository
     {
         return await _context
             .Publications.Where(p =>
-                p.UserId == int.Parse(userId) && p.statusValidation == StatusValidation.InProcess
+                p.UserId == int.Parse(userId) && p.StatusValidation == StatusValidation.EnProceso
             ) // <-- Filtro Pending
             .AsNoTracking()
             .ToListAsync();

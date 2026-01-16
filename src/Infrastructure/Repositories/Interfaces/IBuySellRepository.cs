@@ -11,7 +11,7 @@ namespace bolsafeucn_back.src.Infrastructure.Repositories.Interfaces
         /// <summary>
         /// Crea una nueva publicación de compra/venta
         /// </summary>
-        Task<BuySell> CreateBuySellAsync(BuySell buySell);
+        Task<int> CreateBuySellAsync(BuySell buySell);
 
         /// <summary>
         /// Obtiene todas las publicaciones de compra/venta activas

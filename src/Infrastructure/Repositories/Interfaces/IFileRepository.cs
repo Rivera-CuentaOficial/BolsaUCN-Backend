@@ -30,6 +30,14 @@ namespace bolsafeucn_back.src.Infrastructure.Repositories.Interfaces
         Task<bool?> CreateCVAsync(Curriculum file);
 
         /// <summary>
+        /// Actualiza un archivo de CV en la base de datos.
+        /// </summary>
+        /// <param name="publicId">El identificador público del archivo a actualizar.</param>
+        /// <param name="updatedFile">El archivo de CV actualizado.</param>
+        /// <returns>True si el archivo se actualizó correctamente, de lo contrario false y null si el archivo no existe.</returns>
+        Task<bool?> UpdateCVAsync(string publicId, Curriculum updatedFile);
+
+        /// <summary>
         /// Elimina un archivo de imagen de la base de datos.
         /// </summary>
         /// <param name="publicId">El identificador público del archivo a eliminar.</param>

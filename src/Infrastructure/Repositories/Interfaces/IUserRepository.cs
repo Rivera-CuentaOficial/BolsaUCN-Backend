@@ -1,5 +1,6 @@
 using bolsafeucn_back.src.Application.DTOs.UserDTOs.AdminDTOs;
 using bolsafeucn_back.src.Domain.Models;
+using bolsafeucn_back.src.Domain.Models.Options;
 
 namespace bolsafeucn_back.src.Infrastructure.Repositories.Interfaces
 {
@@ -17,17 +18,12 @@ namespace bolsafeucn_back.src.Infrastructure.Repositories.Interfaces
         Task<string> GetRoleAsync(User user);
         Task<User> GetGeneralUserByIdAsync(int id);
         Task<bool> ConfirmEmailAsync(string email);
-        Task<User?> GetUserByIdAsync(
-            int userId,
-            bool tracking = false,
-            bool includePhoto = false,
-            bool includeCV = false
-        );
+        Task<User?> GetByIdAsync(int userId, UserQueryOptions? options = null);
         Task<(IEnumerable<User>, int TotalCount)> GetFilteredForAdminAsync(
             int adminId,
             SearchParamsDTO searchParams
         );
-        Task<int> GetNumberOfAdmins();
+        Task<int> GetCountByTypeAsync(UserType userType);
         Task<bool> DeleteUserAsync(User user);
     }
 }

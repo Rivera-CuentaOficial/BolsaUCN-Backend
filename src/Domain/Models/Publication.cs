@@ -5,8 +5,8 @@ namespace bolsafeucn_back.src.Domain.Models
     /// </summary>
     public enum Types
     {
-        Offer, // Job or volunteer offer
-        BuySell, // Buy/Sell listing
+        Oferta, // Oferta de trabajo o voluntariado
+        CompraVenta, // Anuncio de compra/venta
     }
 
     /// <summary>
@@ -14,77 +14,82 @@ namespace bolsafeucn_back.src.Domain.Models
     /// </summary>
     public enum StatusValidation
     {
-        Published, // Validated and published by an administrator
-        InProcess, // Under administrative review
-        Rejected, // Rejected by an administrator
-        Closed, // Closed by the user or administrator
+        Publicado, // Validado y publicado por un administrador
+        EnProceso, // En revisión administrativa
+        Rechazado, // Rechazado por un administrador
+        Cerrado, // Cerrado por el usuario o administrador
     }
 
     /// <summary>
-    /// Abstract base class for all publication entities in the system.
-    /// Derived types include <see cref="Offer"/> and <see cref="BuySell"/>.
+    /// Clase base abstracta para todas las entidades de publicación en el sistema.
+    /// Los tipos derivados incluyen <see cref="Offer"/> y <see cref="BuySell"/>.
     /// </summary>
     public abstract class Publication : ModelBase
     {
         /// <summary>
-        /// The user who created the publication.
+        /// El usuario que creó la publicación.
         /// </summary>
         public required User User { get; set; }
 
         /// <summary>
-        /// Identifier of the user who created the publication.
+        /// Identificador del usuario que creó la publicación.
         /// </summary>
         public required int UserId { get; set; }
 
         /// <summary>
-        /// Title of the publication.
+        /// Título de la publicación.
         /// </summary>
         public required string Title { get; set; }
 
         /// <summary>
-        /// Full description of the publication.
+        /// Descripción completa de la publicación.
         /// </summary>
         public required string Description { get; set; }
 
         /// <summary>
-        /// Publication date and time in UTC.
+        /// Ubicación asociada a la publicación.
         /// </summary>
-        public DateTime PublicationDate { get; set; } = DateTime.UtcNow;
+        public required string Location { get; set; }
 
         /// <summary>
-        /// Collection of images attached to the publication.
+        /// Información de contacto adicional proporcionada por el usuario.
+        /// </summary>
+        public string? AdditionalContactInfo { get; set; }
+
+        /// <summary>
+        /// Coleccion de imágenes asociadas a la publicación.
         /// </summary>
         public ICollection<Image> Images { get; set; } = new List<Image>();
 
         /// <summary>
-        /// Publication type (Offer, BuySell).
+        /// Tipo de publicación (Oferta, CompraVenta).
         /// </summary>
         public required Types Type { get; set; }
 
         /// <summary>
-        /// Whether the publication is active and visible to users.
+        /// Indica si la publicación está activa y visible para los usuarios.
         /// </summary>
-        public bool IsActive { get; set; }
+        public bool IsValidated { get; set; }
 
         /// <summary>
-        /// Administrative validation status for the publication.
+        /// Estado de validación administrativa de la publicación.
         /// </summary>
-        public StatusValidation statusValidation { get; set; }
+        public StatusValidation StatusValidation { get; set; }
 
         /// <summary>
-        /// Reason provided by the administrator when rejecting the publication.
-        /// This feedback allows the user to correct their publication.
+        /// Razón de rechazo proporcionada por el administrador.
+        /// Esta retroalimentación permite al usuario corregir su publicación.
         /// </summary>
         public string? AdminRejectionReason { get; set; }
 
         /// <summary>
-        /// Justification provided by the user when appealing a rejection.
+        /// Justificación proporcionada por el usuario al apelar un rechazo.
         /// </summary>
         public string? UserAppealJustification { get; set; }
 
         /// <summary>
-        /// Counter for the number of appeal attempts made by the user.
-        /// Used to enforce the maximum appeal limit logic.
+        /// Contador del número de intentos de apelación realizados por el usuario.
+        /// Usado para hacer cumplir la lógica del límite máximo de apelaciones.
         /// </summary>
         public int AppealCount { get; set; } = 0;
     }

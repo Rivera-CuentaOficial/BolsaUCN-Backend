@@ -1,5 +1,6 @@
 using bolsafeucn_back.src.Application.DTOs.OfferDTOs;
 using bolsafeucn_back.src.Application.DTOs.PublicationDTO;
+using bolsafeucn_back.src.Domain.Models;
 
 namespace bolsafeucn_back.src.Application.Services.Interfaces;
 
@@ -10,6 +11,8 @@ namespace bolsafeucn_back.src.Application.Services.Interfaces;
 /// </summary>
 public interface IOfferService
 {
+    Task<Offer> GetByOfferIdAsync(int offerId);
+
     /// <summary>
     /// Retrieves detailed information for a single offer by its identifier.
     /// Returns null if the offer is not found.

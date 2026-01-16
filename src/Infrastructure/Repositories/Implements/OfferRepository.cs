@@ -2,6 +2,7 @@ using bolsafeucn_back.src.Domain.Models;
 using bolsafeucn_back.src.Infrastructure.Data;
 using bolsafeucn_back.src.Infrastructure.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using Serilog;
 
 namespace bolsafeucn_back.src.Infrastructure.Repositories.Implements;
 
@@ -27,7 +28,7 @@ public class OfferRepository : IOfferRepository
         _logger.LogInformation("Consultando ofertas activas en la base de datos");
         var offers = await _context
             .Offers.Include(o => o.User)
-            .Where(o => o.IsActive && o.EndDate > DateTime.UtcNow)
+            .Where(o => o.IsValidated && o.EndDate > DateTime.UtcNow)
             .AsNoTracking()
             .ToListAsync();
         _logger.LogInformation(
@@ -45,7 +46,7 @@ public class OfferRepository : IOfferRepository
         _logger.LogInformation("Consultando ofertas pendientes en la base de datos");
         var offers = await _context
             .Offers.Include(o => o.User)
-            .Where(o => o.statusValidation == StatusValidation.InProcess)
+            .Where(o => o.StatusValidation == StatusValidation.EnProceso)
             .AsNoTracking()
             .ToListAsync();
         _logger.LogInformation(
@@ -63,7 +64,7 @@ public class OfferRepository : IOfferRepository
         _logger.LogInformation("Consultando ofertas publicadas en la base de datos");
         var offers = await _context
             .Offers.Include(o => o.User)
-            .Where(o => o.statusValidation == StatusValidation.Published && o.IsActive == true)
+            .Where(o => o.StatusValidation == StatusValidation.Publicado && o.IsValidated == true)
             .AsNoTracking()
             .ToListAsync();
         _logger.LogInformation(
@@ -97,30 +98,16 @@ public class OfferRepository : IOfferRepository
     /// <summary>
     /// Crea una nueva oferta en la base de datos
     /// </summary>
-    public async Task<Offer> CreateOfferAsync(Offer offer)
+    public async Task<int> CreateOfferAsync(Offer offer)
     {
-        try
-        {
-            _logger.LogInformation(
-                "Creando nueva oferta: {Title} para usuario ID: {UserId}",
-                offer.Title,
-                offer.UserId
-            );
-            _context.Offers.Add(offer);
-            await _context.SaveChangesAsync();
-            _logger.LogInformation("Oferta creada exitosamente con ID: {OfferId}", offer.Id);
-            return offer;
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(
-                ex,
-                "Error al crear la oferta: {Title} para usuario ID: {UserId}",
-                offer.Title,
-                offer.UserId
-            );
-            throw new Exception("Error al crear la oferta", ex);
-        }
+        Log.Information(
+            "Creando nueva oferta: {Title} para usuario ID: {UserId}",
+            offer.Title,
+            offer.UserId
+        );
+        _context.Offers.Add(offer);
+        await _context.SaveChangesAsync();
+        return offer.Id;
     }
 
     /// <summary>

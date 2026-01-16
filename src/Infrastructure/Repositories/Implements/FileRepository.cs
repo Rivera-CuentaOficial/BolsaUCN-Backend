@@ -50,12 +50,33 @@ namespace bolsafeucn_back.src.Infrastructure.Repositories.Implements
             return null;
         }
 
+        /// <summary>
+        /// Crea un archivo de currículum en la base de datos.
+        /// </summary>
+        /// <param name="file">El archivo de currículum a crear.</param>
+        /// <returns>True si el archivo se creó correctamente, de lo contrario false y null en caso de que el currículum ya existe.</returns>
         public async Task<bool?> CreateCVAsync(Curriculum file)
         {
             var existsCV = await _context.CVs.AnyAsync(i => i.PublicId == file.PublicId);
             if (!existsCV)
             {
                 _context.CVs.Add(file);
+                return await _context.SaveChangesAsync() > 0;
+            }
+            return null;
+        }
+
+        public async Task<bool?> UpdateCVAsync(string publicId, Curriculum updatedCV)
+        {
+            var existingCV = await _context.CVs.FirstOrDefaultAsync(cv => cv.PublicId == publicId);
+            if (existingCV != null)
+            {
+                existingCV.Url = updatedCV.Url;
+                existingCV.OriginalFileName = updatedCV.OriginalFileName;
+                existingCV.FileSizeBytes = updatedCV.FileSizeBytes;
+                existingCV.UpdatedAt = updatedCV.UpdatedAt;
+
+                _context.CVs.Update(existingCV);
                 return await _context.SaveChangesAsync() > 0;
             }
             return null;

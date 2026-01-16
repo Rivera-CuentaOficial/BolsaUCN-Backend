@@ -1,6 +1,7 @@
 using bolsafeucn_back.src.Application.DTOs.BaseResponse;
 using bolsafeucn_back.src.Application.DTOs.UserDTOs.AdminDTOs;
 using bolsafeucn_back.src.Application.Services.Interfaces;
+using bolsafeucn_back.src.Domain.Constants;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Serilog;
@@ -21,7 +22,7 @@ namespace bolsafeucn_back.src.API.Controllers
         /// </summary>
         /// <returns>Respuesta genérica indicando el resultado de la operación.</returns>
         [HttpPatch("users/{userId}/toggle-block")]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = RoleNames.Admin)]
         public async Task<IActionResult> ToggleUserBlockedStatus(int userId)
         {
             var adminId = GetUserIdFromToken();
@@ -40,7 +41,7 @@ namespace bolsafeucn_back.src.API.Controllers
         /// <param name="searchParams">Parámetros para filtrar y paginar la lista de usuarios.</param>
         /// <returns>Lista paginada y filtrada de usuarios.</returns>
         [HttpGet("users")]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = RoleNames.Admin)]
         public async Task<IActionResult> GetAllUsers([FromQuery] SearchParamsDTO searchParams)
         {
             var adminId = GetUserIdFromToken();
@@ -57,7 +58,7 @@ namespace bolsafeucn_back.src.API.Controllers
         /// <param name="userId">ID del usuario cuyo perfil se desea obtener.</param>
         /// <returns>Perfil del usuario.</returns>
         [HttpGet("users/{userId}")]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = RoleNames.Admin)]
         public async Task<IActionResult> GetUserProfileById(int userId)
         {
             var adminId = GetUserIdFromToken();
@@ -77,13 +78,13 @@ namespace bolsafeucn_back.src.API.Controllers
         /// <param name="userId">ID del administrador a eliminar.</param>
         /// <returns>Resultado de la operación de eliminación.</returns>
         [HttpDelete("users/{userId}")]
-        [Authorize(Roles = "SuperAdmin")]
-        public async Task<IActionResult> DeleteAdminById(int userId)
+        [Authorize(Roles = RoleNames.SuperAdmin)]
+        public async Task<IActionResult> BlockAdminById(int userId)
         {
             var superAdminId = GetUserIdFromToken();
             Log.Information($"Intentando eliminar admin con ID: {userId}");
-            var result = await _adminService.DeleteAdminByIdAsync(superAdminId, userId);
-            return Ok(new GenericResponse<string>("Admin eliminado exitosamente.", result));
+            var result = await _adminService.ToggleUserBlockedStatusAsync(superAdminId, userId);
+            return Ok(new GenericResponse<bool>("Admin eliminado exitosamente.", result));
         }
     }
 }

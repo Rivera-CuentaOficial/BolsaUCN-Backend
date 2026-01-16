@@ -81,7 +81,7 @@ namespace bolsafeucn_back.src.API.Controllers
 
             try
             {
-                var response = await _publicationService.CreateOfferAsync(dto, currentUser);
+                var response = await _publicationService.CreateOfferAsync(dto, currentUser.Id);
                 return Ok(response);
             }
             catch (UnauthorizedAccessException ex)
@@ -142,7 +142,7 @@ namespace bolsafeucn_back.src.API.Controllers
 
             try
             {
-                var response = await _publicationService.CreateBuySellAsync(dto, currentUser);
+                var response = await _publicationService.CreateBuySellAsync(dto, currentUser.Id);
                 return Ok(response);
             }
             catch (UnauthorizedAccessException ex)

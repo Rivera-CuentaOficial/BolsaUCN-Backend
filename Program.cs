@@ -155,6 +155,8 @@ try
     // =========================
     builder.Services.AddScoped<UserMapper>();
     builder.Services.AddScoped<OfferMapper>();
+    builder.Services.AddScoped<BuySellMapper>();
+    builder.Services.AddScoped<ApplicationMapper>();
     builder.Services.AddScoped<ProfileMapper>();
 
     builder.Services.AddScoped<IUserRepository, UserRepository>();

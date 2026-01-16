@@ -11,7 +11,7 @@ namespace bolsafeucn_back.src.Application.DTOs.JobAplicationDTO
         public string ApplicantName { get; set; } = string.Empty;
         public string Status { get; set; } = string.Empty;
         public DateTime ApplicationDate { get; set; }
-        public string? CurriculumVitaeUrl { get; set; } 
+        public string? CurriculumVitaeUrl { get; set; }
         public double Rating { get; set; }
     }
 }

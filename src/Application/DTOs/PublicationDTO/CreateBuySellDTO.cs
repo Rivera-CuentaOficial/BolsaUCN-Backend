@@ -42,6 +42,22 @@ namespace bolsafeucn_back.src.Application.DTOs.PublicationDTO
             200,
             ErrorMessage = "La información de contacto no puede exceder 200 caracteres"
         )]
-        public string? ContactInfo { get; set; }
+        public string? AdditionalContactInfo { get; set; }
+
+        public int Quantity { get; set; }
+
+        [Required(ErrorMessage = "La disponibilidad es obligatoria")]
+        [RegularExpression(
+            @"^(Disponible|Vendido)$",
+            ErrorMessage = "El tipo de discapacidad no es válido."
+        )]
+        public required string Availability { get; set; }
+
+        [Required(ErrorMessage = "La condición es obligatoria")]
+        [RegularExpression(
+            @"^(Nuevo|ComoNuevo|Usado|NoAplica)$",
+            ErrorMessage = "La condición no es válida."
+        )]
+        public required string Condition { get; set; }
     }
 }

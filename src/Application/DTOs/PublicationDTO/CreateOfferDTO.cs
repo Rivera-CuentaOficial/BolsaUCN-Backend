@@ -39,7 +39,7 @@ namespace bolsafeucn_back.src.Application.DTOs.PublicationDTO
 
         [Required(ErrorMessage = "La remuneración es obligatoria")]
         [Range(1, 1000000, ErrorMessage = "La remuneración debe estar entre $1 y $1.000.000")]
-        public decimal? Remuneration { get; set; }
+        public int? Remuneration { get; set; }
 
         [Required(ErrorMessage = "El tipo de oferta es obligatorio")]
         [Range(0, 1, ErrorMessage = "El Tipo debe ser 1 (Voluntario) o 0 (Oferta)")]
